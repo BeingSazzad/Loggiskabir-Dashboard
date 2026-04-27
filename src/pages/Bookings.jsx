@@ -7,7 +7,8 @@ import {
   ChevronRight, 
   CheckCircle2, 
   XCircle, 
-  User, 
+  User,
+  Users,
   Calendar, 
   CreditCard,
   AlertCircle,
@@ -200,15 +201,15 @@ const Bookings = () => {
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Driver Assignment</h4>
                   {!isAssigning ? (
                     <div 
-                      className="border-2 border-dashed border-line rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-bg transition-colors"
+                      className="bg-primary-tint/50 border border-primary/10 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary-light/50 transition-all group"
                       onClick={() => setIsAssigning(true)}
                     >
-                      <div className="w-12 h-12 bg-line-2 rounded-full flex items-center justify-center text-ink-4 mb-3">
-                        <Truck size={24} />
+                      <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-primary mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                        <Users size={28} />
                       </div>
-                      <p className="text-sm font-bold text-ink mb-1">No driver assigned yet</p>
-                      <p className="text-xs text-ink-4 mb-4">Click to assign from available on-duty pool</p>
-                      <Button variant="primary-light" size="sm">Select Driver</Button>
+                      <h5 className="text-base font-bold text-ink mb-1">Assign a Driver</h5>
+                      <p className="text-xs font-medium text-ink-3 mb-5 max-w-[240px]">This trip requires a driver assignment from the active on-duty pool.</p>
+                      <Button variant="primary" size="md">Select Available Driver</Button>
                     </div>
                   ) : (
                     <div className="space-y-3">
