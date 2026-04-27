@@ -130,9 +130,9 @@ const Shell = ({ children, currentPage, setPage }) => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-[240px] flex flex-col min-w-0">
+      <main className="flex-1 ml-[240px] flex flex-col min-w-0 h-screen overflow-y-auto">
         {/* Top Bar */}
-        <header className="h-16 bg-white border-b border-line flex items-center justify-between px-8 sticky top-0 z-10">
+        <header className="h-16 bg-white border-b border-line flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
           <div className="flex-1 max-w-md">
             <div className="relative group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" size={18} />
@@ -162,7 +162,7 @@ const Shell = ({ children, currentPage, setPage }) => {
         </header>
 
         {/* Content Wrapper */}
-        <div className="p-8">
+        <div className="p-8 flex-1">
           {children}
         </div>
       </main>

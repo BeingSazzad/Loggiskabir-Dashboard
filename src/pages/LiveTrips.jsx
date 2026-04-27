@@ -26,13 +26,13 @@ const LiveTrips = () => {
   const selectedDriver = selectedTrip ? drivers.find(d => d.id === selectedTrip.driverId) : null;
 
   return (
-    <div className="h-[calc(100vh-160px)] flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Live Trips</h1>
         <p className="text-ink-3 font-medium">Monitoring {activeTrips.length} active assignments</p>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: List */}
         <div className="lg:col-span-4 flex flex-col gap-6 overflow-y-auto pr-2">
           <section className="space-y-3">
