@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, MapPin, User } from 'lucide-react';
-import { Card, Avatar, Badge } from '../components/UI';
+import { Card, Avatar, Badge, Pagination } from '../components/UI';
 import { drivers, trips } from '../data/mockData';
 
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 6); // 6am – 6pm
@@ -30,6 +30,11 @@ const Schedule = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const [weekStart, setWeekStart] = useState(today);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  const totalPages = Math.ceil(drivers.length / itemsPerPage);
+  const paginatedDrivers = drivers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -89,7 +94,7 @@ const Schedule = () => {
 
         {/* Driver Rows */}
         <div className="divide-y divide-line-2">
-          {drivers.map(driver => (
+          {paginatedDrivers.map(driver => (
             <div key={driver.id} className="grid hover:bg-bg/30 transition-colors" style={{ gridTemplateColumns: '200px repeat(7, 1fr)' }}>
               {/* Driver info cell */}
               <div className="px-4 py-3 border-r border-line-2 flex items-center gap-3">
@@ -152,6 +157,13 @@ const Schedule = () => {
           ))}
         </div>
       </Card>
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={drivers.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

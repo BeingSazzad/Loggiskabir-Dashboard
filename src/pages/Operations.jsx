@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Truck, Users, BarChart3, AlertTriangle,
   ChevronRight, Clock, MapPin, CheckCircle2,
@@ -6,11 +6,14 @@ import {
   CalendarDays,
   Plus
 } from 'lucide-react';
-import { Card, StatCard, Avatar, Badge, TripStatusBadge, Button } from '../components/UI';
+import { Card, StatCard, Avatar, Badge, TripStatusBadge, Button, Pagination } from '../components/UI';
 import { opsStats, trips, drivers, applications, reports } from '../data/mockData';
 import { formatTime, formatShortDate } from '../utils/helpers';
 
 const Operations = ({ setPage }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const today = new Date();
   const todayLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
@@ -18,6 +21,9 @@ const Operations = ({ setPage }) => {
   const activeTrips = trips.filter(t => ['in_trip', 'assigned', 'pending_review', 'en_route', 'arrived'].includes(t.status));
   const pendingTrips = trips.filter(t => t.status === 'pending_review');
   const openReports = reports.filter(r => r.status === 'open');
+
+  const totalPages = Math.ceil(activeTrips.length / itemsPerPage);
+  const paginatedActiveTrips = activeTrips.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const statusIcon = (status) => {
     if (status === 'in_trip' || status === 'en_route' || status === 'arrived')
@@ -133,11 +139,11 @@ const Operations = ({ setPage }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line-2">
-                {activeTrips.length === 0 ? (
+                {paginatedActiveTrips.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-5 py-10 text-center text-sm text-ink-4 font-medium">No active trips today.</td>
                   </tr>
-                ) : activeTrips.map(trip => {
+                ) : paginatedActiveTrips.map(trip => {
                   const driver = drivers.find(d => d.id === trip.driverId);
                   const isLive = ['in_trip', 'en_route', 'arrived'].includes(trip.status);
                   return (
@@ -186,6 +192,13 @@ const Operations = ({ setPage }) => {
                 })}
               </tbody>
             </table>
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={activeTrips.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
 
             <div className="px-5 py-3 border-t border-line-2 bg-bg/30">
               <div className="flex items-center gap-4 text-[10px] font-bold text-ink-4">

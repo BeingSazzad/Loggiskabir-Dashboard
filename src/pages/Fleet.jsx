@@ -3,7 +3,7 @@ import {
   Truck, User, AlertTriangle, CheckCircle2, Clock,
   Wrench, Shield, Calendar, ChevronDown, Edit2, X, Check, ShieldCheck
 } from 'lucide-react';
-import { Card, Badge, Avatar, Button } from '../components/UI';
+import { Card, Badge, Avatar, Button, Pagination } from '../components/UI';
 import { vehicles as initialVehicles, drivers } from '../data/mockData';
 
 const VEHICLE_TYPES = ['Ambulatory Van', 'Wheelchair Van', 'Stretcher Van'];
@@ -268,25 +268,40 @@ const VehicleCard = ({ vehicle, allDrivers, onAssignDriver }) => {
 };
 
 const Fleet = ({ role }) => {
-  const [localVehicles, setLocalVehicles] = useState(initialVehicles);
-  const [filter, setFilter] = useState('all');
+  const [vehicles, setVehicles] = useState(initialVehicles);
+  const [activeTab, setActiveTab] = useState('all');
+  const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-  const handleAssignDriver = (vehicleId, driverId) => {
-    setLocalVehicles(prev => prev.map(v =>
-      v.id === vehicleId ? { ...v, assignedDriverId: driverId } : v
-    ));
-  };
-
-  const filtered = localVehicles.filter(v => {
-    if (filter === 'all') return true;
-    return v.status === filter;
+  const filteredVehicles = vehicles.filter(v => {
+    const matchesSearch = 
+      v.make.toLowerCase().includes(search.toLowerCase()) || 
+      v.model.toLowerCase().includes(search.toLowerCase()) ||
+      v.plate.toLowerCase().includes(search.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    if (activeTab === 'available') return v.status === 'available';
+    if (activeTab === 'in_trip') return v.status === 'in_trip';
+    if (activeTab === 'service') return v.maintenanceDue;
+    return true;
   });
 
-  const counts = {
-    available: localVehicles.filter(v => v.status === 'available').length,
-    in_trip: localVehicles.filter(v => v.status === 'in_trip').length,
-    issues: localVehicles.filter(v => v.insurance.status !== 'valid').length,
+  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+  const paginatedVehicles = filteredVehicles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const stats = {
+    total: vehicles.length,
+    available: vehicles.filter(v => v.status === 'available').length,
+    inTrip: vehicles.filter(v => v.status === 'in_trip').length,
+    maintenance: vehicles.filter(v => v.maintenanceDue).length,
+  };
+
+  const handleAssignDriver = (vehicleId, driverId) => {
+    setVehicles(prev => prev.map(v =>
+      v.id === vehicleId ? { ...v, assignedDriverId: driverId } : v
+    ));
   };
 
   return (
@@ -296,7 +311,6 @@ const Fleet = ({ role }) => {
           onClose={() => setShowAddModal(false)}
           onSave={(data) => {
             console.log('New vehicle data:', data);
-            // TODO: Wire to API POST /vehicles
           }}
         />
       )}
@@ -306,18 +320,15 @@ const Fleet = ({ role }) => {
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Fleet Management</h1>
           <p className="text-ink-3 font-medium">Manage vehicles, assignments, and compliance</p>
         </div>
-        {role === 'admin' && (
-          <Button variant="primary" size="sm" icon={Truck} onClick={() => setShowAddModal(true)}>Add Vehicle</Button>
-        )}
       </div>
 
       {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Vehicles', value: localVehicles.length, icon: Truck, color: 'text-primary' },
-          { label: 'Available', value: counts.available, icon: CheckCircle2, color: 'text-accent' },
-          { label: 'In Trip', value: counts.in_trip, icon: Clock, color: 'text-primary' },
-          { label: 'Compliance Issues', value: counts.issues, icon: AlertTriangle, color: 'text-urgent' },
+          { label: 'Total Vehicles', value: stats.total, icon: Truck, color: 'text-primary' },
+          { label: 'Available', value: stats.available, icon: CheckCircle2, color: 'text-accent' },
+          { label: 'In Trip', value: stats.inTrip, icon: Clock, color: 'text-primary' },
+          { label: 'Compliance Issues', value: stats.maintenance, icon: AlertTriangle, color: 'text-urgent' },
         ].map(stat => (
           <Card key={stat.label} className="p-4 flex items-center gap-4">
             <div className={`${stat.color}`}><stat.icon size={20} /></div>
@@ -330,21 +341,35 @@ const Fleet = ({ role }) => {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex items-center gap-2 bg-bg p-1 rounded-xl border border-line w-fit">
-        {['all', 'available', 'in_trip', 'off_duty'].map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${filter === f ? 'bg-white shadow-sm text-primary' : 'text-ink-3 hover:text-ink-2'}`}
-          >
-            {f.replace('_', ' ')}
-          </button>
-        ))}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          {['all', 'available', 'in_trip', 'service'].map(tab => (
+            <button 
+              key={tab}
+              onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
+              className={`px-4 py-2 text-sm font-bold border-b-2 transition-all capitalize ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
+            >
+              {tab.replace('_', ' ')}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <input 
+            type="text" 
+            placeholder="Search fleet..." 
+            className="bg-white border border-line rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-primary/20 outline-none transition-all w-48"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+          />
+          {role === 'admin' && (
+            <Button variant="primary" size="sm" icon={Plus} onClick={() => setShowAddModal(true)}>Add Vehicle</Button>
+          )}
+        </div>
       </div>
 
       {/* Vehicle Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filtered.map(vehicle => (
+        {paginatedVehicles.map(vehicle => (
           <VehicleCard
             key={vehicle.id}
             vehicle={vehicle}
@@ -352,6 +377,16 @@ const Fleet = ({ role }) => {
             onAssignDriver={handleAssignDriver}
           />
         ))}
+      </div>
+
+      <div className="mt-8">
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredVehicles.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

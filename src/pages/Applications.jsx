@@ -14,12 +14,18 @@ import {
   XCircle,
   MoreHorizontal
 } from 'lucide-react';
-import { Card, Avatar, Badge, Button } from '../components/UI';
+import { Card, Avatar, Badge, Button, Pagination } from '../components/UI';
 import { applications } from '../data/mockData';
 import { timeAgo } from '../utils/helpers';
 
 const Applications = () => {
   const [selectedAppId, setSelectedAppId] = useState('APP-2024-1847');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  const totalPages = Math.ceil(applications.length / itemsPerPage);
+  const paginatedApplications = applications.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const selectedApp = applications.find(a => a.id === selectedAppId);
 
   const stages = [
@@ -39,7 +45,7 @@ const Applications = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: List */}
         <div className="lg:col-span-5 flex flex-col gap-3 overflow-y-auto pr-2">
-          {applications.map(app => (
+          {paginatedApplications.map(app => (
             <Card 
               key={app.id} 
               hover 
@@ -75,6 +81,15 @@ const Applications = () => {
               </div>
             </Card>
           ))}
+          <div className="mt-4">
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={applications.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
 
         {/* Right Column: Detail */}

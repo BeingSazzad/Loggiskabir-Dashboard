@@ -17,9 +17,12 @@ import {
   AlertTriangle,
   Edit2,
   Plus,
-  X
+  X,
+  Inbox,
+  TrendingUp,
+  Download
 } from 'lucide-react';
-import { Card, Avatar, Badge, Button, TripStatusBadge } from '../components/UI';
+import { Card, StatCard, Avatar, Badge, Button, TripStatusBadge, Pagination } from '../components/UI';
 import { trips, drivers } from '../data/mockData';
 import { formatTime, formatDateTime, formatShortDate, timeAgo, tripTypeLabel, money } from '../utils/helpers';
 
@@ -41,7 +44,7 @@ const isVehicleMatch = (driver, booking) => {
   return true; // ambulatory / cane can use any van
 };
 
-const ManualBookingModal = ({ onClose, onSave }) => {
+const ManualTripModal = ({ onClose, onSave }) => {
   const [form, setForm] = useState({
     riderName: '',
     phone: '',
@@ -121,23 +124,127 @@ const ManualBookingModal = ({ onClose, onSave }) => {
 };
 
 const Bookings = () => {
-  const [activeTab, setActiveTab] = useState('pending');
-  const [selectedBookingId, setSelectedBookingId] = useState(null);
-   const [isAssigning, setIsAssigning] = useState(false);
   const [localTrips, setLocalTrips] = useState(trips);
+  const [activeTab, setActiveTab] = useState('pending'); // 'pending', 'approved', 'rejected'
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+  const [isAssigning, setIsAssigning] = useState(false);
   const [showManualModal, setShowManualModal] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  const stats = {
+    pending: localTrips.filter(t => t.status === 'pending_review').length,
+    approved: localTrips.filter(t => ['assigned', 'confirmed'].includes(t.status)).length,
+    rejected: localTrips.filter(t => t.status === 'cancelled').length,
+    totalToday: localTrips.filter(t => t.submittedTime && t.submittedTime.startsWith(new Date().toISOString().split('T')[0])).length
+  };
 
   const filteredBookings = localTrips.filter(t => {
-    if (activeTab === 'pending') return t.status === 'pending_review';
-    if (activeTab === 'approved') return t.status === 'assigned' || t.status === 'confirmed';
-    if (activeTab === 'rejected') return t.status === 'cancelled';
-    return false;
+    // Tab Filter
+    let tabMatch = false;
+    if (activeTab === 'pending') tabMatch = t.status === 'pending_review';
+    else if (activeTab === 'approved') tabMatch = ['assigned', 'confirmed'].includes(t.status);
+    else if (activeTab === 'rejected') tabMatch = t.status === 'cancelled';
+
+    // Search Filter
+    const searchMatch = 
+      t.id.toLowerCase().includes(search.toLowerCase()) ||
+      t.rider.name.toLowerCase().includes(search.toLowerCase()) ||
+      t.pickup.toLowerCase().includes(search.toLowerCase()) ||
+      t.dropoff.toLowerCase().includes(search.toLowerCase());
+
+    // Date Filter
+    const tripDate = new Date(t.scheduledTime).getTime();
+    const start = startDate ? new Date(startDate).getTime() : 0;
+    const end = endDate ? new Date(endDate + 'T23:59:59').getTime() : Infinity;
+    const dateMatch = tripDate >= start && tripDate <= end;
+
+    return tabMatch && searchMatch && dateMatch;
   });
+
+  const sortedBookings = [...filteredBookings].sort((a, b) => {
+    if (sortBy === 'newest') return new Date(b.submittedTime) - new Date(a.submittedTime);
+    if (sortBy === 'oldest') return new Date(a.submittedTime) - new Date(b.submittedTime);
+    if (sortBy === 'rider') return a.rider.name.localeCompare(b.rider.name);
+    return 0;
+  });
+
+  const paginatedBookings = sortedBookings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(sortedBookings.length / itemsPerPage);
 
   const selectedBooking = selectedBookingId ? localTrips.find(t => t.id === selectedBookingId) : null;
   const assignedDriver = selectedBooking?.driverId ? drivers.find(d => d.id === selectedBooking.driverId) : null;
 
-  // Smart driver suggestions — filter by conflict and rank by vehicle match
+  const handleExport = () => {
+    const itemsToExport = selectedIds.length > 0 
+      ? localTrips.filter(t => selectedIds.includes(t.id))
+      : sortedBookings;
+    
+    if (itemsToExport.length === 0) return;
+
+    const headers = ['ID', 'Rider', 'Pickup', 'Dropoff', 'Time', 'Status', 'Cost'];
+    const csvContent = [
+      headers.join(','),
+      ...itemsToExport.map(t => [
+        t.id, 
+        t.rider.name, 
+        `"${t.pickup}"`, 
+        `"${t.dropoff}"`, 
+        formatDateTime(t.scheduledTime), 
+        t.status, 
+        t.cost
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Bookings_${activeTab}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+    setSelectedIds([]);
+  };
+
+  const handleReject = () => {
+    if (!selectedBooking) return;
+    setLocalTrips(prev => prev.map(t => 
+      t.id === selectedBooking.id ? { ...t, status: 'cancelled' } : t
+    ));
+    setSelectedBookingId(null);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === paginatedBookings.length) setSelectedIds([]);
+    else setSelectedIds(paginatedBookings.map(b => b.id));
+  };
+
+  const toggleSelect = (id, e) => {
+    e.stopPropagation();
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleApprove = () => {
+    if (!selectedBooking) return;
+    setLocalTrips(prev => prev.map(t => 
+      t.id === selectedBooking.id ? { ...t, status: 'assigned' } : t
+    ));
+    setSelectedBookingId(null);
+  };
+
+  const handleAssign = (driverId) => {
+    if (!selectedBooking) return;
+    setLocalTrips(prev => prev.map(t => 
+      t.id === selectedBooking.id ? { ...t, status: 'assigned', driverId } : t
+    ));
+    setIsAssigning(false);
+    setSelectedBookingId(null);
+  };
+
   const smartDrivers = drivers.map(driver => {
     const conflictingTrips = localTrips.filter(t =>
       t.driverId === driver.id &&
@@ -156,150 +263,227 @@ const Bookings = () => {
     return 0;
   });
 
-  const handleAssign = (driverId) => {
-    if (!selectedBooking) return;
-    setLocalTrips(prev => prev.map(t => 
-      t.id === selectedBooking.id ? { ...t, status: 'assigned', driverId } : t
-    ));
-    setIsAssigning(false);
-    setActiveTab('approved');
-  };
-
-  const handleReject = () => {
-    if (!selectedBooking) return;
-    setLocalTrips(prev => prev.map(t => 
-      t.id === selectedBooking.id ? { ...t, status: 'cancelled' } : t
-    ));
-    setActiveTab('rejected');
-  };
-
-
   return (
-    <div className="flex flex-col gap-6">
-      {showManualModal && (
-        <ManualBookingModal 
-          onClose={() => setShowManualModal(false)}
-          onSave={(newTrip) => setLocalTrips([newTrip, ...localTrips])}
-        />
-      )}
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      {showManualModal && <ManualTripModal onClose={() => setShowManualModal(false)} onSave={(t) => setLocalTrips([t, ...localTrips])} />}
+
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Bookings</h1>
-          <p className="text-ink-3 font-medium">Review and process ride requests</p>
+          <p className="text-ink-3 font-medium">Review and process ride requests for today and future</p>
         </div>
-        <Button variant="primary" icon={Plus} onClick={() => setShowManualModal(true)}>Manual Trip</Button>
+        <Button variant="primary" icon={Plus} onClick={() => setShowManualModal(true)}>Manual Booking</Button>
       </div>
 
-      <div className="flex items-center gap-1 border-b border-line-2">
-        <button 
-          onClick={() => setActiveTab('pending')}
-          className={`px-4 py-2 text-sm font-bold border-b-2 transition-all ${activeTab === 'pending' ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
-        >
-          Pending Review <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'pending' ? 'bg-primary-light' : 'bg-bg'}`}>{localTrips.filter(t => t.status === 'pending_review').length}</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('approved')}
-          className={`px-4 py-2 text-sm font-bold border-b-2 transition-all ${activeTab === 'approved' ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
-        >
-          Approved <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-bg text-[10px]">{localTrips.filter(t => t.status === 'assigned' || t.status === 'confirmed').length}</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('rejected')}
-          className={`px-4 py-2 text-sm font-bold border-b-2 transition-all ${activeTab === 'rejected' ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
-        >
-          Rejected <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-bg text-[10px]">{localTrips.filter(t => t.status === 'cancelled').length}</span>
-        </button>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Pending Review" value={stats.pending} icon={Inbox} accent="warning" />
+        <StatCard label="Approved Trips" value={stats.approved} icon={CheckCircle2} accent="accent" />
+        <StatCard label="Rejected / Cancelled" value={stats.rejected} icon={XCircle} accent="urgent" />
+        <StatCard label="New Today" value={stats.totalToday} icon={TrendingUp} accent="primary" />
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Table List */}
-        <div className={`transition-all duration-300 ease-in-out ${selectedBookingId ? 'lg:col-span-7' : 'lg:col-span-12'} flex flex-col gap-4 overflow-y-auto pr-2`}>
-          {filteredBookings.length > 0 ? (
-            <div className="bg-white border border-line-2 rounded-xl overflow-hidden">
+        {/* Table Content */}
+        <div className={`transition-all duration-300 ease-in-out ${selectedBookingId ? 'lg:col-span-7' : 'lg:col-span-12'}`}>
+          <Card className="overflow-hidden border-line-2 shadow-sm">
+            {/* Advanced Filter Bar */}
+            <div className="p-6 border-b border-line-2 bg-bg/30 space-y-5">
+              {/* Row 1: Search & Sort */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex-1 max-w-2xl relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4" size={20} />
+                  <input 
+                    type="text" 
+                    placeholder="Search by ID, Rider Name, Pickup or Drop-off..." 
+                    className="w-full bg-white border border-line rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                  />
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-ink-4 uppercase tracking-widest whitespace-nowrap">Sort By</span>
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-white border border-line rounded-xl py-2.5 px-4 text-xs font-bold text-ink focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none cursor-pointer"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="rider">Rider Name (A-Z)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 2: Date Range & Tabs */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2 bg-white border border-line rounded-xl px-3 py-1.5 shadow-sm">
+                    <Calendar size={14} className="text-primary" />
+                    <input 
+                      type="date" 
+                      value={startDate}
+                      onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
+                      className="bg-transparent text-xs font-bold text-ink outline-none cursor-pointer"
+                    />
+                    <span className="text-ink-4 font-bold mx-1">→</span>
+                    <input 
+                      type="date" 
+                      value={endDate}
+                      onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
+                      className="bg-transparent text-xs font-bold text-ink outline-none cursor-pointer"
+                    />
+                  </div>
+                  
+                  {selectedIds.length > 0 && (
+                    <Button variant="outline" size="sm" icon={Download} onClick={handleExport} className="animate-fade-in whitespace-nowrap ml-2">
+                      Export {selectedIds.length} Marked
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 bg-bg p-1.5 rounded-xl border border-line shadow-inner">
+                  {[
+                    { id: 'pending', label: 'Pending Review', count: stats.pending },
+                    { id: 'approved', label: 'Approved', count: stats.approved },
+                    { id: 'rejected', label: 'Rejected', count: stats.rejected }
+                  ].map(t => (
+                    <button 
+                      key={t.id}
+                      onClick={() => { setActiveTab(t.id); setCurrentPage(1); setSelectedIds([]); }}
+                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === t.id ? 'bg-white shadow-md text-primary' : 'text-ink-3 hover:text-ink-2 hover:bg-white/50'}`}
+                    >
+                      {t.label}
+                      <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === t.id ? 'bg-primary-light' : 'bg-line'}`}>{t.count}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-bg border-b border-line-2">
+                <thead>
                   <tr className="bg-bg/50 border-b border-line-2">
+                    <th className="px-6 py-4 w-10">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.length === paginatedBookings.length && paginatedBookings.length > 0}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-line text-primary focus:ring-primary/20 cursor-pointer"
+                      />
+                    </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Trip Ref</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Route</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden lg:table-cell">Details</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Assignment</th>
+                    {activeTab !== 'pending' && <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Assignment</th>}
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line-2">
-                  {filteredBookings.map(booking => (
+                  {paginatedBookings.map(booking => (
                     <tr 
                       key={booking.id} 
                       onClick={() => setSelectedBookingId(booking.id)}
-                      className={`cursor-pointer transition-colors ${selectedBookingId === booking.id ? 'bg-primary-tint/40 hover:bg-primary-tint/60' : 'hover:bg-bg'}`}
+                      className={`cursor-pointer transition-colors group ${selectedBookingId === booking.id ? 'bg-primary-tint/20' : 'hover:bg-bg'}`}
                     >
+                      <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedIds.includes(booking.id)}
+                          onChange={() => setSelectedIds(prev => prev.includes(booking.id) ? prev.filter(i => i !== booking.id) : [...prev, booking.id])}
+                          className="w-4 h-4 rounded border-line text-primary focus:ring-primary/20 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="font-mono text-xs font-bold text-ink block mb-1">#{booking.id}</span>
+                        <span className="font-mono text-xs font-bold text-ink block mb-0.5 uppercase">#{booking.id}</span>
                         <span className="text-[10px] font-bold text-ink-4">{timeAgo(booking.submittedTime)}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex items-center gap-3">
                           <Avatar initials={booking.rider.initials} size="xs" />
-                          <h4 className="text-sm font-bold text-ink whitespace-nowrap">{booking.rider.name}</h4>
+                          <span className="text-xs font-bold text-ink">{booking.rider.name}</span>
                         </div>
-                        <p className="text-[10px] text-ink-3 ml-[30px] whitespace-nowrap">{booking.rider.phone || '(804) 555-0142'}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-ink mb-1">
-                          <span>{booking.pickup}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-ink-4">
-                          <MapPin size={10} className="shrink-0" />
-                          <span>{booking.dropoff}</span>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[8px] font-black text-primary uppercase w-7">From</span>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
+                              <div className="w-1 h-1 rounded-full bg-primary flex-shrink-0"></div>
+                              <span className="truncate max-w-[140px]">{booking.pickup}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[8px] font-black text-accent uppercase w-7">To</span>
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-ink-3">
+                              <MapPin size={10} className="flex-shrink-0 text-accent" />
+                              <span className="truncate max-w-[140px]">{booking.dropoff}</span>
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 hidden lg:table-cell">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="primary">{booking.mobility}</Badge>
-                          <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
-                          <Badge variant="neutral">{money(booking.cost)}</Badge>
+                        <div className="flex flex-col gap-2 min-w-[120px]">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-bold text-ink-4 uppercase">Mobility</span>
+                            <Badge variant="primary">{booking.mobility}</Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-bold text-ink-4 uppercase">Type</span>
+                            <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
+                          </div>
+                          <div className="flex items-center justify-between border-t border-line/50 pt-1 mt-1">
+                            <span className="text-[9px] font-bold text-ink-4 uppercase">Price</span>
+                            <span className="text-xs font-mono font-bold text-ink">{money(booking.cost)}</span>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-ink mb-1">{formatShortDate(booking.scheduledTime)}</span>
+                          <span className="text-xs font-bold text-ink mb-0.5">{formatShortDate(booking.scheduledTime)}</span>
                           <span className="text-[10px] font-semibold text-ink-3">{formatTime(booking.scheduledTime)}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {activeTab === 'rejected' ? (
-                          <span className="text-[10px] text-ink-4 italic">—</span>
-                        ) : booking.driverId ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                            <span className="text-[10px] font-bold text-ink">Assigned</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 px-2 py-1 bg-urgent-light text-urgent rounded-md border border-urgent/10 w-max shadow-sm">
-                            <span className="w-1.5 h-1.5 rounded-full bg-urgent pulse-dot"></span>
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider">Assign Driver</span>
-                          </div>
-                        )}
-                      </td>
+                      {activeTab !== 'pending' && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {booking.driverId ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                              <span className="text-[10px] font-bold text-ink uppercase tracking-wider">Assigned</span>
+                            </div>
+                          ) : (
+                            <Badge variant="urgent" dot={true}>Needs Driver</Badge>
+                          )}
+                        </td>
+                      )}
                       <td className="px-6 py-4 text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-primary hover:bg-primary-light/50"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedBookingId(booking.id);
-                          }}
-                        >
-                          Review
-                        </Button>
-                      </td>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-primary hover:bg-primary-light"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedBookingId(booking.id);
+                      }}
+                    >
+                      Review
+                    </Button>
+                  </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredBookings.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+              />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-ink-4 border border-line-2 rounded-xl bg-white">
@@ -442,10 +626,10 @@ const Bookings = () => {
                     </div>
                   </section>
                 )}
-
-                {/* Driver Assignment */}
-                <section>
-                  <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Driver Assignment</h4>
+                {/* Driver Assignment — Only for Approved/Active trips */}
+                {selectedBooking.status !== 'pending_review' && (
+                  <section>
+                    <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Driver Assignment</h4>
 
                   {/* Already assigned — show driver card */}
                   {assignedDriver && !isAssigning ? (
@@ -551,13 +735,14 @@ const Bookings = () => {
                     </div>
                   )}
                 </section>
+              )}
               </div>
 
               <div className="p-4 bg-white border-t border-line-2 flex gap-3">
                 {selectedBooking.status === 'pending_review' ? (
                   <>
                     <Button variant="ghost" className="text-urgent hover:bg-urgent-light flex-1" onClick={handleReject}>Reject</Button>
-                    <Button variant="primary" className="flex-1" onClick={() => setIsAssigning(true)}>Approve & Assign Driver</Button>
+                    <Button variant="primary" className="flex-1" onClick={handleApprove}>Approve Booking</Button>
                   </>
                 ) : (
                   <>

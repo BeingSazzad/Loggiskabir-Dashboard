@@ -4,7 +4,7 @@ import {
   CalendarClock, AlertTriangle, Star, ChevronRight, ExternalLink,
   X, UserPlus, Truck, FileCheck
 } from 'lucide-react';
-import { Card, Avatar, Badge, Button } from '../components/UI';
+import { Card, Avatar, Badge, Button, Pagination } from '../components/UI';
 import { drivers } from '../data/mockData';
 
 const COUNTIES = ['Chesterfield', 'Henrico', 'Richmond City', 'Hanover', 'Goochland', 'Powhatan'];
@@ -193,15 +193,23 @@ const AddDriverModal = ({ onClose, onSave }) => {
 
 const Drivers = ({ role }) => {
   const [activeTab, setActiveTab] = useState('all');
+  const [search, setSearch] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState('DRV-2024-8421');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const filteredDrivers = drivers.filter(d => {
-    if (activeTab === 'on_duty') return d.onDuty;
-    if (activeTab === 'off_duty') return !d.onDuty;
-    if (activeTab === 'attention') return d.pendingDocUpdates > 0;
-    return true;
+    const matchesSearch = d.name.toLowerCase().includes(search.toLowerCase()) || d.id.toLowerCase().includes(search.toLowerCase());
+    let matchesTab = true;
+    if (activeTab === 'on_duty') matchesTab = d.onDuty;
+    if (activeTab === 'off_duty') matchesTab = !d.onDuty;
+    if (activeTab === 'attention') matchesTab = d.pendingDocUpdates > 0;
+    return matchesSearch && matchesTab;
   });
+
+  const totalPages = Math.ceil(filteredDrivers.length / itemsPerPage);
+  const paginatedDrivers = filteredDrivers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const selectedDriver = drivers.find(d => d.id === selectedDriverId);
 
@@ -223,7 +231,6 @@ const Drivers = ({ role }) => {
           onClose={() => setShowAddModal(false)}
           onSave={(data) => {
             console.log('New driver data:', data);
-            // TODO: Wire to API POST /drivers
           }}
         />
       )}
@@ -242,7 +249,7 @@ const Drivers = ({ role }) => {
         {['all', 'on_duty', 'off_duty', 'attention'].map(tab => (
           <button 
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
             className={`px-4 py-2 text-sm font-bold border-b-2 transition-all capitalize ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
           >
             {tab.replace('_', ' ')}
@@ -256,7 +263,7 @@ const Drivers = ({ role }) => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: List */}
         <div className="lg:col-span-5 flex flex-col gap-3 overflow-y-auto pr-2">
-          {filteredDrivers.map(driver => (
+          {paginatedDrivers.map(driver => (
             <Card 
               key={driver.id} 
               hover 
@@ -288,6 +295,15 @@ const Drivers = ({ role }) => {
               </div>
             </Card>
           ))}
+          <div className="mt-4">
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredDrivers.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
 
         {/* Right Column: Detail */}

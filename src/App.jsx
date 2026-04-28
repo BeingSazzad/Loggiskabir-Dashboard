@@ -11,6 +11,7 @@ import TripHistory from './pages/TripHistory';
 import Settings from './pages/Settings';
 import Fleet from './pages/Fleet';
 import Schedule from './pages/Schedule';
+import Notifications from './pages/Notifications';
 
 function App() {
   const [role, setRole] = useState(null); // 'admin' | 'dispatcher' | null
@@ -27,14 +28,15 @@ function App() {
     settings: Settings,
     fleet: Fleet,
     schedule: Schedule,
+    notifications: Notifications,
   };
 
   if (!role) {
     return <Login setRole={setRole} />;
   }
 
-  // Route protection for dispatcher
-  if (role === 'dispatcher' && ['applications', 'reports'].includes(page)) {
+  // Basic permission gate for restricted pages
+  if (role === 'dispatcher' && ['admin_only'].includes(page)) {
     setPage('operations');
   }
 
@@ -46,7 +48,7 @@ function App() {
   };
 
   return (
-    <Shell currentPage={page} setPage={setPage} role={role} onLogout={handleLogout}>
+    <Shell page={page} setPage={setPage} role={role} onLogout={handleLogout}>
       <div className="animate-fade-in">
         <PageComponent setPage={setPage} role={role} />
       </div>

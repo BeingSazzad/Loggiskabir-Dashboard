@@ -85,10 +85,10 @@ const LiveTrips = () => {
 
         {/* Right Column: Map & Detail */}
         <div className="lg:col-span-8 flex flex-col gap-6 overflow-hidden">
-          {/* Stylized Map Container */}
+            {/* Stylized Map Container */}
           <div className="relative flex-1 bg-gradient-to-br from-primary-light to-accent-light rounded-2xl border border-line-2 overflow-hidden shadow-inner min-h-[420px]">
             {/* SVG Background */}
-            <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 500" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
                   <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(41, 105, 205, 0.05)" strokeWidth="1"/>
@@ -97,21 +97,21 @@ const LiveTrips = () => {
               <rect width="100%" height="100%" fill="url(#grid)" />
               
               {/* Road Lines */}
-              <line x1="0" y1="35%" x2="100%" y2="35%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
-              <line x1="0" y1="65%" x2="100%" y2="65%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
-              <line x1="30%" y1="0" x2="30%" y2="100%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
-               <line x1="70%" y1="0" x2="70%" y2="100%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
+              <line x1="0" y1="175" x2="800" y2="175" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
+              <line x1="0" y1="325" x2="800" y2="325" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
+              <line x1="240" y1="0" x2="240" y2="500" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
+               <line x1="560" y1="0" x2="560" y2="500" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
               
               {/* Building Silhouettes */}
-              <rect x="5%" y="10%" width="15%" height="15%" rx="4" fill="rgba(255,255,255,0.1)" />
-              <rect x="45%" y="40%" width="10%" height="10%" rx="4" fill="rgba(255,255,255,0.1)" />
-              <rect x="75%" y="15%" width="20%" height="30%" rx="4" fill="rgba(255,255,255,0.1)" />
-              <rect x="10%" y="70%" width="12%" height="18%" rx="4" fill="rgba(255,255,255,0.1)" />
-              <rect x="40%" y="75%" width="15%" height="10%" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="40" y="50" width="120" height="75" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="360" y="200" width="80" height="50" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="600" y="75" width="160" height="150" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="80" y="350" width="96" height="90" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="320" y="375" width="120" height="50" rx="4" fill="rgba(255,255,255,0.1)" />
               
               {/* Active Trip Path (Curved) */}
               <path 
-                d="M 30% 35% Q 50% 10% 70% 65%" 
+                d="M 240 175 Q 400 50 560 325" 
                 fill="none" 
                 stroke="#0F6E56" 
                 strokeWidth="4" 
@@ -119,7 +119,7 @@ const LiveTrips = () => {
                 strokeOpacity="0.3"
               />
               <path 
-                d="M 30% 35% Q 50% 10% 70% 65%" 
+                d="M 240 175 Q 400 50 560 325" 
                 fill="none" 
                 stroke="white" 
                 strokeWidth="2" 
@@ -128,7 +128,7 @@ const LiveTrips = () => {
               />
 
               {/* Destination Pin */}
-              <g transform="translate(700, 480)">
+              <g transform="translate(560, 325)">
                 <circle r="8" fill="#A32D2D" />
                 <circle r="12" fill="none" stroke="#A32D2D" strokeWidth="2" strokeOpacity="0.3">
                   <animate attributeName="r" from="8" to="16" dur="1.5s" repeatCount="indefinite" />

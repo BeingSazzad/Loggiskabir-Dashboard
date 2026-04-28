@@ -18,56 +18,71 @@ import {
   Car
 } from 'lucide-react';
 import { Avatar, Badge, Button } from './UI';
+import { trips, drivers } from '../data/mockData';
 
 const NavItem = ({ icon: Icon, label, badge, active, onClick, badgeVariant = 'neutral' }) => (
   <div 
     onClick={onClick}
-    className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors group ${
-      active ? 'bg-primary-light text-primary' : 'text-ink-2 hover:bg-bg'
+    className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 group relative ${
+      active ? 'bg-primary text-white shadow-md shadow-primary/20 translate-x-1' : 'text-ink-2 hover:bg-bg hover:translate-x-1'
     }`}
   >
     <div className="flex items-center gap-3">
-      <Icon size={18} className={active ? 'text-primary' : 'text-ink-3 group-hover:text-ink-2'} />
-      <span className="text-sm font-medium">{label}</span>
+      <Icon size={18} className={active ? 'text-white' : 'text-ink-3 group-hover:text-primary transition-colors'} />
+      <span className={`text-xs ${active ? 'font-black' : 'font-bold'}`}>{label}</span>
     </div>
     {badge && (
-      <Badge variant={badgeVariant}>{badge}</Badge>
+      <Badge variant={active ? 'white' : badgeVariant}>{badge}</Badge>
+    )}
+    {active && (
+      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-full shadow-sm"></div>
     )}
   </div>
 );
 
-const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
+const Shell = ({ children, page, setPage, role, onLogout }) => {
+  const [profileOpen, setProfileOpen] = React.useState(false);
+  const liveTripsCount = trips.filter(t => ['in_trip', 'en_route', 'arrived'].includes(t.status)).length;
+  const activeDriversCount = drivers.filter(d => d.onDuty).length;
+
+  // Close dropdown on click outside
+  React.useEffect(() => {
+    const handleOutsideClick = () => setProfileOpen(false);
+    if (profileOpen) window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, [profileOpen]);
+
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex h-screen bg-bg overflow-hidden font-sans text-ink">
       {/* Sidebar */}
-      <aside className="w-[240px] bg-white border-r border-line fixed h-full flex flex-col z-20">
-        <div className="p-5 flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
-            <Truck size={20} />
+      <aside className="w-[260px] bg-white border-r border-line fixed h-full flex flex-col z-20 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.05)]">
+        <div className="p-6 flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <Truck size={22} />
           </div>
           <div>
-            <h1 className="font-display font-extrabold text-xl tracking-tight text-ink leading-none">LOGISS</h1>
-            <span className="text-[9px] font-bold tracking-[0.2em] text-ink-4 uppercase">
+            <h1 className="font-display font-extrabold text-2xl tracking-tight text-ink leading-none">LOGISS</h1>
+            <span className="text-[10px] font-bold tracking-[0.2em] text-ink-4 uppercase">
               {role === 'admin' ? 'Admin Portal' : 'Dispatcher'}
             </span>
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+        <nav className="flex-1 px-4 py-2 space-y-8 overflow-y-auto scrollbar-hide">
           <div>
             <h3 className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-4">Operations</h3>
             <div className="space-y-1">
               <NavItem 
                 icon={LayoutDashboard} 
                 label="Operations" 
-                active={currentPage === 'operations'} 
+                active={page === 'operations'} 
                 onClick={() => setPage('operations')} 
               />
               <NavItem 
                 icon={Inbox} 
                 label="Bookings" 
-                badge="3" 
-                active={currentPage === 'bookings'} 
+                badge="8" 
+                active={page === 'bookings'} 
                 onClick={() => setPage('bookings')} 
               />
               <NavItem 
@@ -76,16 +91,16 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
                 badge={
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
-                    1
+                    {liveTripsCount}
                   </div>
                 } 
-                active={currentPage === 'live'} 
+                active={page === 'live'} 
                 onClick={() => setPage('live')} 
               />
               <NavItem 
                 icon={Users} 
                 label="Drivers" 
-                active={currentPage === 'drivers'} 
+                active={page === 'drivers'} 
                 onClick={() => setPage('drivers')} 
               />
               {role === 'admin' && (
@@ -94,7 +109,7 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
                     icon={FileCheck} 
                     label="Applications" 
                     badge="3" 
-                    active={currentPage === 'applications'} 
+                    active={page === 'applications'} 
                     onClick={() => setPage('applications')} 
                   />
                   <NavItem 
@@ -102,7 +117,7 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
                     label="Reports" 
                     badge="2" 
                     badgeVariant="urgent"
-                    active={currentPage === 'reports'} 
+                    active={page === 'reports'} 
                     onClick={() => setPage('reports')} 
                   />
                 </>
@@ -110,19 +125,19 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
               <NavItem 
                 icon={Truck} 
                 label="Trip History" 
-                active={currentPage === 'trips'} 
+                active={page === 'trips'} 
                 onClick={() => setPage('trips')} 
               />
               <NavItem 
                 icon={CalendarDays} 
                 label="Schedule" 
-                active={currentPage === 'schedule'} 
+                active={page === 'schedule'} 
                 onClick={() => setPage('schedule')} 
               />
               <NavItem 
                 icon={Car} 
                 label="Fleet" 
-                active={currentPage === 'fleet'} 
+                active={page === 'fleet'} 
                 onClick={() => setPage('fleet')} 
               />
             </div>
@@ -134,55 +149,39 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
             <NavItem 
               icon={Settings} 
               label="Settings" 
-              active={currentPage === 'settings'} 
+              active={page === 'settings'} 
               onClick={() => setPage('settings')} 
             />
           </div>
         )}
 
-        <div className="p-4 border-t border-line bg-tint/30 flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="sm" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-ink truncate">
-                {role === 'admin' ? 'Admin User' : 'Dispatcher User'}
-              </p>
-              <p className="text-[10px] font-semibold text-ink-3 capitalize">{role}</p>
-            </div>
-          </div>
-          <button 
-            onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 p-2.5 text-xs font-bold text-urgent bg-urgent-light/50 hover:bg-urgent-light rounded-xl transition-colors shadow-sm cursor-pointer z-50"
-            title="Logout"
-          >
-            <LogOut size={16} />
-            Log Out
-          </button>
-        </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-[240px] flex flex-col min-w-0 h-screen overflow-y-auto">
+      <main className="flex-1 ml-[260px] flex flex-col min-w-0 h-screen overflow-y-auto bg-bg/50">
         {/* Top Bar */}
         <header className="h-16 bg-white border-b border-line flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 max-w-xl">
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" size={20} />
               <input 
                 type="text" 
                 placeholder="Search trips, riders, drivers, plates..." 
-                className="w-full bg-bg border-none rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-ink-4 text-ink"
+                className="w-full bg-bg border-2 border-transparent focus:border-primary/10 rounded-2xl py-2.5 pl-12 pr-4 text-sm focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-ink-4 text-ink shadow-inner font-medium"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-8">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-accent-light rounded-full border border-accent/10">
               <span className="w-2 h-2 rounded-full bg-accent pulse-dot"></span>
-              <span className="text-xs font-bold text-accent">1 Live · 4 Drivers Active</span>
+              <span className="text-xs font-bold text-accent">{liveTripsCount} Live · {activeDriversCount} Drivers Active</span>
             </div>
 
-            <button className="relative p-2 text-ink-3 hover:bg-bg rounded-lg transition-colors">
+            <button 
+              onClick={() => setPage('notifications')}
+              className={`relative p-2 rounded-lg transition-colors ${page === 'notifications' ? 'bg-primary-light text-primary' : 'text-ink-3 hover:bg-bg'}`}
+            >
               <Bell size={20} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-urgent border-2 border-white rounded-full"></span>
             </button>
@@ -193,13 +192,49 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
 
             <div className="w-px h-6 bg-line-2 mx-1"></div>
 
-            <button 
-              onClick={() => setPage('settings')} 
-              className="w-9 h-9 rounded-full border-2 border-line hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 hover:shadow-sm"
-              title="My Profile"
-            >
-              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="sm" className="w-full h-full" />
-            </button>
+            <div className="relative">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setProfileOpen(!profileOpen);
+                }}
+                className={`w-9 h-9 rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 hover:shadow-sm ${profileOpen || page === 'settings' ? 'border-primary' : 'border-line hover:border-primary'}`}
+                title="Account Settings"
+              >
+                <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="sm" className="w-full h-full" />
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-line overflow-hidden animate-fade-in z-50">
+                  <div className="p-4 border-b border-line bg-bg/30">
+                    <p className="text-xs font-bold text-ink mb-0.5 capitalize">{role} User</p>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider">{role === 'admin' ? 'admin@logiss.com' : 'dispatcher@logiss.com'}</p>
+                  </div>
+                  <div className="p-2">
+                    <button 
+                      onClick={() => setPage('settings')}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-colors"
+                    >
+                      <Settings size={16} className="text-ink-3" /> Profile & Settings
+                    </button>
+                    <button 
+                      onClick={() => setPage('settings')}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-colors"
+                    >
+                      <Lock size={16} className="text-ink-3" /> Change Password
+                    </button>
+                  </div>
+                  <div className="p-2 border-t border-line bg-urgent-light/20">
+                    <button 
+                      onClick={onLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-urgent hover:bg-urgent-light transition-colors"
+                    >
+                      <LogOut size={16} /> Log Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
