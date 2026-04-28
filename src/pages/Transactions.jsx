@@ -53,9 +53,9 @@ const Transactions = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard label="Total Revenue (All Time)" value={money(totalRevenue)} icon={CreditCard} variant="primary" />
-        <StatCard label="Pending Payments" value={money(transactions.filter(t => t.status === 'pending').reduce((a,c) => a + c.amount, 0))} icon={Clock} variant="warning" />
-        <StatCard label="Total Refunded" value={money(totalRefunds)} icon={RotateCcw} variant="urgent" />
+        <StatCard label="Total Revenue (All Time)" value={money(totalRevenue)} icon={CreditCard} accent="primary" />
+        <StatCard label="Pending Payments" value={money(transactions.filter(t => t.status === 'pending').reduce((a,c) => a + c.amount, 0))} icon={Clock} accent="warning" />
+        <StatCard label="Total Refunded" value={money(totalRefunds)} icon={RotateCcw} accent="urgent" />
       </div>
 
       <Card className="overflow-hidden border-line-2">

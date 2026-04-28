@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Truck, User, AlertTriangle, CheckCircle2, Clock,
-  Wrench, Shield, Calendar, ChevronDown, Edit2, X, Check, ShieldCheck
+  Wrench, Shield, Calendar, ChevronDown, Edit2, X, Check, ShieldCheck, Plus
 } from 'lucide-react';
 import { Card, Badge, Avatar, Button, Pagination } from '../components/UI';
 import { vehicles as initialVehicles, drivers } from '../data/mockData';

@@ -56,28 +56,28 @@ const AdminDashboard = ({ setPage }) => {
           value={totalVehicles} 
           icon={Car} 
           trend="+2 this month"
-          variant="primary"
+          accent="primary"
         />
-        <StatCard 
-          label="Total Active Drivers" 
-          value={activeDrivers} 
-          icon={Users} 
+        <StatCard
+          label="Total Active Drivers"
+          value={activeDrivers}
+          icon={Users}
           trend="8 pending approval"
-          variant="accent"
+          accent="accent"
         />
-        <StatCard 
-          label="Total Trips (Month)" 
-          value={totalTripsThisMonth + 300} // Mocking realistic number
-          icon={Calendar} 
+        <StatCard
+          label="Total Trips (Month)"
+          value={totalTripsThisMonth + 300}
+          icon={Calendar}
           trend="+12% vs last month"
-          variant="primary"
+          accent="primary"
         />
-        <StatCard 
-          label="Revenue (Month)" 
-          value={money(revenueThisMonth + 10000)} // Mocking realistic number
-          icon={TrendingUp} 
+        <StatCard
+          label="Revenue (Month)"
+          value={money(revenueThisMonth + 10000)}
+          icon={TrendingUp}
           trend="+8% vs last month"
-          variant="accent"
+          accent="accent"
         />
       </div>
 

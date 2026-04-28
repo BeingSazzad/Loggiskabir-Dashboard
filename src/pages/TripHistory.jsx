@@ -342,10 +342,10 @@ const TripHistory = () => {
 
       {/* KPI Cells */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Today's Trips" value={todayTrips.length} icon={Calendar} variant="primary" />
-        <StatCard label="Completed Today" value={completedToday} icon={CheckCircle2} variant="accent" />
-        <StatCard label="Active / Pending" value={activeToday} icon={Clock} variant="warning" />
-        <StatCard label="MTD Revenue" value={money(monthlyRevenue)} icon={TrendingUp} variant="primary" />
+        <StatCard label="Today's Trips" value={todayTrips.length} icon={Calendar} accent="primary" />
+        <StatCard label="Completed Today" value={completedToday} icon={CheckCircle2} accent="accent" />
+        <StatCard label="Active / Pending" value={activeToday} icon={Clock} accent="warning" />
+        <StatCard label="MTD Revenue" value={money(monthlyRevenue)} icon={TrendingUp} accent="primary" />
       </div>
 
       <Card className="overflow-hidden border-line-2 shadow-sm">

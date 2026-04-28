@@ -27,7 +27,8 @@ import {
   MoreVertical,
   Maximize2,
   ExternalLink,
-  AlertOctagon
+  AlertOctagon,
+  Navigation
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button, TripStatusBadge, Pagination } from '../components/UI';
 import { trips, drivers } from '../data/mockData';
@@ -179,9 +180,19 @@ const Bookings = ({ setPage }) => {
     setIsAssigning(false);
   };
 
+  const openBooking = (id) => {
+    setSelectedBookingId(id);
+    setIsAssigning(false);
+  };
+
+  const closeBooking = () => {
+    setSelectedBookingId(null);
+    setIsAssigning(false);
+  };
+
   const handleDispatch = () => {
     setLocalTrips(prev => prev.map(t => t.id === selectedBookingId ? { ...t, status: 'dispatched' } : t));
-    setSelectedBookingId(null);
+    closeBooking();
   };
 
   const handleReject = () => {
@@ -211,7 +222,7 @@ const Bookings = ({ setPage }) => {
           onConfirm={(reason) => {
             setLocalTrips(prev => prev.map(t => t.id === selectedBookingId ? { ...t, status: 'cancelled', cancelReason: reason } : t));
             setShowCancelModal(false);
-            setSelectedBookingId(null);
+            closeBooking();
           }}
         />
       )}
@@ -271,7 +282,7 @@ const Bookings = ({ setPage }) => {
                   {paginatedBookings.map(booking => (
                     <tr
                       key={booking.id}
-                      onClick={() => setSelectedBookingId(booking.id)}
+                      onClick={() => openBooking(booking.id)}
                       className={`cursor-pointer transition-colors group ${selectedBookingId === booking.id ? 'bg-primary-tint/20' : 'hover:bg-bg'} ${selectedTrips.includes(booking.id) ? 'bg-accent-light/10' : ''}`}
                     >
                       <td className="px-6 py-6" onClick={(e) => e.stopPropagation()}>
@@ -348,7 +359,7 @@ const Bookings = ({ setPage }) => {
                                 title="Reject"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedBookingId(booking.id);
+                                  openBooking(booking.id);
                                   setShowCancelModal(true);
                                 }}
                               >
@@ -363,7 +374,7 @@ const Bookings = ({ setPage }) => {
                               title="Assign Driver"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedBookingId(booking.id);
+                                openBooking(booking.id);
                                 setIsAssigning(true);
                               }}
                             >
@@ -373,7 +384,7 @@ const Bookings = ({ setPage }) => {
                           )}
                           <button 
                             className="px-4 py-1.5 text-xs font-bold text-primary bg-primary-light hover:bg-primary/20 rounded-lg transition-all active:scale-95 ml-2 whitespace-nowrap"
-                            onClick={() => setSelectedBookingId(booking.id)}
+                            onClick={() => openBooking(booking.id)}
                           >
                             View Details
                           </button>
@@ -448,7 +459,7 @@ const Bookings = ({ setPage }) => {
 
       {selectedBookingId && (
         <div className="fixed inset-0 z-[100] flex justify-end">
-          <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity" onClick={() => setSelectedBookingId(null)}></div>
+          <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity" onClick={closeBooking}></div>
           <div className="relative w-full max-w-lg bg-white shadow-2xl h-full animate-in slide-in-from-right duration-300">
             {selectedBooking ? (
               <Card className="h-full flex flex-col sticky top-0 max-h-full overflow-hidden">
@@ -461,7 +472,7 @@ const Bookings = ({ setPage }) => {
                     <h2 className="text-base font-bold text-ink">Booking Details</h2>
                   </div>
                   <button
-                    onClick={() => setSelectedBookingId(null)}
+                    onClick={closeBooking}
                     className="p-1.5 hover:bg-bg rounded-lg text-ink-4 hover:text-ink transition-colors"
                   >
                     <XCircle size={18} />

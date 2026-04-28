@@ -25,10 +25,9 @@ const Logout = ({ onBackToLogin }) => {
           </div>
         </div>
 
-        <Button 
-          variant="primary" 
-          fullWidth 
-          className="h-12 text-lg shadow-lg shadow-primary/20" 
+        <Button
+          variant="primary"
+          className="w-full h-12 text-lg shadow-lg shadow-primary/20"
           icon={ArrowRight}
           onClick={onBackToLogin}
         >

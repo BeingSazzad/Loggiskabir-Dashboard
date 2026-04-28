@@ -534,12 +534,12 @@ export const reports = [
   { id: 'RPT-2024-0042', status: 'open', severity: 'high', type: 'Reckless driving', 
     filedBy: { name: 'Linda Adams', role: 'rider' }, subject: { name: 'Robert Kim', role: 'driver', id: 'DRV-2024-4407' },
     tripId: 'LOGISS-2790', description: 'Driver was speeding through residential area and ran a stop sign', submitted: '2026-04-27T15:24:00' },
-  { id: 'RPT-2024-0043', status: 'reviewing', severity: 'medium', type: 'No-show', 
+  { id: 'RPT-2024-0043', status: 'reviewing', severity: 'medium', type: 'No-show',
     filedBy: { name: 'Maria Garcia', role: 'driver', id: 'DRV-2024-7710' }, subject: { name: 'Frank Murphy', role: 'rider' },
-    tripId: 'LOGISS-2812', description: 'Passenger did not show after 8 minute wait' },
-  { id: 'RPT-2024-0044', status: 'resolved', severity: 'low', type: 'Vehicle issue or unclean', 
+    tripId: 'LOGISS-2812', description: 'Passenger did not show after 8 minute wait', submitted: '2026-04-26T10:00:00' },
+  { id: 'RPT-2024-0044', status: 'resolved', severity: 'low', type: 'Vehicle issue or unclean',
     filedBy: { name: 'Helen Walker', role: 'rider' }, subject: { name: 'James Carter', role: 'driver', id: 'DRV-2024-9082' },
-    tripId: 'LOGISS-2818', description: 'Vehicle had a strong odor and trash on the floor' }
+    tripId: 'LOGISS-2818', description: 'Vehicle had a strong odor and trash on the floor', submitted: '2026-04-25T14:30:00' }
 ];
 
 export const willCallQueue = [
