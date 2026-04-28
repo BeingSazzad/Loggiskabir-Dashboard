@@ -207,28 +207,31 @@ const Bookings = () => {
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="bg-bg rounded-xl p-3 border border-line-2">
-                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Auth ID</p>
-                      <p className="text-xs font-bold font-mono text-ink truncate">{selectedBooking.authId}</p>
-                    </div>
-                    <div className="bg-bg rounded-xl p-3 border border-line-2">
-                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">County</p>
-                      <p className="text-xs font-bold text-ink">Chesterfield</p>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Reason</p>
+                      <p className="text-xs font-bold text-ink truncate">{selectedBooking.reason || 'Not specified'}</p>
                     </div>
                     <div className="bg-bg rounded-xl p-3 border border-line-2">
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Trip Type</p>
-                      <p className="text-xs font-bold text-ink">{tripTypeLabel(selectedBooking.type)}</p>
+                      <p className="text-xs font-bold text-ink">
+                        {tripTypeLabel(selectedBooking.type)}
+                        {selectedBooking.returnType === 'will_call' && <span className="text-warning ml-1">(Will Call)</span>}
+                      </p>
                     </div>
                     <div className="bg-bg rounded-xl p-3 border border-line-2">
-                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Mobility</p>
-                      <p className="text-xs font-bold text-ink">{selectedBooking.mobility}</p>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Passengers</p>
+                      <p className="text-xs font-bold text-ink">{selectedBooking.passengers || 1} • {selectedBooking.mobility}</p>
                     </div>
                     <div className="bg-bg rounded-xl p-3 border border-line-2">
-                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Scheduled</p>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Pickup Time</p>
                       <p className="text-xs font-bold text-ink">{formatDateTime(selectedBooking.scheduledTime)}</p>
                     </div>
                     <div className="bg-bg rounded-xl p-3 border border-line-2">
-                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Estimated Cost</p>
-                      <p className="text-xs font-bold font-mono text-ink">{money(selectedBooking.cost)}</p>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Appt Time</p>
+                      <p className="text-xs font-bold text-primary">{selectedBooking.appointmentTime || 'N/A'}</p>
+                    </div>
+                    <div className="bg-bg rounded-xl p-3 border border-line-2">
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Auth ID</p>
+                      <p className="text-xs font-bold font-mono text-ink truncate">{selectedBooking.authId}</p>
                     </div>
                   </div>
                 </section>
@@ -236,17 +239,47 @@ const Bookings = () => {
                 {/* Route Card */}
                 <section>
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Route</h4>
-                  <div className="relative pl-6 space-y-8">
+                  <div className="relative pl-6 space-y-6">
                     <div className="absolute left-[7px] top-2 bottom-2 w-0.5 border-l border-dashed border-line"></div>
                     <div className="relative">
                       <div className="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-primary ring-4 ring-primary-light"></div>
                       <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Pickup</p>
                       <p className="text-sm font-bold text-ink">{selectedBooking.pickup}</p>
                     </div>
+                    {selectedBooking.stop && (
+                      <div className="relative">
+                        <div className="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-warning ring-4 ring-warning-light"></div>
+                        <p className="text-[10px] font-bold text-warning uppercase tracking-wider mb-1">Stop</p>
+                        <p className="text-sm font-bold text-ink">{selectedBooking.stop}</p>
+                      </div>
+                    )}
                     <div className="relative">
                       <div className="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-urgent ring-4 ring-urgent-light"></div>
                       <p className="text-[10px] font-bold text-urgent uppercase tracking-wider mb-1">Dropoff</p>
                       <p className="text-sm font-bold text-ink">{selectedBooking.dropoff}</p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Payment Details */}
+                <section>
+                  <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Payment Details</h4>
+                  <div className="bg-bg rounded-xl border border-line-2 overflow-hidden">
+                    <div className="p-4 border-b border-line-2 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CreditCard size={18} className="text-ink-4" />
+                        <div>
+                          <p className="text-xs font-bold text-ink">{selectedBooking.paymentMethod || 'Insurance Covered'}</p>
+                          <p className="text-[10px] text-ink-4">Payment Method</p>
+                        </div>
+                      </div>
+                      <Badge variant={selectedBooking.paymentStatus === 'Auth Hold' ? 'warning' : 'neutral'}>
+                        {selectedBooking.paymentStatus || 'Pending'}
+                      </Badge>
+                    </div>
+                    <div className="p-4 bg-white flex items-center justify-between">
+                      <span className="text-xs font-bold text-ink-3">Total Estimated Cost</span>
+                      <span className="text-lg font-bold font-mono text-ink">{money(selectedBooking.cost)}</span>
                     </div>
                   </div>
                 </section>
