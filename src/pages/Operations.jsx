@@ -1,270 +1,229 @@
 import React from 'react';
 import { 
-  Truck, 
-  Users, 
-  BarChart3, 
-  AlertTriangle,
-  ChevronRight,
-  Phone,
-  MessageSquare,
-  Clock,
-  MapPin
+  Truck, Users, BarChart3, AlertTriangle,
+  ChevronRight, Clock, MapPin, CheckCircle2,
+  Circle, Loader2, XCircle, FileWarning, UserPlus
 } from 'lucide-react';
-import { Card, StatCard, SectionHeader, Avatar, Badge, Button, TripStatusBadge } from '../components/UI';
+import { Card, StatCard, Avatar, Badge, TripStatusBadge } from '../components/UI';
 import { opsStats, trips, drivers, applications, reports } from '../data/mockData';
 import { formatTime, formatShortDate } from '../utils/helpers';
 
 const Operations = ({ setPage }) => {
-  const liveTrip = trips.find(t => t.id === 'LOGISS-2847');
-  const liveDriver = drivers.find(d => d.id === liveTrip.driverId);
+  const today = new Date();
+  const todayLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  // All trips relevant to today (in_trip, assigned, pending_review)
+  const activeTrips = trips.filter(t => ['in_trip', 'assigned', 'pending_review', 'en_route', 'arrived'].includes(t.status));
+  const pendingTrips = trips.filter(t => t.status === 'pending_review');
+  const openReports = reports.filter(r => r.status === 'open');
+
+  const statusIcon = (status) => {
+    if (status === 'in_trip' || status === 'en_route' || status === 'arrived')
+      return <span className="w-2 h-2 rounded-full bg-accent pulse-dot flex-shrink-0" />;
+    if (status === 'assigned')
+      return <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />;
+    if (status === 'pending_review')
+      return <span className="w-2 h-2 rounded-full bg-warning flex-shrink-0" />;
+    if (status === 'completed')
+      return <span className="w-2 h-2 rounded-full bg-ink-4 flex-shrink-0" />;
+    return <span className="w-2 h-2 rounded-full bg-line flex-shrink-0" />;
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Operations</h1>
-        <p className="text-ink-3 font-medium">Tuesday, October 22, 2024</p>
+        <p className="text-ink-3 font-medium">{todayLabel}</p>
       </div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          label="Today's Trips" 
-          value={opsStats.todaysTrips} 
-          sub="1 in progress · 3 pending" 
-          icon={Truck} 
-          accent="primary"
-        />
-        <StatCard 
-          label="Drivers On Duty" 
-          value={`${opsStats.driversOnDuty}/${opsStats.driversTotal}`} 
-          sub="3 available · 1 in trip" 
-          icon={Users} 
-          accent="accent"
-        />
-        <StatCard 
-          label="Completion Rate" 
-          value={`${opsStats.completionRate}%`} 
-          sub="★ 4.83 avg rating" 
-          icon={BarChart3} 
-          accent="accent"
-          trend="+2.1% vs last week"
-        />
-        <StatCard 
-          label="Action Required" 
-          value={opsStats.pendingReview + reports.length} 
-          sub="3 bookings · 2 reports" 
-          icon={AlertTriangle} 
-          accent="warning"
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Today's Trips" value={opsStats.todaysTrips} sub="1 in progress · 3 pending" icon={Truck} accent="primary" />
+        <StatCard label="Drivers On Duty" value={`${opsStats.driversOnDuty}/${opsStats.driversTotal}`} sub="3 available · 1 in trip" icon={Users} accent="accent" />
+        <StatCard label="Completion Rate" value={`${opsStats.completionRate}%`} sub="★ 4.83 avg rating" icon={BarChart3} accent="accent" trend="+2.1% vs last week" />
+        <StatCard label="Action Required" value={opsStats.pendingReview + openReports.length} sub={`${pendingTrips.length} bookings · ${openReports.length} reports`} icon={AlertTriangle} accent="warning" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Live Trip Card */}
-          <section>
-            <SectionHeader title="Live Trip" />
-            <Card className="overflow-hidden">
-              <div className="bg-accent-light/30 border-b border-line-2 px-6 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-accent-light rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
-                    <span className="text-[10px] font-bold text-accent uppercase tracking-wider">In Trip</span>
-                  </div>
-                  <span className="font-mono text-xs font-bold text-ink-3">#{liveTrip.id}</span>
-                </div>
-                <span className="text-xs font-semibold text-ink-3 flex items-center gap-1.5">
-                  <Clock size={12} />
-                  Started 8:32 AM
-                </span>
-              </div>
-              
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex gap-4">
-                    <Avatar initials={liveTrip.rider.initials} size="lg" />
-                    <div>
-                      <h3 className="text-xl font-bold text-ink mb-1">{liveTrip.rider.name}</h3>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xs font-medium text-ink-3">{liveTrip.rider.age} years</span>
-                        <span className="w-1 h-1 bg-line rounded-full"></span>
-                        <span className="text-xs font-medium text-ink-3">{liveTrip.rider.phone}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge variant="primary">{liveTrip.mobility}</Badge>
-                        <Badge variant="neutral">{liveTrip.type === 'round_trip' ? 'Round Trip' : 'One Way'}</Badge>
-                        {liveTrip.escort && <Badge variant="neutral">Escort</Badge>}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" icon={Phone}>Call</Button>
-                    <Button variant="outline" size="sm" icon={MessageSquare}>Msg</Button>
-                  </div>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <div className="bg-bg rounded-xl p-4 flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <Avatar initials={liveDriver.initials} size="sm" />
-                    <div>
-                      <p className="text-sm font-bold text-ink">{liveDriver.name}</p>
-                      <p className="text-[10px] font-mono text-ink-4 uppercase tracking-tighter">
-                        Plate {liveDriver.vehicle.plate} · ★{liveDriver.rating}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="accent">On Task</Badge>
-                </div>
-
-                {/* Route Timeline */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-accent"></div>
-                      <span className="text-xs font-bold text-ink uppercase tracking-wide">Picked up</span>
-                    </div>
-                    <p className="text-xs font-bold text-ink leading-tight">{liveTrip.actualPickup}</p>
-                    <p className="text-[10px] text-ink-4 truncate">2401 Robious Rd, Chesterfield</p>
-                  </div>
-                  <div className="space-y-2 relative">
-                    <div className="absolute top-1.25 left-[-33%] right-[-33%] h-0.5 border-t border-dashed border-line"></div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-warning"></div>
-                      <span className="text-xs font-bold text-ink uppercase tracking-wide">Stop CVS</span>
-                    </div>
-                    <p className="text-xs font-bold text-ink leading-tight">{liveTrip.actualStop}</p>
-                    <p className="text-[10px] text-ink-4 truncate">CVS Pharmacy, 7201 Midlothian Tpke</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-urgent"></div>
-                      <span className="text-xs font-bold text-ink uppercase tracking-wide">Dropoff</span>
-                    </div>
-                    <p className="text-xs font-bold text-ink leading-tight">{liveTrip.actualDropoff}</p>
-                    <p className="text-[10px] text-ink-4 truncate">{liveTrip.dropoff}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-6 border-t border-line-2 pt-4">
-                  <div>
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Duration</p>
-                    <p className="text-sm font-bold text-ink">{liveTrip.duration}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Distance</p>
-                    <p className="text-sm font-bold text-ink">{liveTrip.distance}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Estimated Cost</p>
-                    <p className="text-sm font-bold font-mono text-ink">${liveTrip.cost.toFixed(2)}</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </section>
-
-          {/* Upcoming Today */}
-          <section>
-            <SectionHeader title="Upcoming Today" action="View all →" />
-            <div className="space-y-3">
-              {trips.filter(t => t.status === 'assigned').map(trip => (
-                <Card key={trip.id} hover className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-16 flex-shrink-0 text-center">
-                      <p className="text-xs font-bold text-ink leading-none">{formatTime(trip.scheduledTime).split(' ')[0]}</p>
-                      <p className="text-[10px] font-bold text-ink-4 uppercase">{formatTime(trip.scheduledTime).split(' ')[1]}</p>
-                    </div>
-                    <Avatar initials={trip.rider.initials} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-bold text-ink truncate">{trip.rider.name}</h4>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="primary">{trip.mobility}</Badge>
-                        <p className="text-[10px] text-ink-4 truncate flex items-center gap-1">
-                          <MapPin size={10} />
-                          {trip.pickup} → {trip.dropoff}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Driver</p>
-                      <p className="text-xs font-bold text-ink">{drivers.find(d => d.id === trip.driverId)?.name}</p>
-                    </div>
-                    <TripStatusBadge status={trip.status} />
-                    <ChevronRight size={16} className="text-ink-4" />
-                  </div>
-                </Card>
-              ))}
+        {/* Left: Today's Trip Activity Table */}
+        <div className="lg:col-span-2">
+          <Card className="overflow-hidden">
+            <div className="px-5 py-4 border-b border-line-2 flex items-center justify-between">
+              <h2 className="text-sm font-extrabold text-ink">Today's Activity</h2>
+              <button onClick={() => setPage('trips')} className="text-xs font-bold text-primary hover:underline">View all →</button>
             </div>
-          </section>
+
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-bg/60 border-b border-line-2">
+                  <th className="px-5 py-2.5 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Status</th>
+                  <th className="px-5 py-2.5 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider</th>
+                  <th className="px-5 py-2.5 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden md:table-cell">Route</th>
+                  <th className="px-5 py-2.5 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Time</th>
+                  <th className="px-5 py-2.5 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden md:table-cell">Driver</th>
+                  <th className="px-5 py-2.5"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line-2">
+                {activeTrips.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-10 text-center text-sm text-ink-4 font-medium">No active trips today.</td>
+                  </tr>
+                ) : activeTrips.map(trip => {
+                  const driver = drivers.find(d => d.id === trip.driverId);
+                  const isLive = ['in_trip', 'en_route', 'arrived'].includes(trip.status);
+                  return (
+                    <tr
+                      key={trip.id}
+                      onClick={() => setPage(trip.status === 'pending_review' ? 'bookings' : 'live')}
+                      className="hover:bg-bg cursor-pointer transition-colors group"
+                    >
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          {statusIcon(trip.status)}
+                          <TripStatusBadge status={trip.status} />
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <Avatar initials={trip.rider.initials} size="xs" />
+                          <div>
+                            <p className="text-xs font-bold text-ink whitespace-nowrap">{trip.rider.name}</p>
+                            <p className="text-[10px] text-ink-4">{trip.mobility}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3 hidden md:table-cell max-w-[180px]">
+                        <p className="text-[10px] font-semibold text-ink truncate">{trip.pickup}</p>
+                        <p className="text-[10px] text-ink-4 flex items-center gap-1 truncate">
+                          <MapPin size={8} className="flex-shrink-0" /> {trip.dropoff}
+                        </p>
+                      </td>
+                      <td className="px-5 py-3 whitespace-nowrap">
+                        <p className="text-xs font-bold text-ink">{formatTime(trip.scheduledTime)}</p>
+                        <p className="text-[10px] text-ink-4">{formatShortDate(trip.scheduledTime)}</p>
+                      </td>
+                      <td className="px-5 py-3 hidden md:table-cell">
+                        {driver ? (
+                          <p className="text-xs font-bold text-ink whitespace-nowrap">{driver.name}</p>
+                        ) : (
+                          <span className="text-[10px] italic text-ink-4">Unassigned</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <ChevronRight size={15} className="text-ink-4 opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="px-5 py-3 border-t border-line-2 bg-bg/30">
+              <div className="flex items-center gap-4 text-[10px] font-bold text-ink-4">
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-accent"></span> Live</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary"></span> Assigned</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-warning"></span> Pending</span>
+              </div>
+            </div>
+          </Card>
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-8">
-          {/* Awaiting Approval */}
-          <section>
-            <SectionHeader title="Awaiting Approval" action="View all →" />
-            <div className="space-y-3">
-              {trips.filter(t => t.status === 'pending_review').map(trip => (
-                <Card key={trip.id} hover className="p-3" onClick={() => setPage('bookings')}>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-mono text-[10px] font-bold text-ink-4 uppercase tracking-tighter">#{trip.id}</span>
-                    <TripStatusBadge status={trip.status} />
-                  </div>
-                  <h4 className="text-sm font-bold text-ink mb-1">{trip.rider.name}</h4>
-                  <p className="text-[10px] text-ink-3 mb-2">{formatShortDate(trip.scheduledTime)} at {formatTime(trip.scheduledTime)}</p>
-                  <div className="flex items-center gap-1 text-[10px] text-ink-4 truncate">
-                    <MapPin size={10} />
-                    {trip.dropoff}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </section>
+        {/* Right: Action Required */}
+        <div className="space-y-4">
 
-          {/* Driver Applications */}
-          <section>
-            <SectionHeader title="Applications" action="View all →" />
-            <div className="space-y-3">
-              {applications.slice(0, 2).map(app => (
-                <Card key={app.id} hover className="p-3" onClick={() => setPage('applications')}>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-mono text-[10px] font-bold text-ink-4 uppercase tracking-tighter">#{app.id}</span>
-                    <Badge variant="warning">Review</Badge>
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Avatar initials={app.initials} size="xs" />
-                    <h4 className="text-sm font-bold text-ink">{app.name}</h4>
-                  </div>
-                  <p className="text-[10px] text-ink-3 mb-1">{app.county} · {app.vehicle.type}</p>
-                  <div className="w-full bg-line-2 h-1 rounded-full overflow-hidden mt-2">
-                    <div className="bg-warning h-full" style={{ width: `${(app.stage / 4) * 100}%` }}></div>
-                  </div>
-                </Card>
-              ))}
+          {/* Pending Bookings */}
+          <Card className="overflow-hidden">
+            <div className="px-4 py-3.5 border-b border-line-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-warning pulse-dot"></span>
+                <h3 className="text-xs font-extrabold text-ink">Pending Bookings</h3>
+              </div>
+              <button onClick={() => setPage('bookings')} className="text-[10px] font-bold text-primary hover:underline">Review all →</button>
             </div>
-          </section>
+            <div className="divide-y divide-line-2">
+              {pendingTrips.slice(0, 4).map(trip => (
+                <div
+                  key={trip.id}
+                  onClick={() => setPage('bookings')}
+                  className="px-4 py-3 flex items-center justify-between hover:bg-bg cursor-pointer transition-colors group"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Avatar initials={trip.rider.initials} size="xs" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-ink truncate">{trip.rider.name}</p>
+                      <p className="text-[10px] text-ink-4 whitespace-nowrap">{formatShortDate(trip.scheduledTime)} · {formatTime(trip.scheduledTime)}</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={14} className="text-ink-4 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
+                </div>
+              ))}
+              {pendingTrips.length === 0 && (
+                <p className="px-4 py-5 text-xs text-ink-4 text-center font-medium">All bookings reviewed ✓</p>
+              )}
+            </div>
+          </Card>
 
           {/* Open Reports */}
-          <section>
-            <SectionHeader title="Open Reports" action="View all →" />
-            <div className="space-y-3">
-              {reports.filter(r => r.status === 'open').map(report => (
-                <Card key={report.id} hover className="p-3" onClick={() => setPage('reports')}>
-                  <div className="flex justify-between mb-2">
-                    <div className="flex items-center gap-1">
-                      <AlertTriangle size={12} className={report.severity === 'high' ? 'text-urgent' : 'text-warning'} />
-                      <span className="font-mono text-[10px] font-bold text-ink-4 uppercase tracking-tighter">#{report.id}</span>
-                    </div>
-                    <Badge variant={report.severity === 'high' ? 'urgent' : 'warning'}>{report.severity}</Badge>
+          <Card className="overflow-hidden">
+            <div className="px-4 py-3.5 border-b border-line-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileWarning size={14} className="text-urgent" />
+                <h3 className="text-xs font-extrabold text-ink">Open Reports</h3>
+              </div>
+              <button onClick={() => setPage('reports')} className="text-[10px] font-bold text-primary hover:underline">View all →</button>
+            </div>
+            <div className="divide-y divide-line-2">
+              {openReports.slice(0, 3).map(report => (
+                <div
+                  key={report.id}
+                  onClick={() => setPage('reports')}
+                  className="px-4 py-3 flex items-center justify-between hover:bg-bg cursor-pointer transition-colors group"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-ink truncate">{report.type}</p>
+                    <p className="text-[10px] text-ink-4">By {report.filedBy.name}</p>
                   </div>
-                  <h4 className="text-sm font-bold text-ink mb-1 truncate">{report.type}</h4>
-                  <p className="text-[10px] text-ink-3">Filed by {report.filedBy.role} · {report.filedBy.name}</p>
-                </Card>
+                  <Badge variant={report.severity === 'high' ? 'urgent' : 'warning'} className="flex-shrink-0 ml-2">{report.severity}</Badge>
+                </div>
+              ))}
+              {openReports.length === 0 && (
+                <p className="px-4 py-5 text-xs text-ink-4 text-center font-medium">No open reports ✓</p>
+              )}
+            </div>
+          </Card>
+
+          {/* Driver Applications */}
+          <Card className="overflow-hidden">
+            <div className="px-4 py-3.5 border-b border-line-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserPlus size={14} className="text-primary" />
+                <h3 className="text-xs font-extrabold text-ink">Applications</h3>
+              </div>
+              <button onClick={() => setPage('applications')} className="text-[10px] font-bold text-primary hover:underline">Review →</button>
+            </div>
+            <div className="divide-y divide-line-2">
+              {applications.slice(0, 3).map(app => (
+                <div
+                  key={app.id}
+                  onClick={() => setPage('applications')}
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-bg cursor-pointer transition-colors"
+                >
+                  <Avatar initials={app.initials} size="xs" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-ink truncate">{app.name}</p>
+                    <div className="w-full bg-line-2 h-1 rounded-full mt-1.5 overflow-hidden">
+                      <div className="bg-warning h-full rounded-full transition-all" style={{ width: `${(app.stage / 4) * 100}%` }} />
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-ink-4 flex-shrink-0">Step {app.stage}/4</span>
+                </div>
               ))}
             </div>
-          </section>
+          </Card>
+
         </div>
       </div>
     </div>
