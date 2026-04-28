@@ -12,17 +12,37 @@ import {
   Calendar, 
   CreditCard,
   AlertCircle,
-  Truck
+  Truck,
+  Star,
+  AlertTriangle,
+  Edit2
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button, TripStatusBadge } from '../components/UI';
 import { trips, drivers } from '../data/mockData';
 import { formatTime, formatDateTime, formatShortDate, timeAgo, tripTypeLabel, money } from '../utils/helpers';
 
+// Helper: check if two time windows overlap (within 1.5 hours either side)
+const hasTimeConflict = (existingTrip, candidateTime) => {
+  if (!existingTrip.scheduledTime || !candidateTime) return false;
+  const existing = new Date(existingTrip.scheduledTime).getTime();
+  const candidate = new Date(candidateTime).getTime();
+  const BUFFER_MS = 90 * 60 * 1000; // 1.5 hour buffer
+  return Math.abs(existing - candidate) < BUFFER_MS;
+};
+
+// Helper: check if driver vehicle type matches trip mobility need
+const isVehicleMatch = (driver, booking) => {
+  if (!booking?.mobility) return false;
+  const need = booking.mobility.toLowerCase();
+  const type = driver.vehicle?.type?.toLowerCase() || '';
+  if (need === 'wheelchair' || need === 'stretcher') return type.includes(need.split(' ')[0]);
+  return true; // ambulatory / cane can use any van
+};
+
 const Bookings = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [isAssigning, setIsAssigning] = useState(false);
-
   const [localTrips, setLocalTrips] = useState(trips);
 
   const filteredBookings = localTrips.filter(t => {
@@ -33,8 +53,26 @@ const Bookings = () => {
   });
 
   const selectedBooking = selectedBookingId ? localTrips.find(t => t.id === selectedBookingId) : null;
+  const assignedDriver = selectedBooking?.driverId ? drivers.find(d => d.id === selectedBooking.driverId) : null;
 
-  const availableDrivers = drivers.filter(d => d.onDuty && d.status === 'available');
+  // Smart driver suggestions — filter by conflict and rank by vehicle match
+  const smartDrivers = drivers.map(driver => {
+    const conflictingTrips = localTrips.filter(t =>
+      t.driverId === driver.id &&
+      t.id !== selectedBooking?.id &&
+      ['assigned', 'confirmed', 'in_trip'].includes(t.status) &&
+      hasTimeConflict(t, selectedBooking?.scheduledTime)
+    );
+    const hasConflict = conflictingTrips.length > 0;
+    const isMatch = isVehicleMatch(driver, selectedBooking);
+    return { ...driver, hasConflict, isMatch };
+  }).sort((a, b) => {
+    if (a.isMatch && !b.isMatch) return -1;
+    if (!a.isMatch && b.isMatch) return 1;
+    if (a.hasConflict && !b.hasConflict) return 1;
+    if (!a.hasConflict && b.hasConflict) return -1;
+    return 0;
+  });
 
   const handleAssign = (driverId) => {
     if (!selectedBooking) return;
@@ -52,6 +90,7 @@ const Bookings = () => {
     ));
     setActiveTab('rejected');
   };
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -302,8 +341,47 @@ const Bookings = () => {
                 {/* Driver Assignment */}
                 <section>
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Driver Assignment</h4>
-                  {!isAssigning ? (
-                    <div 
+
+                  {/* Already assigned — show driver card */}
+                  {assignedDriver && !isAssigning ? (
+                    <div className="border border-accent/20 bg-accent-light/10 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar initials={assignedDriver.initials} size="sm" online={assignedDriver.onDuty} />
+                          <div>
+                            <p className="text-sm font-bold text-ink">{assignedDriver.name}</p>
+                            <p className="text-[10px] text-ink-3">{assignedDriver.phone}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setIsAssigning(true)}
+                          className="flex items-center gap-1.5 text-[10px] font-bold text-primary hover:underline"
+                        >
+                          <Edit2 size={11} /> Change
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Vehicle</p>
+                          <p className="text-xs font-bold text-ink">{assignedDriver.vehicle.type}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Plate</p>
+                          <p className="text-xs font-bold font-mono text-ink">{assignedDriver.vehicle.plate}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Rating</p>
+                          <p className="text-xs font-bold text-ink">★ {assignedDriver.rating}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Total Trips</p>
+                          <p className="text-xs font-bold text-ink">{assignedDriver.totalTrips.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : !isAssigning ? (
+                    /* Not assigned yet — CTA */
+                    <div
                       className="bg-primary-tint/30 border border-primary/10 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-primary-tint/50 transition-colors"
                       onClick={() => setIsAssigning(true)}
                     >
@@ -313,30 +391,57 @@ const Bookings = () => {
                         </div>
                         <div>
                           <h5 className="text-sm font-bold text-ink">Assign a Driver</h5>
-                          <p className="text-[10px] font-medium text-ink-3">Select from available on-duty pool</p>
+                          <p className="text-[10px] font-medium text-ink-3">Smart suggestions based on schedule & vehicle type</p>
                         </div>
                       </div>
                       <Button variant="primary" size="sm">Select Driver</Button>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    /* Smart Driver Picker */
+                    <div className="space-y-2">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-bold text-ink-3">{availableDrivers.length} Available Drivers</p>
+                        <p className="text-xs font-bold text-ink-3">{smartDrivers.length} Drivers · Ranked by match</p>
                         <button onClick={() => setIsAssigning(false)} className="text-xs font-bold text-primary">Cancel</button>
                       </div>
-                      {availableDrivers.map(driver => (
-                        <Card key={driver.id} hover className="p-3 flex items-center justify-between border-line-2">
+                      {smartDrivers.map(driver => (
+                        <div
+                          key={driver.id}
+                          className={`p-3 rounded-xl border flex items-center justify-between ${
+                            driver.hasConflict
+                              ? 'border-warning/40 bg-warning-light/20 opacity-70'
+                              : 'border-line-2 hover:border-primary/30 hover:bg-primary-tint/10'
+                          } transition-colors`}
+                        >
                           <div className="flex items-center gap-3">
-                            <Avatar initials={driver.initials} size="sm" online />
+                            <Avatar initials={driver.initials} size="sm" online={driver.onDuty} />
                             <div>
-                              <p className="text-sm font-bold text-ink">{driver.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold text-ink">{driver.name}</p>
+                                {driver.isMatch && !driver.hasConflict && (
+                                  <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-accent text-white flex items-center gap-0.5">
+                                    <Star size={8} /> Best Match
+                                  </span>
+                                )}
+                                {driver.hasConflict && (
+                                  <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-warning-light text-warning-dark flex items-center gap-0.5">
+                                    <AlertTriangle size={8} /> Conflict Risk
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-[10px] text-ink-3">
                                 {driver.vehicle.type} · <span className="font-mono">{driver.vehicle.plate}</span> · ★{driver.rating}
                               </p>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => handleAssign(driver.id)}>Assign</Button>
-                        </Card>
+                          <Button
+                            variant={driver.hasConflict ? 'outline' : 'outline'}
+                            size="sm"
+                            onClick={() => handleAssign(driver.id)}
+                            disabled={driver.hasConflict}
+                          >
+                            {driver.hasConflict ? 'Busy' : 'Assign'}
+                          </Button>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -344,15 +449,19 @@ const Bookings = () => {
               </div>
 
               <div className="p-4 bg-white border-t border-line-2 flex gap-3">
-                <Button variant="ghost" className="text-urgent hover:bg-urgent-light flex-1" onClick={handleReject}>Reject Booking</Button>
-                <Button 
-                  variant="primary" 
-                  className="flex-1" 
-                  onClick={() => setIsAssigning(true)}
-                  disabled={selectedBooking.status !== 'pending_review'}
-                >
-                  {selectedBooking.status === 'pending_review' ? 'Approve & Assign Driver' : 'Driver Assigned'}
-                </Button>
+                {selectedBooking.status === 'pending_review' ? (
+                  <>
+                    <Button variant="ghost" className="text-urgent hover:bg-urgent-light flex-1" onClick={handleReject}>Reject</Button>
+                    <Button variant="primary" className="flex-1" onClick={() => setIsAssigning(true)}>Approve & Assign Driver</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="text-urgent hover:bg-urgent-light flex-1" onClick={handleReject}>Cancel Trip</Button>
+                    <Button variant="outline" className="flex-1" onClick={() => setIsAssigning(true)}>
+                      <Edit2 size={14} className="mr-1.5" /> Change Driver
+                    </Button>
+                  </>
+                )}
               </div>
             </Card>
           ) : (

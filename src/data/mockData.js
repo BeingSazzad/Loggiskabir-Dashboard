@@ -1,7 +1,58 @@
+export const vehicles = [
+  {
+    id: 'VEH-001', make: 'Ford Transit', model: 'T-250', year: 2022,
+    color: 'White', plate: 'VA · 4KL-8392', type: 'Ambulatory Van',
+    seats: 6, vin: '1FTBW2CM2NKA00142',
+    status: 'in_trip', assignedDriverId: 'DRV-2024-8421',
+    mileage: 48200, lastService: '2026-02-10', nextService: '2026-08-10',
+    insurance: { policy: 'INS-48291', expires: '2026-02-14', status: 'expiring' },
+  },
+  {
+    id: 'VEH-002', make: 'Honda Odyssey', model: 'EX-L', year: 2021,
+    color: 'Silver', plate: 'VA · 7XR-1129', type: 'Wheelchair Van',
+    seats: 4, vin: '5FNRL6H73MB000283',
+    status: 'available', assignedDriverId: 'DRV-2024-7710',
+    mileage: 62100, lastService: '2026-01-15', nextService: '2026-07-15',
+    insurance: { policy: 'INS-39184', expires: '2026-08-30', status: 'valid' },
+  },
+  {
+    id: 'VEH-003', make: 'Toyota Sienna', model: 'XLE', year: 2023,
+    color: 'Gray', plate: 'VA · 2HT-5560', type: 'Ambulatory Van',
+    seats: 7, vin: '5TDYZ3DC7LS000491',
+    status: 'available', assignedDriverId: 'DRV-2024-9082',
+    mileage: 21300, lastService: '2026-03-20', nextService: '2026-09-20',
+    insurance: { policy: 'INS-50923', expires: '2026-03-12', status: 'valid' },
+  },
+  {
+    id: 'VEH-004', make: 'Ford Transit', model: 'T-350', year: 2020,
+    color: 'White', plate: 'VA · 9KE-3320', type: 'Ambulatory Van',
+    seats: 8, vin: '1FTBW2CM2LKA02211',
+    status: 'off_duty', assignedDriverId: 'DRV-2024-6531',
+    mileage: 89400, lastService: '2025-12-01', nextService: '2026-06-01',
+    insurance: { policy: 'INS-29871', expires: '2026-01-10', status: 'expiring' },
+  },
+  {
+    id: 'VEH-005', make: 'Chrysler Pacifica', model: 'Hybrid', year: 2022,
+    color: 'Blue', plate: 'VA · 5DL-7821', type: 'Wheelchair Van',
+    seats: 3, vin: '2C4RC1N72NR100833',
+    status: 'break', assignedDriverId: 'DRV-2024-4407',
+    mileage: 33800, lastService: '2026-04-01', nextService: '2026-10-01',
+    insurance: { policy: 'INS-61029', expires: '2025-12-22', status: 'expired' },
+  },
+  {
+    id: 'VEH-006', make: 'RAM ProMaster', model: '2500', year: 2023,
+    color: 'White', plate: 'VA · 1PX-4490', type: 'Stretcher Van',
+    seats: 2, vin: '3C6TRVDG0PE500112',
+    status: 'available', assignedDriverId: null,
+    mileage: 11200, lastService: '2026-04-10', nextService: '2026-10-10',
+    insurance: { policy: 'INS-72110', expires: '2027-03-01', status: 'valid' },
+  },
+];
+
 export const drivers = [
   { id: 'DRV-2024-8421', name: 'David Wilson', initials: 'DW', phone: '(804) 555-0189',
     email: 'd.wilson@logiss-drivers.com', rating: 4.9, totalTrips: 1284,
-    onDuty: true, status: 'in_trip', currentTripId: 'LOGISS-2847',
+    onDuty: true, status: 'in_trip', currentTripId: 'LOGISS-2847', vehicleId: 'VEH-001',
     vehicle: { make: 'Ford Transit', color: 'White', plate: 'VA · 4KL-8392', type: 'Ambulatory Van' },
     license: { number: 'DL-VA-94281', expires: '2027-12-14', status: 'valid' },
     insurance: { policy: 'INS-48291', expires: '2026-02-14', status: 'expiring' },
@@ -11,7 +62,7 @@ export const drivers = [
 
   { id: 'DRV-2024-7710', name: 'Maria Garcia', initials: 'MG', phone: '(804) 555-0224',
     email: 'm.garcia@logiss-drivers.com', rating: 4.8, totalTrips: 967,
-    onDuty: true, status: 'available', currentTripId: null,
+    onDuty: true, status: 'available', currentTripId: null, vehicleId: 'VEH-002',
     vehicle: { make: 'Honda Odyssey', color: 'Silver', plate: 'VA · 7XR-1129', type: 'Wheelchair Van' },
     license: { number: 'DL-VA-87392', expires: '2028-04-22', status: 'valid' },
     insurance: { policy: 'INS-39184', expires: '2026-08-30', status: 'valid' },
@@ -21,7 +72,7 @@ export const drivers = [
 
   { id: 'DRV-2024-9082', name: 'James Carter', initials: 'JC', phone: '(804) 555-0341',
     email: 'j.carter@logiss-drivers.com', rating: 4.7, totalTrips: 612,
-    onDuty: true, status: 'available', currentTripId: null,
+    onDuty: true, status: 'available', currentTripId: null, vehicleId: 'VEH-003',
     vehicle: { make: 'Toyota Sienna', color: 'Gray', plate: 'VA · 2HT-5560', type: 'Ambulatory Van' },
     license: { number: 'DL-VA-62815', expires: '2027-09-08', status: 'valid' },
     insurance: { policy: 'INS-50923', expires: '2026-03-12', status: 'valid' },
@@ -31,7 +82,7 @@ export const drivers = [
 
   { id: 'DRV-2024-6531', name: 'Patricia Lee', initials: 'PL', phone: '(804) 555-0492',
     email: 'p.lee@logiss-drivers.com', rating: 4.9, totalTrips: 1542,
-    onDuty: false, status: 'off_duty', currentTripId: null,
+    onDuty: false, status: 'off_duty', currentTripId: null, vehicleId: 'VEH-004',
     vehicle: { make: 'Ford Transit', color: 'White', plate: 'VA · 9KE-3320', type: 'Ambulatory Van' },
     license: { number: 'DL-VA-30182', expires: '2027-02-28', status: 'valid' },
     insurance: { policy: 'INS-29871', expires: '2026-01-10', status: 'expiring' },
@@ -41,7 +92,7 @@ export const drivers = [
 
   { id: 'DRV-2024-4407', name: 'Robert Kim', initials: 'RK', phone: '(804) 555-0117',
     email: 'r.kim@logiss-drivers.com', rating: 4.6, totalTrips: 389,
-    onDuty: true, status: 'break', currentTripId: null,
+    onDuty: true, status: 'break', currentTripId: null, vehicleId: 'VEH-005',
     vehicle: { make: 'Chrysler Pacifica', color: 'Blue', plate: 'VA · 5DL-7821', type: 'Wheelchair Van' },
     license: { number: 'DL-VA-71203', expires: '2026-12-01', status: 'valid' },
     insurance: { policy: 'INS-61029', expires: '2025-12-22', status: 'expired' },

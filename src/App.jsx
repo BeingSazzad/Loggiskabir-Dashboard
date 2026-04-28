@@ -9,6 +9,8 @@ import Applications from './pages/Applications';
 import Reports from './pages/Reports';
 import TripHistory from './pages/TripHistory';
 import Settings from './pages/Settings';
+import Fleet from './pages/Fleet';
+import Schedule from './pages/Schedule';
 
 function App() {
   const [role, setRole] = useState(null); // 'admin' | 'dispatcher' | null
@@ -22,7 +24,9 @@ function App() {
     applications: Applications,
     reports: Reports,
     trips: TripHistory,
-    settings: Settings
+    settings: Settings,
+    fleet: Fleet,
+    schedule: Schedule,
   };
 
   if (!role) {
@@ -30,8 +34,8 @@ function App() {
   }
 
   // Route protection for dispatcher
-  if (role === 'dispatcher' && ['drivers', 'applications', 'reports', 'settings'].includes(page)) {
-    setPage('operations'); // Force back to safe page
+  if (role === 'dispatcher' && ['drivers', 'applications', 'reports', 'settings', 'fleet'].includes(page)) {
+    setPage('operations');
   }
 
   const PageComponent = PAGES[page] || Operations;

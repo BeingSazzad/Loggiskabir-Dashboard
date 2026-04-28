@@ -13,7 +13,9 @@ import {
   Phone, 
   ChevronDown,
   Menu,
-  LogOut
+  LogOut,
+  CalendarDays,
+  Car
 } from 'lucide-react';
 import { Avatar, Badge, Button } from './UI';
 
@@ -111,6 +113,20 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
                 active={currentPage === 'trips'} 
                 onClick={() => setPage('trips')} 
               />
+              <NavItem 
+                icon={CalendarDays} 
+                label="Schedule" 
+                active={currentPage === 'schedule'} 
+                onClick={() => setPage('schedule')} 
+              />
+              {role === 'admin' && (
+                <NavItem 
+                  icon={Car} 
+                  label="Fleet" 
+                  active={currentPage === 'fleet'} 
+                  onClick={() => setPage('fleet')} 
+                />
+              )}
             </div>
           </div>
         </nav>
