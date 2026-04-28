@@ -12,7 +12,8 @@ import {
   Bell, 
   Phone, 
   ChevronDown,
-  Menu
+  Menu,
+  LogOut
 } from 'lucide-react';
 import { Avatar, Badge, Button } from './UI';
 
@@ -33,7 +34,7 @@ const NavItem = ({ icon: Icon, label, badge, active, onClick, badgeVariant = 'ne
   </div>
 );
 
-const Shell = ({ children, currentPage, setPage }) => {
+const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
   return (
     <div className="flex min-h-screen bg-bg">
       {/* Sidebar */}
@@ -44,7 +45,9 @@ const Shell = ({ children, currentPage, setPage }) => {
           </div>
           <div>
             <h1 className="font-display font-extrabold text-xl tracking-tight text-ink leading-none">LOGISS</h1>
-            <span className="text-[9px] font-bold tracking-[0.2em] text-ink-4 uppercase">Dispatcher</span>
+            <span className="text-[9px] font-bold tracking-[0.2em] text-ink-4 uppercase">
+              {role === 'admin' ? 'Admin Portal' : 'Dispatcher'}
+            </span>
           </div>
         </div>
 
@@ -77,27 +80,31 @@ const Shell = ({ children, currentPage, setPage }) => {
                 active={currentPage === 'live'} 
                 onClick={() => setPage('live')} 
               />
-              <NavItem 
-                icon={Users} 
-                label="Drivers" 
-                active={currentPage === 'drivers'} 
-                onClick={() => setPage('drivers')} 
-              />
-              <NavItem 
-                icon={FileCheck} 
-                label="Applications" 
-                badge="3" 
-                active={currentPage === 'applications'} 
-                onClick={() => setPage('applications')} 
-              />
-              <NavItem 
-                icon={Flag} 
-                label="Reports" 
-                badge="2" 
-                badgeVariant="urgent"
-                active={currentPage === 'reports'} 
-                onClick={() => setPage('reports')} 
-              />
+              {role === 'admin' && (
+                <>
+                  <NavItem 
+                    icon={Users} 
+                    label="Drivers" 
+                    active={currentPage === 'drivers'} 
+                    onClick={() => setPage('drivers')} 
+                  />
+                  <NavItem 
+                    icon={FileCheck} 
+                    label="Applications" 
+                    badge="3" 
+                    active={currentPage === 'applications'} 
+                    onClick={() => setPage('applications')} 
+                  />
+                  <NavItem 
+                    icon={Flag} 
+                    label="Reports" 
+                    badge="2" 
+                    badgeVariant="urgent"
+                    active={currentPage === 'reports'} 
+                    onClick={() => setPage('reports')} 
+                  />
+                </>
+              )}
               <NavItem 
                 icon={Truck} 
                 label="Trip History" 
@@ -108,24 +115,34 @@ const Shell = ({ children, currentPage, setPage }) => {
           </div>
         </nav>
 
-        <div className="p-3 border-t border-line">
-          <NavItem 
-            icon={Settings} 
-            label="Settings" 
-            active={currentPage === 'settings'} 
-            onClick={() => setPage('settings')} 
-          />
-        </div>
-
-        <div className="p-4 border-t border-line bg-tint/30">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <Avatar initials="SO" size="sm" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-ink truncate">Sarah Ortega</p>
-              <p className="text-[10px] font-semibold text-ink-3">Dispatch Admin</p>
-            </div>
-            <ChevronDown size={14} className="text-ink-4" />
+        {role === 'admin' && (
+          <div className="p-3 border-t border-line">
+            <NavItem 
+              icon={Settings} 
+              label="Settings" 
+              active={currentPage === 'settings'} 
+              onClick={() => setPage('settings')} 
+            />
           </div>
+        )}
+
+        <div className="p-4 border-t border-line bg-tint/30 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="sm" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-ink truncate">
+                {role === 'admin' ? 'Admin User' : 'Dispatcher User'}
+              </p>
+              <p className="text-[10px] font-semibold text-ink-3 capitalize">{role}</p>
+            </div>
+          </div>
+          <button 
+            onClick={onLogout}
+            className="p-2 text-ink-4 hover:text-urgent hover:bg-urgent-light rounded-lg transition-colors"
+            title="Logout"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </aside>
 
