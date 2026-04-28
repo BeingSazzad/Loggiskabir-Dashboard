@@ -300,15 +300,19 @@ const Bookings = () => {
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Driver Assignment</h4>
                   {!isAssigning ? (
                     <div 
-                      className="bg-primary-tint/50 border border-primary/10 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary-light/50 transition-all group"
+                      className="bg-primary-tint/30 border border-primary/10 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-primary-tint/50 transition-colors"
                       onClick={() => setIsAssigning(true)}
                     >
-                      <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-primary mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                        <Users size={28} />
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
+                          <Users size={20} />
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-bold text-ink">Assign a Driver</h5>
+                          <p className="text-[10px] font-medium text-ink-3">Select from available on-duty pool</p>
+                        </div>
                       </div>
-                      <h5 className="text-base font-bold text-ink mb-1">Assign a Driver</h5>
-                      <p className="text-xs font-medium text-ink-3 mb-5 max-w-[240px]">This trip requires a driver assignment from the active on-duty pool.</p>
-                      <Button variant="primary" size="md">Select Available Driver</Button>
+                      <Button variant="primary" size="sm">Select Driver</Button>
                     </div>
                   ) : (
                     <div className="space-y-3">
