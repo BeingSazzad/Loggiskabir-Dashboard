@@ -106,7 +106,7 @@ const Bookings = () => {
                       onClick={() => setSelectedBookingId(booking.id)}
                       className={`cursor-pointer transition-colors ${selectedBookingId === booking.id ? 'bg-primary-tint/40 hover:bg-primary-tint/60' : 'hover:bg-bg'}`}
                     >
-                      <td className="px-4 py-3 align-top w-28">
+                      <td className="px-4 py-3 align-top whitespace-nowrap">
                         <span className="font-mono text-xs font-bold text-ink block mb-1">#{booking.id}</span>
                         <span className="text-[10px] font-bold text-ink-4">{timeAgo(booking.submittedTime)}</span>
                       </td>
