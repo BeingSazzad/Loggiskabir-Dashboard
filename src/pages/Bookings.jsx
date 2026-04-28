@@ -20,7 +20,7 @@ import { formatTime, formatDateTime, formatShortDate, timeAgo, tripTypeLabel, mo
 
 const Bookings = () => {
   const [activeTab, setActiveTab] = useState('pending');
-  const [selectedBookingId, setSelectedBookingId] = useState('LOGISS-2850');
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [isAssigning, setIsAssigning] = useState(false);
 
   const [localTrips, setLocalTrips] = useState(trips);
@@ -32,7 +32,7 @@ const Bookings = () => {
     return false;
   });
 
-  const selectedBooking = localTrips.find(t => t.id === selectedBookingId) || filteredBookings[0];
+  const selectedBooking = selectedBookingId ? localTrips.find(t => t.id === selectedBookingId) : null;
 
   const availableDrivers = drivers.filter(d => d.onDuty && d.status === 'available');
 
@@ -85,7 +85,7 @@ const Bookings = () => {
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Table List */}
-        <div className="lg:col-span-7 flex flex-col gap-4 overflow-y-auto pr-2">
+        <div className={`transition-all duration-300 ease-in-out ${selectedBookingId ? 'lg:col-span-7' : 'lg:col-span-12'} flex flex-col gap-4 overflow-y-auto pr-2`}>
           {filteredBookings.length > 0 ? (
             <div className="bg-white border border-line-2 rounded-xl overflow-hidden">
               <table className="w-full text-left border-collapse">
@@ -93,7 +93,9 @@ const Bookings = () => {
                   <tr>
                     <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Trip Ref</th>
                     <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider & Destination</th>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden md:table-cell">Details</th>
                     <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line-2">
@@ -117,9 +119,28 @@ const Bookings = () => {
                           <span className="truncate max-w-[180px]">{booking.dropoff}</span>
                         </div>
                       </td>
+                      <td className="px-4 py-3 align-top hidden md:table-cell">
+                        <div className="flex gap-1 mb-1">
+                          <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
+                          <Badge variant="neutral">{money(booking.cost)}</Badge>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 align-top whitespace-nowrap">
                         <p className="text-xs font-bold text-ink mb-1">{formatShortDate(booking.scheduledTime)}</p>
                         <p className="text-[10px] font-semibold text-ink-3">{formatTime(booking.scheduledTime)}</p>
+                      </td>
+                      <td className="px-4 py-3 align-top text-right">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-primary hover:bg-primary-light/50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBookingId(booking.id);
+                          }}
+                        >
+                          Review
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -136,15 +157,24 @@ const Bookings = () => {
         </div>
 
         {/* Right Detail Panel */}
-        <div className="lg:col-span-5">
-          {selectedBooking ? (
+        {selectedBookingId && (
+          <div className="lg:col-span-5 transition-all duration-300 ease-in-out">
+            {selectedBooking ? (
             <Card className="h-full flex flex-col sticky top-0 max-h-full overflow-hidden">
               <div className="p-6 border-b border-line-2 flex items-center justify-between bg-tint/10">
                 <div className="flex items-center gap-4">
                   <span className="font-mono text-sm font-bold text-ink-3">#{selectedBooking.id}</span>
                   <h2 className="text-lg font-bold font-display text-ink">Booking Request Details</h2>
                 </div>
-                <TripStatusBadge status={selectedBooking.status} />
+                <div className="flex items-center gap-4">
+                  <TripStatusBadge status={selectedBooking.status} />
+                  <button 
+                    onClick={() => setSelectedBookingId(null)}
+                    className="p-1 hover:bg-bg rounded-lg text-ink-4 hover:text-ink transition-colors"
+                  >
+                    <XCircle size={20} />
+                  </button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -277,11 +307,12 @@ const Bookings = () => {
               </div>
             </Card>
           ) : (
-            <div className="h-full flex items-center justify-center">
+            <div className="h-full flex items-center justify-center border-2 border-dashed border-line-2 rounded-xl">
               <p className="text-ink-4 font-bold">Select a booking to view details</p>
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );
