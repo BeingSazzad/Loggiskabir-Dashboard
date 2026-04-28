@@ -126,7 +126,7 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
           </div>
         )}
 
-        <div className="p-4 border-t border-line bg-tint/30 flex items-center justify-between">
+        <div className="p-4 border-t border-line bg-tint/30 flex flex-col gap-4">
           <div className="flex items-center gap-3">
             <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="sm" />
             <div className="flex-1 min-w-0">
@@ -138,10 +138,11 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
           </div>
           <button 
             onClick={onLogout}
-            className="p-2 text-ink-4 hover:text-urgent hover:bg-urgent-light rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 p-2.5 text-xs font-bold text-urgent bg-urgent-light/50 hover:bg-urgent-light rounded-xl transition-colors shadow-sm cursor-pointer z-50"
             title="Logout"
           >
             <LogOut size={16} />
+            Log Out
           </button>
         </div>
       </aside>
