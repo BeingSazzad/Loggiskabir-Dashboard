@@ -23,16 +23,35 @@ const Bookings = () => {
   const [selectedBookingId, setSelectedBookingId] = useState('LOGISS-2850');
   const [isAssigning, setIsAssigning] = useState(false);
 
-  const filteredBookings = trips.filter(t => {
+  const [localTrips, setLocalTrips] = useState(trips);
+
+  const filteredBookings = localTrips.filter(t => {
     if (activeTab === 'pending') return t.status === 'pending_review';
     if (activeTab === 'approved') return t.status === 'assigned' || t.status === 'confirmed';
     if (activeTab === 'rejected') return t.status === 'cancelled';
     return false;
   });
 
-  const selectedBooking = trips.find(t => t.id === selectedBookingId) || filteredBookings[0];
+  const selectedBooking = localTrips.find(t => t.id === selectedBookingId) || filteredBookings[0];
 
   const availableDrivers = drivers.filter(d => d.onDuty && d.status === 'available');
+
+  const handleAssign = (driverId) => {
+    if (!selectedBooking) return;
+    setLocalTrips(prev => prev.map(t => 
+      t.id === selectedBooking.id ? { ...t, status: 'assigned', driverId } : t
+    ));
+    setIsAssigning(false);
+    setActiveTab('approved');
+  };
+
+  const handleReject = () => {
+    if (!selectedBooking) return;
+    setLocalTrips(prev => prev.map(t => 
+      t.id === selectedBooking.id ? { ...t, status: 'cancelled' } : t
+    ));
+    setActiveTab('rejected');
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,58 +67,67 @@ const Bookings = () => {
           onClick={() => setActiveTab('pending')}
           className={`px-4 py-2 text-sm font-bold border-b-2 transition-all ${activeTab === 'pending' ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
         >
-          Pending Review <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'pending' ? 'bg-primary-light' : 'bg-bg'}`}>{trips.filter(t => t.status === 'pending_review').length}</span>
+          Pending Review <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'pending' ? 'bg-primary-light' : 'bg-bg'}`}>{localTrips.filter(t => t.status === 'pending_review').length}</span>
         </button>
         <button 
           onClick={() => setActiveTab('approved')}
           className={`px-4 py-2 text-sm font-bold border-b-2 transition-all ${activeTab === 'approved' ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
         >
-          Approved <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-bg text-[10px]">3</span>
+          Approved <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-bg text-[10px]">{localTrips.filter(t => t.status === 'assigned' || t.status === 'confirmed').length}</span>
         </button>
         <button 
           onClick={() => setActiveTab('rejected')}
           className={`px-4 py-2 text-sm font-bold border-b-2 transition-all ${activeTab === 'rejected' ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
         >
-          Rejected <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-bg text-[10px]">0</span>
+          Rejected <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-bg text-[10px]">{localTrips.filter(t => t.status === 'cancelled').length}</span>
         </button>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left List */}
-        <div className="lg:col-span-5 flex flex-col gap-4 overflow-y-auto pr-2">
-          {filteredBookings.map(booking => (
-            <Card 
-              key={booking.id} 
-              hover 
-              onClick={() => setSelectedBookingId(booking.id)}
-              className={`p-4 ${selectedBookingId === booking.id ? 'border-primary bg-primary-tint/30' : ''}`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <span className="font-mono text-[10px] font-bold text-ink-4 uppercase">#{booking.id}</span>
-                <span className="text-[10px] font-bold text-ink-4">{timeAgo(booking.submittedTime)}</span>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <Avatar initials={booking.rider.initials} size="sm" />
-                <div>
-                  <h4 className="text-sm font-bold text-ink">{booking.rider.name}</h4>
-                  <p className="text-[10px] font-semibold text-ink-3">
-                    {formatShortDate(booking.scheduledTime)} at {formatTime(booking.scheduledTime)}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-[10px] text-ink-4 mb-3 truncate">
-                <MapPin size={10} />
-                {booking.pickup} → {booking.dropoff}
-              </div>
-              <div className="flex gap-2">
-                <Badge variant="primary">{booking.mobility}</Badge>
-                <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
-                <Badge variant="neutral">{money(booking.cost)}</Badge>
-              </div>
-            </Card>
-          ))}
-          {filteredBookings.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-ink-4">
+        {/* Left Table List */}
+        <div className="lg:col-span-7 flex flex-col gap-4 overflow-y-auto pr-2">
+          {filteredBookings.length > 0 ? (
+            <div className="bg-white border border-line-2 rounded-xl overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-bg border-b border-line-2">
+                  <tr>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Trip Ref</th>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider & Destination</th>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line-2">
+                  {filteredBookings.map(booking => (
+                    <tr 
+                      key={booking.id} 
+                      onClick={() => setSelectedBookingId(booking.id)}
+                      className={`cursor-pointer transition-colors ${selectedBookingId === booking.id ? 'bg-primary-tint/40 hover:bg-primary-tint/60' : 'hover:bg-bg'}`}
+                    >
+                      <td className="px-4 py-3 align-top w-28">
+                        <span className="font-mono text-xs font-bold text-ink block mb-2">#{booking.id}</span>
+                        <Badge variant="primary">{booking.mobility}</Badge>
+                      </td>
+                      <td className="px-4 py-3 align-top">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="text-sm font-bold text-ink">{booking.rider.name}</h4>
+                          <span className="text-[10px] font-semibold text-ink-4">({timeAgo(booking.submittedTime)})</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-ink-3">
+                          <MapPin size={10} className="shrink-0 text-ink-4" />
+                          <span className="truncate max-w-[180px]">{booking.dropoff}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 align-top whitespace-nowrap">
+                        <p className="text-xs font-bold text-ink mb-1">{formatShortDate(booking.scheduledTime)}</p>
+                        <p className="text-[10px] font-semibold text-ink-3">{formatTime(booking.scheduledTime)}</p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-ink-4 border border-line-2 rounded-xl bg-white">
               <CheckCircle2 size={48} className="mb-4 opacity-20" />
               <p className="font-bold">All caught up!</p>
               <p className="text-sm">No bookings in this category.</p>
@@ -108,7 +136,7 @@ const Bookings = () => {
         </div>
 
         {/* Right Detail Panel */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-5">
           {selectedBooking ? (
             <Card className="h-full flex flex-col sticky top-0 max-h-full overflow-hidden">
               <div className="p-6 border-b border-line-2 flex items-center justify-between bg-tint/10">
@@ -228,7 +256,7 @@ const Bookings = () => {
                               </p>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => setIsAssigning(false)}>Assign</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleAssign(driver.id)}>Assign</Button>
                         </Card>
                       ))}
                     </div>
@@ -237,13 +265,14 @@ const Bookings = () => {
               </div>
 
               <div className="p-4 bg-white border-t border-line-2 flex gap-3">
-                <Button variant="ghost" className="text-urgent hover:bg-urgent-light flex-1">Reject Booking</Button>
+                <Button variant="ghost" className="text-urgent hover:bg-urgent-light flex-1" onClick={handleReject}>Reject Booking</Button>
                 <Button 
                   variant="primary" 
                   className="flex-1" 
                   onClick={() => setIsAssigning(true)}
+                  disabled={selectedBooking.status !== 'pending_review'}
                 >
-                  Approve & Assign Driver
+                  {selectedBooking.status === 'pending_review' ? 'Approve & Assign Driver' : 'Driver Assigned'}
                 </Button>
               </div>
             </Card>
