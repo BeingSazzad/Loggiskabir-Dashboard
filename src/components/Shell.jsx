@@ -190,6 +190,16 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
             <Button variant="primary-light" size="sm" icon={Phone} className="font-mono">
               (804) 555-LOGI
             </Button>
+
+            <div className="w-px h-6 bg-line-2 mx-1"></div>
+
+            <button 
+              onClick={() => setPage('settings')} 
+              className="w-9 h-9 rounded-full border-2 border-line hover:border-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 hover:shadow-sm"
+              title="My Profile"
+            >
+              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="sm" className="w-full h-full" />
+            </button>
           </div>
         </header>
 

@@ -33,7 +33,7 @@ const Toggle = ({ label, sub, icon: Icon, active, onToggle }) => (
   </div>
 );
 
-const Settings = () => {
+const Settings = ({ role }) => {
   const [notifications, setNotifications] = useState({
     bookings: true,
     reports: true,
@@ -51,26 +51,71 @@ const Settings = () => {
         <p className="text-ink-3 font-medium">Manage your profile and dispatch preferences</p>
       </div>
 
-      {/* Dispatcher Profile */}
+      {/* Profile & Authentication */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start justify-between mb-6 border-b border-line-2 pb-6">
           <div className="flex items-center gap-4">
-            <Avatar initials="SO" size="xl" />
+            <div className="relative group cursor-pointer w-16 h-16 rounded-2xl overflow-hidden border-2 border-line group-hover:border-primary transition-colors">
+              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="xl" className="w-full h-full" />
+              <div className="absolute inset-0 bg-ink/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider text-center leading-tight">Change<br/>Photo</span>
+              </div>
+            </div>
             <div>
-              <h3 className="text-xl font-bold text-ink">Sarah Ortega</h3>
-              <p className="text-sm font-semibold text-ink-3">Dispatch Admin</p>
+              <h3 className="text-xl font-bold text-ink">{role === 'admin' ? 'Admin User' : 'Dispatcher User'}</h3>
+              <p className="text-sm font-semibold text-ink-3 uppercase tracking-wider">{role}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm">Edit Profile</Button>
+          {role === 'admin' && <Button variant="primary-light" size="sm">Save Changes</Button>}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-3 bg-bg rounded-xl border border-line-2 flex items-center gap-3">
-            <Mail size={16} className="text-ink-4" />
-            <span className="text-sm font-bold text-ink">s.ortega@logiss.com</span>
+        
+        <div className="space-y-5">
+          <h4 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest flex items-center gap-2">
+            <Shield size={12} className={role === 'admin' ? "text-primary" : "text-ink-4"} /> Authentication Details
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5 flex justify-between">
+                Email Address
+                {role !== 'admin' && <span className="text-urgent flex items-center gap-1"><Shield size={10}/> Admin Only</span>}
+              </label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-4" />
+                <input 
+                  type="email" 
+                  value={role === 'admin' ? 'admin@logiss.com' : 'dispatcher@logiss.com'} 
+                  className={`input-base w-full pl-10 ${role !== 'admin' ? 'bg-bg text-ink-4 cursor-not-allowed border-line-2' : ''}`}
+                  disabled={role !== 'admin'}
+                  onChange={() => {}}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5 flex justify-between">
+                Phone Number
+                {role !== 'admin' && <span className="text-urgent flex items-center gap-1"><Shield size={10}/> Admin Only</span>}
+              </label>
+              <div className="relative">
+                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-4" />
+                <input 
+                  type="text" 
+                  value="(804) 555-0100" 
+                  className={`input-base w-full pl-10 ${role !== 'admin' ? 'bg-bg text-ink-4 cursor-not-allowed border-line-2' : ''}`}
+                  disabled={role !== 'admin'}
+                  onChange={() => {}}
+                />
+              </div>
+            </div>
           </div>
-          <div className="p-3 bg-bg rounded-xl border border-line-2 flex items-center gap-3">
-            <Phone size={16} className="text-ink-4" />
-            <span className="text-sm font-bold text-ink">(804) 555-0100</span>
+
+          <div className="pt-5 border-t border-line-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-ink">Change Password</p>
+                <p className="text-[10px] text-ink-4 font-semibold mt-0.5">Update your account password</p>
+              </div>
+              <Button variant="outline" size="sm">Update Password</Button>
+            </div>
           </div>
         </div>
       </Card>

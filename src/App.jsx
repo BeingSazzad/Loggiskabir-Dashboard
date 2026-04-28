@@ -34,7 +34,7 @@ function App() {
   }
 
   // Route protection for dispatcher
-  if (role === 'dispatcher' && ['applications', 'reports', 'settings'].includes(page)) {
+  if (role === 'dispatcher' && ['applications', 'reports'].includes(page)) {
     setPage('operations');
   }
 
