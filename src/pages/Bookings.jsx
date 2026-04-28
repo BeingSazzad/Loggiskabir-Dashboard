@@ -115,24 +115,22 @@ const Bookings = () => {
                           <Avatar initials={booking.rider.initials} size="xs" />
                           <h4 className="text-sm font-bold text-ink">{booking.rider.name}</h4>
                         </div>
-                        <p className="text-[10px] text-ink-3 ml-8">{booking.rider.phone || '(804) 555-0142'}</p>
+                        <p className="text-[10px] text-ink-3 ml-[30px]">{booking.rider.phone || '(804) 555-0142'}</p>
                       </td>
                       <td className="px-4 py-3 align-top">
                         <div className="flex items-center gap-1.5 text-xs font-semibold text-ink mb-1">
-                          <span className="truncate max-w-[150px]">{booking.pickup}</span>
+                          <span>{booking.pickup}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] text-ink-4">
                           <MapPin size={10} className="shrink-0" />
-                          <span className="truncate max-w-[150px]">{booking.dropoff}</span>
+                          <span>{booking.dropoff}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3 align-top hidden lg:table-cell">
-                        <div className="flex flex-col gap-1.5 items-start">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="primary">{booking.mobility}</Badge>
-                          <div className="flex gap-1">
-                            <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
-                            <Badge variant="neutral">{money(booking.cost)}</Badge>
-                          </div>
+                          <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
+                          <Badge variant="neutral">{money(booking.cost)}</Badge>
                         </div>
                       </td>
                       <td className="px-4 py-3 align-top whitespace-nowrap">
