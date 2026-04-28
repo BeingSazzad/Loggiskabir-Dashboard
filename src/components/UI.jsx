@@ -12,6 +12,7 @@ export const Badge = ({ variant = 'neutral', dot = false, children, className = 
   const variants = {
     neutral: 'bg-bg text-ink-3 border-line',
     primary: 'bg-primary-light text-primary border-primary/10',
+    'primary-light': 'bg-primary-light/50 text-primary border-primary/10',
     accent: 'bg-accent-light text-accent border-accent/10',
     warning: 'bg-warning-light text-warning border-warning/10',
     urgent: 'bg-urgent-light text-urgent border-urgent/10',

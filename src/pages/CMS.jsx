@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  FileText, 
-  Shield, 
-  HelpCircle, 
-  Info, 
-  Save, 
-  RotateCcw, 
-  Clock, 
+import {
+  FileText,
+  Shield,
+  HelpCircle,
+  Info,
+  Save,
+  RotateCcw,
+  Clock,
   ExternalLink,
   Edit3,
-  CheckCircle
+  CheckCircle,
+  ChevronRight
 } from 'lucide-react';
 import { Card, Button, Badge } from '../components/UI';
 
