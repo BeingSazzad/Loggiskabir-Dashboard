@@ -9,7 +9,9 @@ import {
   ChevronRight, 
   Mail,
   Smartphone,
-  Info
+  Info,
+  AlertTriangle,
+  UserX
 } from 'lucide-react';
 import { Card, Avatar, Button, Badge } from '../components/UI';
 

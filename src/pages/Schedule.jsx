@@ -1,169 +1,186 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Clock, MapPin, User } from 'lucide-react';
-import { Card, Avatar, Badge, Pagination } from '../components/UI';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Calendar, 
+  Clock, 
+  Truck, 
+  Users, 
+  Filter,
+  Search,
+  LayoutGrid,
+  List
+} from 'lucide-react';
+import { Card, Avatar, Badge, Button } from '../components/UI';
 import { drivers, trips } from '../data/mockData';
 
-const HOURS = Array.from({ length: 13 }, (_, i) => i + 6); // 6am – 6pm
-
-const tripColor = {
-  'in_trip':   'bg-primary text-white',
-  'assigned':  'bg-accent text-white',
-  'confirmed': 'bg-primary-tint text-primary border border-primary/30',
-  'completed': 'bg-bg text-ink-3 border border-line-2',
-};
-
-function getDateStr(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function addDays(date, n) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + n);
-  return d;
-}
-
-function formatHeader(date) {
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-}
-
 const Schedule = () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const [weekStart, setWeekStart] = useState(today);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const [activeTab, setActiveTab] = useState('driver'); // 'driver' or 'fleet'
+  const [viewMode, setViewMode] = useState('week'); // 'today', 'tomorrow', 'week', 'month'
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const totalPages = Math.ceil(drivers.length / itemsPerPage);
-  const paginatedDrivers = drivers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const timeFilters = [
+    { id: 'today', label: 'Today' },
+    { id: 'tomorrow', label: 'Tomorrow' },
+    { id: 'week', label: 'This Week' },
+    { id: 'month', label: 'This Month' },
+  ];
 
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-
-  // Build driver → trip map keyed by date string
-  const tripsByDriverAndDate = {};
-  trips.forEach(trip => {
-    if (!trip.driverId || !trip.scheduledTime) return;
-    const dateStr = trip.scheduledTime.slice(0, 10);
-    const key = `${trip.driverId}__${dateStr}`;
-    if (!tripsByDriverAndDate[key]) tripsByDriverAndDate[key] = [];
-    tripsByDriverAndDate[key].push(trip);
-  });
-
-  const todayStr = getDateStr(today);
+  // Mock fleet data derived from drivers
+  const fleet = drivers.map(d => ({
+    id: d.id,
+    plate: `VA-${1000 + d.id}`,
+    model: d.vehicle.model || 'Toyota Sienna',
+    type: d.vehicle.type,
+    status: d.onDuty ? 'active' : 'maintenance',
+    driver: d.name
+  }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Fleet Schedule</h1>
-          <p className="text-ink-3 font-medium">Weekly driver & vehicle availability overview</p>
+          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Fleet & Driver Schedule</h1>
+          <p className="text-ink-3 font-medium">Coordinate vehicle availability and driver shifts</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setWeekStart(d => addDays(d, -7))} className="w-9 h-9 border border-line rounded-lg flex items-center justify-center hover:bg-bg transition-colors">
-            <ChevronLeft size={18} />
-          </button>
-          <button onClick={() => setWeekStart(today)} className="px-4 py-1.5 text-xs font-bold border border-line rounded-lg hover:bg-bg transition-colors">
-            Today
-          </button>
-          <button onClick={() => setWeekStart(d => addDays(d, 7))} className="w-9 h-9 border border-line rounded-lg flex items-center justify-center hover:bg-bg transition-colors">
-            <ChevronRight size={18} />
-          </button>
+        <div className="flex items-center gap-2 bg-bg p-1 rounded-2xl border border-line-2 shadow-sm">
+          {timeFilters.map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => setViewMode(filter.id)}
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                viewMode === filter.id 
+                ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' 
+                : 'text-ink-4 hover:text-ink'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <Card className="overflow-hidden">
-        {/* Day header */}
-        <div className="grid border-b border-line-2" style={{ gridTemplateColumns: '200px repeat(7, 1fr)' }}>
-          <div className="px-4 py-3 bg-bg/50 border-r border-line-2">
-            <p className="text-[10px] font-bold text-ink-4 uppercase tracking-widest">Driver / Vehicle</p>
-          </div>
-          {days.map(day => {
-            const ds = getDateStr(day);
-            const isToday = ds === todayStr;
-            return (
-              <div key={ds} className={`px-3 py-3 text-center border-r border-line-2 last:border-r-0 ${isToday ? 'bg-primary-tint/30' : 'bg-bg/50'}`}>
-                <p className={`text-[10px] font-bold uppercase tracking-wider ${isToday ? 'text-primary' : 'text-ink-4'}`}>
-                  {day.toLocaleDateString('en-US', { weekday: 'short' })}
-                </p>
-                <p className={`text-lg font-extrabold ${isToday ? 'text-primary' : 'text-ink'}`}>
-                  {day.getDate()}
-                </p>
-              </div>
-            );
-          })}
+      <div className="flex items-center justify-between border-b border-line-2 pb-1">
+        <div className="flex gap-8">
+          <button 
+            onClick={() => setActiveTab('driver')}
+            className={`pb-3 text-sm font-bold transition-all relative ${
+              activeTab === 'driver' ? 'text-primary' : 'text-ink-3 hover:text-ink'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Users size={16} /> Driver Schedule
+            </div>
+            {activeTab === 'driver' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
+          </button>
+          <button 
+            onClick={() => setActiveTab('fleet')}
+            className={`pb-3 text-sm font-bold transition-all relative ${
+              activeTab === 'fleet' ? 'text-primary' : 'text-ink-3 hover:text-ink'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Truck size={16} /> Fleet Schedule
+            </div>
+            {activeTab === 'fleet' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
+          </button>
         </div>
 
-        {/* Driver Rows */}
-        <div className="divide-y divide-line-2">
-          {paginatedDrivers.map(driver => (
-            <div key={driver.id} className="grid hover:bg-bg/30 transition-colors" style={{ gridTemplateColumns: '200px repeat(7, 1fr)' }}>
-              {/* Driver info cell */}
-              <div className="px-4 py-3 border-r border-line-2 flex items-center gap-3">
-                <Avatar initials={driver.initials} size="xs" online={driver.onDuty} />
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-ink truncate">{driver.name}</p>
-                  <p className="text-[10px] text-ink-4 truncate">{driver.vehicle.type}</p>
-                </div>
-              </div>
+        <div className="flex items-center gap-4 mb-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-4" />
+            <input 
+              className="input-base pl-9 py-1.5 text-xs w-64 h-9" 
+              placeholder={activeTab === 'driver' ? "Search driver..." : "Search vehicle plate..."}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex border border-line-2 rounded-xl overflow-hidden shadow-sm">
+             <button className="p-2 bg-white text-primary border-r border-line-2"><LayoutGrid size={16} /></button>
+             <button className="p-2 bg-bg text-ink-3 hover:bg-white transition-colors"><List size={16} /></button>
+          </div>
+        </div>
+      </div>
 
-              {/* Day cells */}
-              {days.map(day => {
-                const ds = getDateStr(day);
-                const isToday = ds === todayStr;
-                const key = `${driver.id}__${ds}`;
-                const dayTrips = tripsByDriverAndDate[key] || [];
-
-                return (
-                  <div key={ds} className={`px-2 py-2 border-r border-line-2 last:border-r-0 min-h-[72px] ${isToday ? 'bg-primary-tint/10' : ''}`}>
-                    {dayTrips.length === 0 ? (
-                      <div className="h-full flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-ink-4/30">—</span>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        {dayTrips.map(trip => (
-                          <div
-                            key={trip.id}
-                            className={`rounded-md px-2 py-1.5 text-[10px] font-bold leading-tight cursor-pointer hover:opacity-80 transition-opacity ${tripColor[trip.status] || 'bg-bg text-ink border border-line-2'}`}
-                          >
-                            <div className="flex items-center gap-1 mb-0.5">
-                              <Clock size={9} />
-                              <span>{trip.scheduledTime?.slice(11, 16)}</span>
-                            </div>
-                            <p className="truncate">{trip.rider.name}</p>
-                            <p className="opacity-70 truncate">{trip.dropoff}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+      <Card className="overflow-hidden border-line-2">
+        <div className="grid grid-cols-8 border-b border-line-2 bg-bg/40">
+          <div className="col-span-2 p-4 border-r border-line-2">
+             <p className="text-[10px] font-black text-ink-4 uppercase tracking-widest">{activeTab === 'driver' ? 'Driver Details' : 'Vehicle Details'}</p>
+          </div>
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+            <div key={day} className="p-4 text-center border-r border-line-2 last:border-r-0">
+               <p className="text-[10px] font-bold text-ink-4 uppercase mb-1">{day}</p>
+               <p className="text-sm font-black text-ink">2{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(day) + 1}</p>
             </div>
           ))}
         </div>
 
-        {/* Legend */}
-        <div className="px-6 py-3 bg-bg/30 border-t border-line-2 flex items-center gap-6">
-          {[
-            { color: 'bg-primary', label: 'In Trip' },
-            { color: 'bg-accent', label: 'Assigned' },
-            { color: 'bg-primary-tint border border-primary/30', label: 'Confirmed' },
-            { color: 'bg-bg border border-line-2', label: 'Completed' },
-          ].map(l => (
-            <div key={l.label} className="flex items-center gap-2">
-              <span className={`w-3 h-3 rounded-sm ${l.color}`}></span>
-              <span className="text-[10px] font-bold text-ink-4">{l.label}</span>
+        <div className="divide-y divide-line-2">
+          {(activeTab === 'driver' ? drivers : fleet).map((item, idx) => (
+            <div key={item.id} className="grid grid-cols-8 group">
+              <div className="col-span-2 p-4 border-r border-line-2 flex items-center gap-3 bg-bg/10 group-hover:bg-bg/30 transition-colors">
+                {activeTab === 'driver' ? (
+                  <>
+                    <Avatar initials={item.initials} size="xs" online={item.onDuty} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-extrabold text-ink truncate">{item.name}</p>
+                      <p className="text-[10px] text-ink-4 font-bold uppercase tracking-wider">{item.vehicle.type}</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-8 h-8 bg-primary-light rounded-xl flex items-center justify-center text-primary border border-primary/10">
+                      <Truck size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-extrabold text-ink truncate font-mono">{item.plate}</p>
+                      <p className="text-[10px] text-ink-4 font-bold uppercase tracking-wider">{item.model}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              {/* Day slots */}
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="p-2 border-r border-line-2 last:border-r-0 min-h-[80px] hover:bg-bg transition-colors relative">
+                   {/* Mock shifts/bookings */}
+                   {((idx + i) % 3 === 0) && (
+                     <div className={`p-2 rounded-xl text-[10px] font-black shadow-sm border ${
+                       activeTab === 'driver' 
+                       ? 'bg-primary-tint/30 text-primary border-primary/20' 
+                       : 'bg-accent-light/40 text-accent-dark border-accent/20'
+                     }`}>
+                        <div className="flex items-center gap-1 mb-1 opacity-70">
+                          <Clock size={10} /> 08:00 - 16:00
+                        </div>
+                        <p className="truncate uppercase">{activeTab === 'driver' ? 'Full Shift' : 'Reserved'}</p>
+                     </div>
+                   )}
+                </div>
+              ))}
             </div>
           ))}
         </div>
       </Card>
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={drivers.length}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-      />
+
+      <div className="flex items-center justify-between px-2 text-ink-4 font-bold text-[10px] uppercase tracking-widest">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-primary rounded-full" />
+            <span>Driver Shift Active</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-accent rounded-full" />
+            <span>Vehicle Scheduled</span>
+          </div>
+          <div className="flex items-center gap-2">
+             <div className="w-3 h-3 bg-warning rounded-full" />
+             <span>Maintenance Needed</span>
+          </div>
+        </div>
+        <p>Last Sync: Just Now</p>
+      </div>
     </div>
   );
 };

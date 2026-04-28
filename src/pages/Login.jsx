@@ -25,9 +25,9 @@ const Login = ({ setRole }) => {
       <div className="hidden lg:flex w-1/2 relative bg-ink items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-ink/80 to-transparent z-10 mix-blend-multiply pointer-events-none"></div>
         <img 
-          src="/login-bg.png" 
+          src="C:\Users\User\.gemini\antigravity\brain\ea54f8fb-d562-4b18-9791-d329b647ce10\login_bg_1777384467746.png" 
           alt="Dispatch Center" 
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          className="absolute inset-0 w-full h-full object-cover opacity-90 scale-105"
         />
         <div className="relative z-20 text-left p-16 w-full max-w-2xl mt-auto">
           <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white mb-6 border border-white/20">

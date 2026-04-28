@@ -15,7 +15,14 @@ import {
   Menu,
   LogOut,
   CalendarDays,
-  Car
+  Car,
+  User,
+  Shield,
+  HelpCircle,
+  Lock,
+  FileText,
+  CreditCard,
+  UserPlus
 } from 'lucide-react';
 import { Avatar, Badge, Button } from './UI';
 import { trips, drivers } from '../data/mockData';
@@ -70,90 +77,92 @@ const Shell = ({ children, page, setPage, role, onLogout }) => {
 
         <nav className="flex-1 px-4 py-2 space-y-8 overflow-y-auto scrollbar-hide">
           <div>
-            <h3 className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-4">Operations</h3>
+            <h3 className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-4">
+              {role === 'admin' ? 'Admin Controls' : 'Operations'}
+            </h3>
             <div className="space-y-1">
-              <NavItem 
-                icon={LayoutDashboard} 
-                label="Operations" 
-                active={page === 'operations'} 
-                onClick={() => setPage('operations')} 
-              />
-              <NavItem 
-                icon={Inbox} 
-                label="Bookings" 
-                badge="8" 
-                active={page === 'bookings'} 
-                onClick={() => setPage('bookings')} 
-              />
-              <NavItem 
-                icon={Map} 
-                label="Live Trips" 
-                badge={
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
-                    {liveTripsCount}
-                  </div>
-                } 
-                active={page === 'live'} 
-                onClick={() => setPage('live')} 
-              />
-              <NavItem 
-                icon={Users} 
-                label="Drivers" 
-                active={page === 'drivers'} 
-                onClick={() => setPage('drivers')} 
-              />
-              {role === 'admin' && (
+              {role === 'admin' ? (
                 <>
                   <NavItem 
-                    icon={FileCheck} 
-                    label="Applications" 
-                    badge="3" 
-                    active={page === 'applications'} 
-                    onClick={() => setPage('applications')} 
+                    icon={LayoutDashboard} 
+                    label="Dashboard" 
+                    active={page === 'admin_dashboard' || page === 'operations'} 
+                    onClick={() => setPage('admin_dashboard')} 
                   />
                   <NavItem 
-                    icon={Flag} 
-                    label="Reports" 
-                    badge="2" 
-                    badgeVariant="urgent"
-                    active={page === 'reports'} 
-                    onClick={() => setPage('reports')} 
+                    icon={CreditCard} 
+                    label="Transactions" 
+                    active={page === 'transactions'} 
+                    onClick={() => setPage('transactions')} 
                   />
+                  <NavItem 
+                    icon={UserPlus} 
+                    label="User Access" 
+                    active={page === 'users'} 
+                    onClick={() => setPage('users')} 
+                  />
+                  <NavItem 
+                    icon={FileText} 
+                    label="Content Manager" 
+                    active={page === 'cms'} 
+                    onClick={() => setPage('cms')} 
+                  />
+                  
+                  <h3 className="px-3 mt-6 mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-4">Operations</h3>
+                  <NavItem icon={Inbox} label="Bookings" badge="8" active={page === 'bookings'} onClick={() => setPage('bookings')} />
+                  <NavItem 
+                    icon={Map} 
+                    label="Live Trips" 
+                    badge={
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
+                        {liveTripsCount}
+                      </div>
+                    } 
+                    active={page === 'live'} 
+                    onClick={() => setPage('live')} 
+                  />
+                  <NavItem icon={Users} label="Drivers" active={page === 'drivers'} onClick={() => setPage('drivers')} />
+                  <NavItem icon={FileCheck} label="Applications" badge="3" active={page === 'applications'} onClick={() => setPage('applications')} />
+                  <NavItem icon={Flag} label="Reports" badge="2" badgeVariant="urgent" active={page === 'reports'} onClick={() => setPage('reports')} />
+                  <NavItem icon={Truck} label="Trip History" active={page === 'trips'} onClick={() => setPage('trips')} />
+                  <NavItem icon={CalendarDays} label="Schedule" active={page === 'schedule'} onClick={() => setPage('schedule')} />
+                  <NavItem icon={Car} label="Fleet" active={page === 'fleet'} onClick={() => setPage('fleet')} />
+                </>
+              ) : (
+                <>
+                  <NavItem icon={LayoutDashboard} label="Operations" active={page === 'operations'} onClick={() => setPage('operations')} />
+                  <NavItem icon={Inbox} label="Bookings" badge="8" active={page === 'bookings'} onClick={() => setPage('bookings')} />
+                  <NavItem 
+                    icon={Map} 
+                    label="Live Trips" 
+                    badge={
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
+                        {liveTripsCount}
+                      </div>
+                    } 
+                    active={page === 'live'} 
+                    onClick={() => setPage('live')} 
+                  />
+                  <NavItem icon={Users} label="Drivers" active={page === 'drivers'} onClick={() => setPage('drivers')} />
+                  <NavItem icon={Truck} label="Trip History" active={page === 'trips'} onClick={() => setPage('trips')} />
+                  <NavItem icon={CalendarDays} label="Schedule" active={page === 'schedule'} onClick={() => setPage('schedule')} />
+                  <NavItem icon={Car} label="Fleet" active={page === 'fleet'} onClick={() => setPage('fleet')} />
                 </>
               )}
-              <NavItem 
-                icon={Truck} 
-                label="Trip History" 
-                active={page === 'trips'} 
-                onClick={() => setPage('trips')} 
-              />
-              <NavItem 
-                icon={CalendarDays} 
-                label="Schedule" 
-                active={page === 'schedule'} 
-                onClick={() => setPage('schedule')} 
-              />
-              <NavItem 
-                icon={Car} 
-                label="Fleet" 
-                active={page === 'fleet'} 
-                onClick={() => setPage('fleet')} 
-              />
             </div>
           </div>
         </nav>
 
-        {role === 'admin' && (
-          <div className="p-3 border-t border-line">
-            <NavItem 
-              icon={Settings} 
-              label="Settings" 
-              active={page === 'settings'} 
-              onClick={() => setPage('settings')} 
-            />
-          </div>
-        )}
+        <div className="p-3 border-t border-line space-y-1">
+          <NavItem 
+            icon={Settings} 
+            label="Settings" 
+            active={page === 'settings'} 
+            onClick={() => setPage('settings')} 
+          />
+        </div>
 
       </aside>
 
@@ -205,31 +214,61 @@ const Shell = ({ children, page, setPage, role, onLogout }) => {
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-line overflow-hidden animate-fade-in z-50">
-                  <div className="p-4 border-b border-line bg-bg/30">
-                    <p className="text-xs font-bold text-ink mb-0.5 capitalize">{role} User</p>
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider">{role === 'admin' ? 'admin@logiss.com' : 'dispatcher@logiss.com'}</p>
+                <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-line overflow-hidden animate-in slide-in-from-top-2 duration-200 z-50">
+                  <div className="p-5 border-b border-line bg-bg/30">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="md" />
+                      <div>
+                        <p className="text-sm font-black text-ink leading-none capitalize">{role} User</p>
+                        <p className="text-[10px] font-bold text-ink-4 mt-1">ID: #LOG-{role === 'admin' ? '882' : '941'}</p>
+                      </div>
+                    </div>
+                    <Badge variant="primary-light" className="w-full justify-center py-1 text-[9px] uppercase tracking-widest">{role === 'admin' ? 'Administrator' : 'Dispatch Officer'}</Badge>
                   </div>
+                  
                   <div className="p-2">
                     <button 
                       onClick={() => setPage('settings')}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all group"
                     >
-                      <Settings size={16} className="text-ink-3" /> Profile & Settings
+                      <div className="flex items-center gap-3">
+                        <User size={16} className="text-ink-3 group-hover:text-primary" /> 
+                        <span>Account Info</span>
+                      </div>
+                      <ChevronDown size={14} className="text-ink-4 -rotate-90" />
                     </button>
                     <button 
                       onClick={() => setPage('settings')}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all group"
                     >
-                      <Lock size={16} className="text-ink-3" /> Change Password
+                      <div className="flex items-center gap-3">
+                        <Settings size={16} className="text-ink-3 group-hover:text-primary" /> 
+                        <span>Settings</span>
+                      </div>
+                    </button>
+                    <button 
+                      onClick={() => setPage('settings')}
+                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Lock size={16} className="text-ink-3 group-hover:text-primary" /> 
+                        <span>Security & Privacy</span>
+                      </div>
                     </button>
                   </div>
-                  <div className="p-2 border-t border-line bg-urgent-light/20">
+
+                  <div className="p-2 border-t border-line bg-bg/20">
+                    <button 
+                      onClick={() => setPage('support')}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all"
+                    >
+                      <HelpCircle size={16} className="text-ink-3" /> Help & Support
+                    </button>
                     <button 
                       onClick={onLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-urgent hover:bg-urgent-light transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-urgent hover:bg-urgent-light transition-all mt-1"
                     >
-                      <LogOut size={16} /> Log Out
+                      <LogOut size={16} /> Log Out Session
                     </button>
                   </div>
                 </div>

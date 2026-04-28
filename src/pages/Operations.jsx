@@ -4,7 +4,9 @@ import {
   ChevronRight, Clock, MapPin, CheckCircle2,
   Circle, Loader2, XCircle, FileWarning, UserPlus,
   CalendarDays,
-  Plus
+  Plus,
+  MoveRight,
+  Repeat
 } from 'lucide-react';
 import { Card, StatCard, Avatar, Badge, TripStatusBadge, Button, Pagination } from '../components/UI';
 import { opsStats, trips, drivers, applications, reports } from '../data/mockData';
@@ -41,24 +43,16 @@ const Operations = ({ setPage }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Operations</h1>
+          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Today's Schedule</h1>
           <p className="text-ink-3 font-medium">{todayLabel}</p>
         </div>
-        <Button 
-          variant="primary" 
-          icon={Plus} 
-          onClick={() => setPage('bookings')}
-          className="shadow-lg shadow-primary/20"
-        >
-          New Manual Trip
-        </Button>
       </div>
 
       {/* KPI Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Today's Trips" value={opsStats.todaysTrips} sub="1 in progress · 3 pending" icon={Truck} accent="primary" />
-        <StatCard label="Drivers On Duty" value={`${opsStats.driversOnDuty}/${opsStats.driversTotal}`} sub="3 available · 1 in trip" icon={Users} accent="accent" />
-        <StatCard label="Completion Rate" value={`${opsStats.completionRate}%`} sub="★ 4.83 avg rating" icon={BarChart3} accent="accent" trend="+2.1% vs last week" />
+        <StatCard label="Trips (This Month)" value={opsStats.todaysTrips} sub="1 in progress · 3 pending" icon={Truck} accent="primary" />
+        <StatCard label="On Duty (This Month)" value={`${opsStats.driversOnDuty}/${opsStats.driversTotal}`} sub="3 available · 1 in trip" icon={Users} accent="accent" />
+        <StatCard label="Success (This Month)" value={`${opsStats.completionRate}%`} sub="★ 4.83 avg rating" icon={BarChart3} accent="accent" trend="+2.1% vs last week" />
         <StatCard label="Action Required" value={opsStats.pendingReview + openReports.length} sub={`${pendingTrips.length} bookings · ${openReports.length} reports`} icon={AlertTriangle} accent="warning" />
       </div>
 
@@ -123,7 +117,7 @@ const Operations = ({ setPage }) => {
         <div className="lg:col-span-2">
           <Card className="overflow-hidden">
             <div className="px-5 py-4 border-b border-line-2 flex items-center justify-between">
-              <h2 className="text-sm font-extrabold text-ink">Today's Activity</h2>
+              <h2 className="text-sm font-extrabold text-ink">Today's Schedule</h2>
               <button onClick={() => setPage('trips')} className="text-xs font-bold text-primary hover:underline">View all →</button>
             </div>
 
@@ -159,11 +153,28 @@ const Operations = ({ setPage }) => {
                         </div>
                       </td>
                       <td className="px-5 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar initials={trip.rider.initials} size="xs" />
-                          <div>
-                            <p className="text-xs font-bold text-ink whitespace-nowrap">{trip.rider.name}</p>
-                            <p className="text-[10px] text-ink-4">{trip.mobility}</p>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Avatar 
+                            initials={drivers.find(d => String(d.id) === String(trip.driverId))?.initials || trip.rider.initials} 
+                            size="xs" 
+                            online={drivers.find(d => String(d.id) === String(trip.driverId))?.onDuty} 
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-ink truncate">{trip.rider.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className="text-[10px] text-ink-4">{trip.mobility}</p>
+                              {trip.type === 'round_trip' ? (
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                  <Repeat size={8} strokeWidth={3} />
+                                  <span className="text-[8px] font-black uppercase">Round</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                                  <MoveRight size={8} strokeWidth={3} />
+                                  <span className="text-[8px] font-black uppercase">O/W</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
