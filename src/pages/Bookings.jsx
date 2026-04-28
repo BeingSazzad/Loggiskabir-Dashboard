@@ -90,13 +90,13 @@ const Bookings = () => {
             <div className="bg-white border border-line-2 rounded-xl overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-bg border-b border-line-2">
-                  <tr>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Trip Ref</th>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider</th>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Route</th>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden lg:table-cell">Details</th>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
+                  <tr className="bg-bg/50 border-b border-line-2">
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Trip Ref</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Route</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden lg:table-cell">Details</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line-2">
@@ -106,18 +106,18 @@ const Bookings = () => {
                       onClick={() => setSelectedBookingId(booking.id)}
                       className={`cursor-pointer transition-colors ${selectedBookingId === booking.id ? 'bg-primary-tint/40 hover:bg-primary-tint/60' : 'hover:bg-bg'}`}
                     >
-                      <td className="px-4 py-3 align-top whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="font-mono text-xs font-bold text-ink block mb-1">#{booking.id}</span>
                         <span className="text-[10px] font-bold text-ink-4">{timeAgo(booking.submittedTime)}</span>
                       </td>
-                      <td className="px-4 py-3 align-top">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2 mb-1.5">
                           <Avatar initials={booking.rider.initials} size="xs" />
-                          <h4 className="text-sm font-bold text-ink">{booking.rider.name}</h4>
+                          <h4 className="text-sm font-bold text-ink whitespace-nowrap">{booking.rider.name}</h4>
                         </div>
-                        <p className="text-[10px] text-ink-3 ml-[30px]">{booking.rider.phone || '(804) 555-0142'}</p>
+                        <p className="text-[10px] text-ink-3 ml-[30px] whitespace-nowrap">{booking.rider.phone || '(804) 555-0142'}</p>
                       </td>
-                      <td className="px-4 py-3 align-top">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-1.5 text-xs font-semibold text-ink mb-1">
                           <span>{booking.pickup}</span>
                         </div>
@@ -126,18 +126,20 @@ const Bookings = () => {
                           <span>{booking.dropoff}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 align-top hidden lg:table-cell">
+                      <td className="px-6 py-4 hidden lg:table-cell">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="primary">{booking.mobility}</Badge>
                           <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
                           <Badge variant="neutral">{money(booking.cost)}</Badge>
                         </div>
                       </td>
-                      <td className="px-4 py-3 align-top whitespace-nowrap">
-                        <p className="text-xs font-bold text-ink mb-1">{formatShortDate(booking.scheduledTime)}</p>
-                        <p className="text-[10px] font-semibold text-ink-3">{formatTime(booking.scheduledTime)}</p>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-ink mb-1">{formatShortDate(booking.scheduledTime)}</span>
+                          <span className="text-[10px] font-semibold text-ink-3">{formatTime(booking.scheduledTime)}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 align-top text-right">
+                      <td className="px-6 py-4 text-right">
                         <Button 
                           variant="ghost" 
                           size="sm" 
