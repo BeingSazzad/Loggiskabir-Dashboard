@@ -92,8 +92,9 @@ const Bookings = () => {
                 <thead className="bg-bg border-b border-line-2">
                   <tr>
                     <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Trip Ref</th>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider & Destination</th>
-                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden md:table-cell">Details</th>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider</th>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Route</th>
+                    <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden lg:table-cell">Details</th>
                     <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
                     <th className="px-4 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
                   </tr>
@@ -106,23 +107,32 @@ const Bookings = () => {
                       className={`cursor-pointer transition-colors ${selectedBookingId === booking.id ? 'bg-primary-tint/40 hover:bg-primary-tint/60' : 'hover:bg-bg'}`}
                     >
                       <td className="px-4 py-3 align-top w-28">
-                        <span className="font-mono text-xs font-bold text-ink block mb-2">#{booking.id}</span>
-                        <Badge variant="primary">{booking.mobility}</Badge>
+                        <span className="font-mono text-xs font-bold text-ink block mb-1">#{booking.id}</span>
+                        <span className="text-[10px] font-bold text-ink-4">{timeAgo(booking.submittedTime)}</span>
                       </td>
                       <td className="px-4 py-3 align-top">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Avatar initials={booking.rider.initials} size="xs" />
                           <h4 className="text-sm font-bold text-ink">{booking.rider.name}</h4>
-                          <span className="text-[10px] font-semibold text-ink-4">({timeAgo(booking.submittedTime)})</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-ink-3">
-                          <MapPin size={10} className="shrink-0 text-ink-4" />
-                          <span className="truncate max-w-[180px]">{booking.dropoff}</span>
+                        <p className="text-[10px] text-ink-3 ml-8">{booking.rider.phone || '(804) 555-0142'}</p>
+                      </td>
+                      <td className="px-4 py-3 align-top">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-ink mb-1">
+                          <span className="truncate max-w-[150px]">{booking.pickup}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-ink-4">
+                          <MapPin size={10} className="shrink-0" />
+                          <span className="truncate max-w-[150px]">{booking.dropoff}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 align-top hidden md:table-cell">
-                        <div className="flex gap-1 mb-1">
-                          <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
-                          <Badge variant="neutral">{money(booking.cost)}</Badge>
+                      <td className="px-4 py-3 align-top hidden lg:table-cell">
+                        <div className="flex flex-col gap-1.5 items-start">
+                          <Badge variant="primary">{booking.mobility}</Badge>
+                          <div className="flex gap-1">
+                            <Badge variant="neutral">{tripTypeLabel(booking.type)}</Badge>
+                            <Badge variant="neutral">{money(booking.cost)}</Badge>
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-3 align-top whitespace-nowrap">
