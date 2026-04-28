@@ -9,7 +9,9 @@ import {
   Truck,
   Plus,
   Minus,
-  Navigation
+  Navigation,
+  Battery,
+  Wifi
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button, TripStatusBadge } from '../components/UI';
 import { trips, drivers, willCallQueue } from '../data/mockData';
@@ -98,7 +100,14 @@ const LiveTrips = () => {
               <line x1="0" y1="35%" x2="100%" y2="35%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
               <line x1="0" y1="65%" x2="100%" y2="65%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
               <line x1="30%" y1="0" x2="30%" y2="100%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
-              <line x1="70%" y1="0" x2="70%" y2="100%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
+               <line x1="70%" y1="0" x2="70%" y2="100%" stroke="white" strokeWidth="4" strokeOpacity="0.4" />
+              
+              {/* Building Silhouettes */}
+              <rect x="5%" y="10%" width="15%" height="15%" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="45%" y="40%" width="10%" height="10%" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="75%" y="15%" width="20%" height="30%" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="10%" y="70%" width="12%" height="18%" rx="4" fill="rgba(255,255,255,0.1)" />
+              <rect x="40%" y="75%" width="15%" height="10%" rx="4" fill="rgba(255,255,255,0.1)" />
               
               {/* Active Trip Path (Curved) */}
               <path 
@@ -246,6 +255,10 @@ const LiveTrips = () => {
                       {selectedDriver?.vehicle?.make || 'No Vehicle'} · <span className="font-mono">{selectedDriver?.vehicle?.plate || '---'}</span>
                     </p>
                     <Badge variant="accent">{selectedDriver?.vehicle?.type || 'Standard'}</Badge>
+                    <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-ink-3">
+                      <span className="flex items-center gap-1"><Battery size={12} className="text-accent" /> 84%</span>
+                      <span className="flex items-center gap-1"><Wifi size={12} className="text-accent" /> LTE</span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -3,9 +3,10 @@ import {
   Truck, Users, BarChart3, AlertTriangle,
   ChevronRight, Clock, MapPin, CheckCircle2,
   Circle, Loader2, XCircle, FileWarning, UserPlus,
-  CalendarDays
+  CalendarDays,
+  Plus
 } from 'lucide-react';
-import { Card, StatCard, Avatar, Badge, TripStatusBadge } from '../components/UI';
+import { Card, StatCard, Avatar, Badge, TripStatusBadge, Button } from '../components/UI';
 import { opsStats, trips, drivers, applications, reports } from '../data/mockData';
 import { formatTime, formatShortDate } from '../utils/helpers';
 
@@ -32,10 +33,19 @@ const Operations = ({ setPage }) => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Operations</h1>
-        <p className="text-ink-3 font-medium">{todayLabel}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Operations</h1>
+          <p className="text-ink-3 font-medium">{todayLabel}</p>
+        </div>
+        <Button 
+          variant="primary" 
+          icon={Plus} 
+          onClick={() => setPage('bookings')}
+          className="shadow-lg shadow-primary/20"
+        >
+          New Manual Trip
+        </Button>
       </div>
 
       {/* KPI Strip */}

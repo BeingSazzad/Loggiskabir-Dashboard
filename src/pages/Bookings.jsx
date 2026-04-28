@@ -15,7 +15,9 @@ import {
   Truck,
   Star,
   AlertTriangle,
-  Edit2
+  Edit2,
+  Plus,
+  X
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button, TripStatusBadge } from '../components/UI';
 import { trips, drivers } from '../data/mockData';
@@ -39,11 +41,91 @@ const isVehicleMatch = (driver, booking) => {
   return true; // ambulatory / cane can use any van
 };
 
+const ManualBookingModal = ({ onClose, onSave }) => {
+  const [form, setForm] = useState({
+    riderName: '',
+    phone: '',
+    pickup: '',
+    dropoff: '',
+    scheduledTime: '',
+    mobility: 'Ambulatory',
+    type: 'one_way',
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...form,
+      id: `LOGISS-${Math.floor(1000 + Math.random() * 9000)}`,
+      rider: { name: form.riderName, initials: form.riderName.split(' ').map(n => n[0]).join(''), phone: form.phone },
+      status: 'pending_review',
+      submittedTime: new Date().toISOString(),
+    });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line-2">
+          <h3 className="text-lg font-bold text-ink">New Manual Trip Entry</h3>
+          <button onClick={onClose} className="p-2 hover:bg-bg rounded-lg text-ink-4"><X size={20}/></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Rider Name</label>
+              <input required className="input-base w-full" value={form.riderName} onChange={e => setForm({...form, riderName: e.target.value})} placeholder="Full Name" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Phone</label>
+              <input className="input-base w-full" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="(804) 555-0000" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Mobility</label>
+              <select className="input-base w-full" value={form.mobility} onChange={e => setForm({...form, mobility: e.target.value})}>
+                <option>Ambulatory</option>
+                <option>Wheelchair</option>
+                <option>Stretcher</option>
+                <option>Cane</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Pickup Address</label>
+              <input required className="input-base w-full" value={form.pickup} onChange={e => setForm({...form, pickup: e.target.value})} placeholder="Street, City, State" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Dropoff Address</label>
+              <input required className="input-base w-full" value={form.dropoff} onChange={e => setForm({...form, dropoff: e.target.value})} placeholder="Medical Facility / Home" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Scheduled Date & Time</label>
+              <input required type="datetime-local" className="input-base w-full" value={form.scheduledTime} onChange={e => setForm({...form, scheduledTime: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Trip Type</label>
+              <select className="input-base w-full" value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
+                <option value="one_way">One Way</option>
+                <option value="round_trip">Round Trip</option>
+              </select>
+            </div>
+          </div>
+          <div className="pt-4 flex gap-3">
+            <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
+            <Button variant="primary" type="submit" className="flex-1">Create Booking</Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const Bookings = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedBookingId, setSelectedBookingId] = useState(null);
-  const [isAssigning, setIsAssigning] = useState(false);
+   const [isAssigning, setIsAssigning] = useState(false);
   const [localTrips, setLocalTrips] = useState(trips);
+  const [showManualModal, setShowManualModal] = useState(false);
 
   const filteredBookings = localTrips.filter(t => {
     if (activeTab === 'pending') return t.status === 'pending_review';
@@ -94,11 +176,18 @@ const Bookings = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      {showManualModal && (
+        <ManualBookingModal 
+          onClose={() => setShowManualModal(false)}
+          onSave={(newTrip) => setLocalTrips([newTrip, ...localTrips])}
+        />
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Bookings</h1>
           <p className="text-ink-3 font-medium">Review and process ride requests</p>
         </div>
+        <Button variant="primary" icon={Plus} onClick={() => setShowManualModal(true)}>Manual Trip</Button>
       </div>
 
       <div className="flex items-center gap-1 border-b border-line-2">
@@ -188,9 +277,9 @@ const Bookings = () => {
                             <span className="text-[10px] font-bold text-ink">Assigned</span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-warning"></span>
-                            <span className="text-[10px] font-bold text-warning-dark">Pending</span>
+                          <div className="flex items-center gap-1.5 px-2 py-1 bg-urgent-light text-urgent rounded-md border border-urgent/10 w-max shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-urgent pulse-dot"></span>
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider">Assign Driver</span>
                           </div>
                         )}
                       </td>
