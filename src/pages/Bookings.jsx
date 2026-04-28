@@ -135,6 +135,7 @@ const Bookings = () => {
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Route</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest hidden lg:table-cell">Details</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Assignment</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
                   </tr>
                 </thead>
@@ -177,6 +178,21 @@ const Bookings = () => {
                           <span className="text-xs font-bold text-ink mb-1">{formatShortDate(booking.scheduledTime)}</span>
                           <span className="text-[10px] font-semibold text-ink-3">{formatTime(booking.scheduledTime)}</span>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {activeTab === 'rejected' ? (
+                          <span className="text-[10px] text-ink-4 italic">—</span>
+                        ) : booking.driverId ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                            <span className="text-[10px] font-bold text-ink">Assigned</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-warning"></span>
+                            <span className="text-[10px] font-bold text-warning-dark">Pending</span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <Button 
