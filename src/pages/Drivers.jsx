@@ -1,25 +1,200 @@
 import React, { useState } from 'react';
 import { 
-  Plus, 
-  Search, 
-  Phone, 
-  Mail, 
-  Car, 
-  MapPin, 
-  ShieldCheck, 
-  CalendarClock, 
-  AlertTriangle,
-  Star,
-  ChevronRight,
-  ExternalLink
+  Plus, Search, Phone, Mail, Car, MapPin, ShieldCheck,
+  CalendarClock, AlertTriangle, Star, ChevronRight, ExternalLink,
+  X, UserPlus, Truck, FileCheck
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button } from '../components/UI';
 import { drivers } from '../data/mockData';
-import { docExpiryStatus } from '../utils/helpers';
+
+const COUNTIES = ['Chesterfield', 'Henrico', 'Richmond City', 'Hanover', 'Goochland', 'Powhatan'];
+const VEHICLE_TYPES = ['Ambulatory Van', 'Wheelchair Van', 'Stretcher Van'];
+
+const EMPTY_FORM = {
+  name: '', email: '', phone: '',
+  licenseNumber: '', licenseExpiry: '',
+  insurancePolicy: '', insuranceExpiry: '',
+  certNumber: '', certExpiry: '',
+  vehicleMake: '', vehicleModel: '', vehicleYear: '',
+  vehiclePlate: '', vehicleColor: '', vehicleType: 'Ambulatory Van',
+  counties: [],
+};
+
+const AddDriverModal = ({ onClose, onSave }) => {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [step, setStep] = useState(1); // 1=Personal, 2=Documents, 3=Vehicle
+
+  const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
+  const toggleCounty = (county) => set('counties', form.counties.includes(county)
+    ? form.counties.filter(c => c !== county)
+    : [...form.counties, county]);
+
+  const steps = ['Personal', 'Documents', 'Vehicle'];
+
+  return (
+    <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-line-2">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-primary-light rounded-xl flex items-center justify-center text-primary">
+              <UserPlus size={18} />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-ink">Create Driver Account</h2>
+              <p className="text-[10px] text-ink-4 font-medium">Step {step} of 3 — {steps[step-1]}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-ink-4 hover:text-ink transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Step indicator */}
+        <div className="flex px-6 pt-4 gap-2">
+          {steps.map((s, i) => (
+            <div key={s} className="flex-1">
+              <div className={`h-1 rounded-full transition-all ${step > i ? 'bg-primary' : 'bg-line-2'}`} />
+              <p className={`text-[10px] font-bold mt-1 ${step === i+1 ? 'text-primary' : 'text-ink-4'}`}>{s}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Form body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {step === 1 && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Full Name *</label>
+                  <input className="input-base w-full" placeholder="David Wilson" value={form.name} onChange={e => set('name', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Email *</label>
+                  <input className="input-base w-full" type="email" placeholder="driver@logiss.com" value={form.email} onChange={e => set('email', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Phone *</label>
+                  <input className="input-base w-full" placeholder="(804) 555-0000" value={form.phone} onChange={e => set('phone', e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-2">Service Counties *</label>
+                <div className="flex flex-wrap gap-2">
+                  {COUNTIES.map(c => (
+                    <button
+                      key={c} type="button"
+                      onClick={() => toggleCounty(c)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${form.counties.includes(c) ? 'bg-primary text-white border-primary' : 'bg-bg text-ink-3 border-line hover:border-primary/40'}`}
+                    >{c}</button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <div className="bg-bg rounded-xl p-4 border border-line-2 space-y-4">
+                <p className="text-xs font-extrabold text-ink flex items-center gap-2"><ShieldCheck size={14} className="text-accent" /> Driver License</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">License No. *</label>
+                    <input className="input-base w-full" placeholder="DL-VA-00000" value={form.licenseNumber} onChange={e => set('licenseNumber', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Expiry Date *</label>
+                    <input className="input-base w-full" type="date" value={form.licenseExpiry} onChange={e => set('licenseExpiry', e.target.value)} />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-bg rounded-xl p-4 border border-line-2 space-y-4">
+                <p className="text-xs font-extrabold text-ink flex items-center gap-2"><FileCheck size={14} className="text-primary" /> Commercial Insurance</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Policy No. *</label>
+                    <input className="input-base w-full" placeholder="INS-00000" value={form.insurancePolicy} onChange={e => set('insurancePolicy', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Expiry Date *</label>
+                    <input className="input-base w-full" type="date" value={form.insuranceExpiry} onChange={e => set('insuranceExpiry', e.target.value)} />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-bg rounded-xl p-4 border border-line-2 space-y-4">
+                <p className="text-xs font-extrabold text-ink flex items-center gap-2"><Star size={14} className="text-warning" /> NEMT Certification</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Cert No. *</label>
+                    <input className="input-base w-full" placeholder="NEMT-VA-00000" value={form.certNumber} onChange={e => set('certNumber', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Expiry Date *</label>
+                    <input className="input-base w-full" type="date" value={form.certExpiry} onChange={e => set('certExpiry', e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Make *</label>
+                  <input className="input-base w-full" placeholder="Ford" value={form.vehicleMake} onChange={e => set('vehicleMake', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Model *</label>
+                  <input className="input-base w-full" placeholder="Transit" value={form.vehicleModel} onChange={e => set('vehicleModel', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Year *</label>
+                  <input className="input-base w-full" type="number" placeholder="2023" value={form.vehicleYear} onChange={e => set('vehicleYear', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Plate No. *</label>
+                  <input className="input-base w-full font-mono" placeholder="VA · 0AA-0000" value={form.vehiclePlate} onChange={e => set('vehiclePlate', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Color</label>
+                  <input className="input-base w-full" placeholder="White" value={form.vehicleColor} onChange={e => set('vehicleColor', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Vehicle Type *</label>
+                  <select className="input-base w-full" value={form.vehicleType} onChange={e => set('vehicleType', e.target.value)}>
+                    {VEHICLE_TYPES.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="bg-primary-tint/30 border border-primary/10 rounded-xl p-4">
+                <p className="text-xs font-bold text-ink mb-1">⚠️ Note</p>
+                <p className="text-xs text-ink-3">The new driver will receive an email invitation to set up their password. Their account will be inactive until they complete onboarding.</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-line-2 flex items-center justify-between">
+          <button onClick={onClose} className="text-sm font-bold text-ink-4 hover:text-ink transition-colors">Cancel</button>
+          <div className="flex gap-3">
+            {step > 1 && <Button variant="outline" onClick={() => setStep(s => s - 1)}>← Back</Button>}
+            {step < 3
+              ? <Button variant="primary" onClick={() => setStep(s => s + 1)}>Continue →</Button>
+              : <Button variant="primary" icon={UserPlus} onClick={() => { onSave(form); onClose(); }}>Create Account</Button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Drivers = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedDriverId, setSelectedDriverId] = useState('DRV-2024-8421');
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const filteredDrivers = drivers.filter(d => {
     if (activeTab === 'on_duty') return d.onDuty;
@@ -43,12 +218,22 @@ const Drivers = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      {showAddModal && (
+        <AddDriverModal
+          onClose={() => setShowAddModal(false)}
+          onSave={(data) => {
+            console.log('New driver data:', data);
+            // TODO: Wire to API POST /drivers
+          }}
+        />
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Drivers</h1>
-          <p className="text-ink-3 font-medium">Manage driver pool and vehicle assignments</p>
+          <p className="text-ink-3 font-medium">Manage driver accounts and compliance</p>
         </div>
-        <Button variant="primary" icon={Plus}>Onboard New Driver</Button>
+        <Button variant="primary" icon={UserPlus} onClick={() => setShowAddModal(true)}>Create Driver Account</Button>
       </div>
 
       <div className="flex items-center gap-1 border-b border-line-2">
@@ -107,7 +292,6 @@ const Drivers = () => {
         <div className="lg:col-span-7 overflow-y-auto pr-2">
           {selectedDriver ? (
             <Card className="overflow-hidden">
-              {/* Header */}
               <div className="bg-gradient-to-r from-primary to-primary-dark p-6 h-32 relative">
                 <div className="absolute -bottom-8 left-6">
                   <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-lg">
@@ -134,23 +318,21 @@ const Drivers = () => {
                   </div>
                 </div>
 
-                {/* Today's Stats */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-bg rounded-xl p-4 border border-line-2">
+                  <div className="bg-bg rounded-xl p-4 border border-line-2 text-center">
                     <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Today's Trips</p>
                     <p className="text-lg font-bold text-ink">{selectedDriver.tripsToday}</p>
                   </div>
-                  <div className="bg-bg rounded-xl p-4 border border-line-2">
+                  <div className="bg-bg rounded-xl p-4 border border-line-2 text-center">
                     <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Completed</p>
                     <p className="text-lg font-bold text-accent">{selectedDriver.completedToday}</p>
                   </div>
-                  <div className="bg-bg rounded-xl p-4 border border-line-2">
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Remaining</p>
-                    <p className="text-lg font-bold text-ink">{selectedDriver.tripsToday - selectedDriver.completedToday}</p>
+                  <div className="bg-bg rounded-xl p-4 border border-line-2 text-center">
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Total Trips</p>
+                    <p className="text-lg font-bold text-ink">{selectedDriver.totalTrips.toLocaleString()}</p>
                   </div>
                 </div>
 
-                {/* Contact */}
                 <section>
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Contact Information</h4>
                   <div className="space-y-3">
@@ -165,7 +347,6 @@ const Drivers = () => {
                   </div>
                 </section>
 
-                {/* Vehicle */}
                 <section>
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Vehicle Assignment</h4>
                   <Card className="p-4 flex items-center gap-4 bg-tint/10 border-primary/10">
@@ -180,7 +361,6 @@ const Drivers = () => {
                   </Card>
                 </section>
 
-                {/* Counties */}
                 <section>
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Service Counties</h4>
                   <div className="flex flex-wrap gap-2">
@@ -193,7 +373,6 @@ const Drivers = () => {
                   </div>
                 </section>
 
-                {/* Documents */}
                 <section>
                   <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Documents & Compliance</h4>
                   <div className="space-y-3">
@@ -236,4 +415,7 @@ const Drivers = () => {
   );
 };
 
+
 export default Drivers;
+
+
