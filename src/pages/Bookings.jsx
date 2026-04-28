@@ -203,33 +203,35 @@ const Bookings = () => {
                     <Button variant="outline" size="sm" icon={Phone}>Call Rider</Button>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="bg-bg rounded-xl p-3 border border-line-2">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
+                    <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Reason</p>
-                      <p className="text-xs font-bold text-ink truncate">{selectedBooking.reason || 'Not specified'}</p>
+                      <p className="text-sm font-bold text-ink truncate">{selectedBooking.reason || 'Not specified'}</p>
                     </div>
-                    <div className="bg-bg rounded-xl p-3 border border-line-2">
+                    <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Trip Type</p>
-                      <p className="text-xs font-bold text-ink">
+                      <p className="text-sm font-bold text-ink flex items-center gap-2">
                         {tripTypeLabel(selectedBooking.type)}
-                        {selectedBooking.returnType === 'will_call' && <span className="text-warning ml-1">(Will Call)</span>}
+                        {selectedBooking.returnType === 'will_call' && <span className="text-[10px] bg-warning-light text-warning-dark px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Will Call</span>}
                       </p>
                     </div>
-                    <div className="bg-bg rounded-xl p-3 border border-line-2">
+                    <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Passengers</p>
-                      <p className="text-xs font-bold text-ink">{selectedBooking.passengers || 1} • {selectedBooking.mobility}</p>
+                      <p className="text-sm font-bold text-ink flex items-center gap-2">
+                        {selectedBooking.passengers || 1} <span className="text-ink-4">•</span> {selectedBooking.mobility}
+                      </p>
                     </div>
-                    <div className="bg-bg rounded-xl p-3 border border-line-2">
+                    <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Pickup Time</p>
-                      <p className="text-xs font-bold text-ink">{formatDateTime(selectedBooking.scheduledTime)}</p>
+                      <p className="text-sm font-bold text-ink">{formatDateTime(selectedBooking.scheduledTime)}</p>
                     </div>
-                    <div className="bg-bg rounded-xl p-3 border border-line-2">
+                    <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Appt Time</p>
-                      <p className="text-xs font-bold text-primary">{selectedBooking.appointmentTime || 'N/A'}</p>
+                      <p className="text-sm font-bold text-primary">{selectedBooking.appointmentTime || 'N/A'}</p>
                     </div>
-                    <div className="bg-bg rounded-xl p-3 border border-line-2">
+                    <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Auth ID</p>
-                      <p className="text-xs font-bold font-mono text-ink truncate">{selectedBooking.authId}</p>
+                      <p className="text-sm font-bold font-mono text-ink truncate">{selectedBooking.authId}</p>
                     </div>
                   </div>
                 </section>
