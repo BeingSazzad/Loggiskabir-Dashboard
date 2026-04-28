@@ -54,8 +54,11 @@ const isVehicleMatch = (driver, booking) => {
 };
 
 const ManualTripModal = ({ onClose, onSave }) => {
+  const [userType, setUserType] = useState('new');
   const [form, setForm] = useState({
-    riderName: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
     phone: '',
     pickup: '',
     dropoff: '',
@@ -64,12 +67,15 @@ const ManualTripModal = ({ onClose, onSave }) => {
     type: 'one_way',
   });
 
+  const inputClass = "w-full bg-white border border-line rounded-xl py-3 px-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none";
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const fullName = `${form.firstName} ${form.middleName ? form.middleName + ' ' : ''}${form.lastName}`.trim();
     onSave({
       ...form,
       id: `LOGISS-${Math.floor(1000 + Math.random() * 9000)}`,
-      rider: { name: form.riderName, initials: form.riderName.split(' ').map(n => n[0]).join(''), phone: form.phone },
+      rider: { name: fullName || 'Unknown Rider', initials: form.firstName ? form.firstName[0] + (form.lastName ? form.lastName[0] : '') : 'UN', phone: form.phone },
       status: 'pending_review',
       submittedTime: new Date().toISOString(),
     });
@@ -77,58 +83,108 @@ const ManualTripModal = ({ onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col">
+    <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 md:p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line-2">
-          <h3 className="text-lg font-bold text-ink">New Manual Trip Entry</h3>
+          <h3 className="text-lg font-bold text-ink">Manual Booking Entry</h3>
           <button onClick={onClose} className="p-2 hover:bg-bg rounded-lg text-ink-4"><X size={20} /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Rider Name</label>
-              <input required className="input-base w-full" value={form.riderName} onChange={e => setForm({ ...form, riderName: e.target.value })} placeholder="Full Name" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Phone</label>
-              <input className="input-base w-full" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="(804) 555-0000" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Mobility</label>
-              <select className="input-base w-full" value={form.mobility} onChange={e => setForm({ ...form, mobility: e.target.value })}>
-                <option>Ambulatory</option>
-                <option>Wheelchair</option>
-                <option>Stretcher</option>
-                <option>Cane</option>
-              </select>
-            </div>
-            <div className="col-span-2 relative">
-              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Pickup Address</label>
-              <input required className="input-base w-full" value={form.pickup} onChange={e => setForm({ ...form, pickup: e.target.value })} placeholder="Type to search address..." />
-              <div className="absolute right-3 top-8 text-ink-4"><Search size={14} /></div>
-            </div>
-            <div className="col-span-2 relative">
-              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Dropoff Address</label>
-              <input required className="input-base w-full" value={form.dropoff} onChange={e => setForm({ ...form, dropoff: e.target.value })} placeholder="Type to search address..." />
-              <div className="absolute right-3 top-8 text-ink-4"><Search size={14} /></div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Scheduled Date & Time</label>
-              <input required type="datetime-local" className="input-base w-full" value={form.scheduledTime} onChange={e => setForm({ ...form, scheduledTime: e.target.value })} />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Trip Type</label>
-              <select className="input-base w-full" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                <option value="one_way">One Way</option>
-                <option value="round_trip">Round Trip</option>
-              </select>
-            </div>
+        <div className="overflow-y-auto p-6 scrollbar-hide">
+          <div className="flex items-center bg-bg p-1 rounded-xl mb-6">
+            <button 
+              type="button"
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${userType === 'new' ? 'bg-white shadow-sm text-ink' : 'text-ink-4 hover:text-ink-2'}`}
+              onClick={() => setUserType('new')}
+            >
+              New Rider
+            </button>
+            <button 
+              type="button"
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${userType === 'existing' ? 'bg-white shadow-sm text-ink' : 'text-ink-4 hover:text-ink-2'}`}
+              onClick={() => setUserType('existing')}
+            >
+              Existing Rider
+            </button>
           </div>
-          <div className="pt-4 flex gap-3">
-            <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
-            <Button variant="primary" type="submit" className="flex-1">Create Booking</Button>
-          </div>
-        </form>
+
+          <form id="manual-booking-form" onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="text-xs font-black text-ink uppercase tracking-widest border-b border-line-2 pb-2">Rider Information</h4>
+              
+              {userType === 'existing' ? (
+                <div className="relative">
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Search Rider</label>
+                  <input className={inputClass} placeholder="Search by name or phone..." />
+                  <div className="absolute right-4 top-[26px] text-ink-4"><Search size={18} /></div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">First Name *</label>
+                    <input required className={inputClass} value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} placeholder="First" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Middle Name</label>
+                    <input className={inputClass} value={form.middleName} onChange={e => setForm({ ...form, middleName: e.target.value })} placeholder="Middle (Opt)" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Last Name *</label>
+                    <input required className={inputClass} value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} placeholder="Last" />
+                  </div>
+                  <div className="md:col-span-3">
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Phone Number</label>
+                    <input className={inputClass} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="(804) 555-0000" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4 pt-2">
+              <h4 className="text-xs font-black text-ink uppercase tracking-widest border-b border-line-2 pb-2">Trip Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 relative">
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Pickup Address *</label>
+                  <input required className={inputClass} value={form.pickup} onChange={e => setForm({ ...form, pickup: e.target.value })} placeholder="Enter pickup location" />
+                  <div className="absolute right-4 top-[26px] text-ink-4"><MapPin size={18} /></div>
+                </div>
+                <div className="md:col-span-2 relative">
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Dropoff Address *</label>
+                  <input required className={inputClass} value={form.dropoff} onChange={e => setForm({ ...form, dropoff: e.target.value })} placeholder="Enter dropoff location" />
+                  <div className="absolute right-4 top-[26px] text-ink-4"><MapPin size={18} /></div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Date & Time *</label>
+                  <input required type="datetime-local" className={inputClass} value={form.scheduledTime} onChange={e => setForm({ ...form, scheduledTime: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Trip Type</label>
+                  <select className={inputClass} value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+                    <option value="one_way">One Way</option>
+                    <option value="round_trip">Round Trip</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Mobility Requirements</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {['Ambulatory', 'Wheelchair', 'Stretcher', 'Cane'].map(m => (
+                      <div 
+                        key={m}
+                        onClick={() => setForm({ ...form, mobility: m })}
+                        className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${form.mobility === m ? 'border-primary bg-primary-tint/10 text-primary ring-1 ring-primary' : 'border-line hover:border-line-2 bg-white text-ink-3'}`}
+                      >
+                        <span className="text-xs font-bold">{m}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div className="px-6 py-4 border-t border-line-2 bg-bg flex gap-3 mt-auto shrink-0 rounded-b-2xl">
+          <Button variant="ghost" className="flex-1 bg-white border border-line" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" type="submit" form="manual-booking-form" className="flex-1">Create Booking</Button>
+        </div>
       </div>
     </div>
   );
@@ -274,6 +330,7 @@ const Bookings = ({ setPage }) => {
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Route</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Type</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Cost</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Created</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
                   </tr>
@@ -333,6 +390,12 @@ const Bookings = ({ setPage }) => {
                       </td>
                       <td className="px-6 py-6">
                         <span className="text-sm font-black font-mono text-ink">{money(booking.cost)}</span>
+                      </td>
+                      <td className="px-6 py-6 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-ink">{booking.submittedTime ? formatShortDate(booking.submittedTime) : '-'}</span>
+                          <span className="text-[10px] font-semibold text-ink-3 mt-0.5">{booking.submittedTime ? formatTime(booking.submittedTime) : '-'}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-6 whitespace-nowrap">
                         <div className="flex flex-col">
@@ -413,7 +476,7 @@ const Bookings = ({ setPage }) => {
       </div>
 
       {selectedTrips.length > 0 && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-8 duration-500">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-8 duration-500">
           <div className="bg-ink text-white px-8 py-5 rounded-[2.5rem] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.4)] flex items-center gap-10 border border-white/10 backdrop-blur-xl">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-black text-lg">

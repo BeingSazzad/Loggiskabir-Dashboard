@@ -8,6 +8,12 @@
   }
 }
 
+@layer components {
+  .input-base {
+    @apply bg-white border border-line rounded-xl px-3 py-2 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:bg-bg disabled:text-ink-4 disabled:cursor-not-allowed;
+  }
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 300ms ease-out forwards;
