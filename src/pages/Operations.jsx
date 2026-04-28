@@ -2,7 +2,8 @@ import React from 'react';
 import { 
   Truck, Users, BarChart3, AlertTriangle,
   ChevronRight, Clock, MapPin, CheckCircle2,
-  Circle, Loader2, XCircle, FileWarning, UserPlus
+  Circle, Loader2, XCircle, FileWarning, UserPlus,
+  CalendarDays
 } from 'lucide-react';
 import { Card, StatCard, Avatar, Badge, TripStatusBadge } from '../components/UI';
 import { opsStats, trips, drivers, applications, reports } from '../data/mockData';
@@ -43,6 +44,61 @@ const Operations = ({ setPage }) => {
         <StatCard label="Drivers On Duty" value={`${opsStats.driversOnDuty}/${opsStats.driversTotal}`} sub="3 available · 1 in trip" icon={Users} accent="accent" />
         <StatCard label="Completion Rate" value={`${opsStats.completionRate}%`} sub="★ 4.83 avg rating" icon={BarChart3} accent="accent" trend="+2.1% vs last week" />
         <StatCard label="Action Required" value={opsStats.pendingReview + openReports.length} sub={`${pendingTrips.length} bookings · ${openReports.length} reports`} icon={AlertTriangle} accent="warning" />
+      </div>
+
+      {/* Quick Actions Strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <button
+          onClick={() => setPage('bookings')}
+          className="flex items-center gap-3 bg-warning-light/60 hover:bg-warning-light border border-warning/20 rounded-xl px-4 py-3 transition-colors group text-left"
+        >
+          <div className="w-9 h-9 bg-warning/20 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Clock size={18} className="text-warning-dark" />
+          </div>
+          <div>
+            <p className="text-xs font-extrabold text-ink">Review Bookings</p>
+            <p className="text-[10px] font-bold text-warning-dark">{pendingTrips.length} awaiting approval</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setPage('live')}
+          className="flex items-center gap-3 bg-accent-light/40 hover:bg-accent-light/70 border border-accent/20 rounded-xl px-4 py-3 transition-colors group text-left"
+        >
+          <div className="w-9 h-9 bg-accent/20 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-accent pulse-dot" />
+          </div>
+          <div>
+            <p className="text-xs font-extrabold text-ink">Live Map</p>
+            <p className="text-[10px] font-bold text-accent">{activeTrips.filter(t => t.status === 'in_trip').length} trip in progress</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setPage('schedule')}
+          className="flex items-center gap-3 bg-primary-tint/40 hover:bg-primary-tint/70 border border-primary/10 rounded-xl px-4 py-3 transition-colors group text-left"
+        >
+          <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <CalendarDays size={18} className="text-primary" />
+          </div>
+          <div>
+            <p className="text-xs font-extrabold text-ink">Fleet Schedule</p>
+            <p className="text-[10px] font-bold text-primary">{activeTrips.filter(t => t.status === 'assigned').length} assigned today</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setPage('reports')}
+          className="flex items-center gap-3 bg-urgent-light/40 hover:bg-urgent-light/70 border border-urgent/20 rounded-xl px-4 py-3 transition-colors group text-left"
+        >
+          <div className="w-9 h-9 bg-urgent/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FileWarning size={18} className="text-urgent" />
+          </div>
+          <div>
+            <p className="text-xs font-extrabold text-ink">Open Reports</p>
+            <p className="text-[10px] font-bold text-urgent">{openReports.length} need attention</p>
+          </div>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
