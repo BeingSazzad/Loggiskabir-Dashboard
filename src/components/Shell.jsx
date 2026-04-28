@@ -82,14 +82,14 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
                 active={currentPage === 'live'} 
                 onClick={() => setPage('live')} 
               />
+              <NavItem 
+                icon={Users} 
+                label="Drivers" 
+                active={currentPage === 'drivers'} 
+                onClick={() => setPage('drivers')} 
+              />
               {role === 'admin' && (
                 <>
-                  <NavItem 
-                    icon={Users} 
-                    label="Drivers" 
-                    active={currentPage === 'drivers'} 
-                    onClick={() => setPage('drivers')} 
-                  />
                   <NavItem 
                     icon={FileCheck} 
                     label="Applications" 
@@ -119,14 +119,12 @@ const Shell = ({ children, currentPage, setPage, role, onLogout }) => {
                 active={currentPage === 'schedule'} 
                 onClick={() => setPage('schedule')} 
               />
-              {role === 'admin' && (
-                <NavItem 
-                  icon={Car} 
-                  label="Fleet" 
-                  active={currentPage === 'fleet'} 
-                  onClick={() => setPage('fleet')} 
-                />
-              )}
+              <NavItem 
+                icon={Car} 
+                label="Fleet" 
+                active={currentPage === 'fleet'} 
+                onClick={() => setPage('fleet')} 
+              />
             </div>
           </div>
         </nav>

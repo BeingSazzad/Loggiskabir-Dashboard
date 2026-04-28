@@ -34,7 +34,7 @@ function App() {
   }
 
   // Route protection for dispatcher
-  if (role === 'dispatcher' && ['drivers', 'applications', 'reports', 'settings', 'fleet'].includes(page)) {
+  if (role === 'dispatcher' && ['applications', 'reports', 'settings'].includes(page)) {
     setPage('operations');
   }
 
@@ -48,7 +48,7 @@ function App() {
   return (
     <Shell currentPage={page} setPage={setPage} role={role} onLogout={handleLogout}>
       <div className="animate-fade-in">
-        <PageComponent setPage={setPage} />
+        <PageComponent setPage={setPage} role={role} />
       </div>
     </Shell>
   );

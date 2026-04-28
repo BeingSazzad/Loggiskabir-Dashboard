@@ -191,7 +191,7 @@ const AddDriverModal = ({ onClose, onSave }) => {
   );
 };
 
-const Drivers = () => {
+const Drivers = ({ role }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedDriverId, setSelectedDriverId] = useState('DRV-2024-8421');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -233,7 +233,9 @@ const Drivers = () => {
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Drivers</h1>
           <p className="text-ink-3 font-medium">Manage driver accounts and compliance</p>
         </div>
-        <Button variant="primary" icon={UserPlus} onClick={() => setShowAddModal(true)}>Create Driver Account</Button>
+        {role === 'admin' && (
+          <Button variant="primary" icon={UserPlus} onClick={() => setShowAddModal(true)}>Create Driver Account</Button>
+        )}
       </div>
 
       <div className="flex items-center gap-1 border-b border-line-2">

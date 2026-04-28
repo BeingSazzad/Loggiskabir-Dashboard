@@ -267,7 +267,7 @@ const VehicleCard = ({ vehicle, allDrivers, onAssignDriver }) => {
   );
 };
 
-const Fleet = () => {
+const Fleet = ({ role }) => {
   const [localVehicles, setLocalVehicles] = useState(initialVehicles);
   const [filter, setFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -306,7 +306,9 @@ const Fleet = () => {
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Fleet Management</h1>
           <p className="text-ink-3 font-medium">Manage vehicles, assignments, and compliance</p>
         </div>
-        <Button variant="primary" size="sm" icon={Truck} onClick={() => setShowAddModal(true)}>Add Vehicle</Button>
+        {role === 'admin' && (
+          <Button variant="primary" size="sm" icon={Truck} onClick={() => setShowAddModal(true)}>Add Vehicle</Button>
+        )}
       </div>
 
       {/* KPI Strip */}
