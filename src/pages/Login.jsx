@@ -30,8 +30,8 @@ const Login = ({ setRole }) => {
           className="absolute inset-0 w-full h-full object-cover z-0"
         />
         <div className="relative z-20 text-left p-16 w-full max-w-2xl mt-auto">
-          <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white mb-6 border border-white/20">
-            <Truck size={32} />
+          <div className="mb-8">
+            <img src="/logo.png" alt="Logiss Rides" className="h-24 w-auto drop-shadow-lg bg-white/80 p-2 rounded-xl backdrop-blur-sm" />
           </div>
           <h1 className="font-display font-extrabold text-5xl tracking-tight text-white mb-4 leading-tight">
             Logistics &<br/>Fleet Operations
@@ -47,10 +47,7 @@ const Login = ({ setRole }) => {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex flex-col items-center mb-10">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg mb-4">
-              <Truck size={24} />
-            </div>
-            <h1 className="font-display font-extrabold text-2xl tracking-tight text-ink">LOGISS</h1>
+            <img src="/logo.png" alt="Logiss Rides" className="h-20 w-auto" />
           </div>
 
           {step === 1 ? (

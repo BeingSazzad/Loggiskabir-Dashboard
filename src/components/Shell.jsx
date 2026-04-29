@@ -64,10 +64,8 @@ const Shell = ({ children, page, setPage, role, onLogout }) => {
       {/* Sidebar */}
       <aside className="w-[260px] bg-white border-r border-line fixed h-full flex flex-col z-20 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.05)]">
         <div className="p-6 flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-            <Truck size={22} />
-          </div>
-          <div>
+          <img src="/logo.png" alt="Logiss Rides" className="h-12 w-auto" />
+          <div className="hidden">
             <h1 className="font-display font-extrabold text-2xl tracking-tight text-ink leading-none">LOGISS</h1>
             <span className="text-[10px] font-bold tracking-[0.2em] text-ink-4 uppercase">
               {role === 'admin' ? 'Admin Portal' : 'Dispatcher'}

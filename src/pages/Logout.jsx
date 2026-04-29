@@ -16,9 +16,7 @@ const Logout = ({ onBackToLogin }) => {
         </p>
 
         <div className="bg-bg/50 rounded-2xl p-6 border border-line-2 mb-8 flex items-center gap-4">
-          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm">
-            <Truck size={24} />
-          </div>
+          <img src="/logo.png" alt="Logiss Rides" className="h-10 w-auto" />
           <div className="text-left">
             <p className="text-xs font-bold text-ink-4 uppercase tracking-widest leading-none mb-1">LOGISS Console</p>
             <p className="text-sm font-bold text-ink">v1.0.4 Production Build</p>
