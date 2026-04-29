@@ -22,7 +22,8 @@ import {
   Lock,
   FileText,
   CreditCard,
-  UserPlus
+  UserPlus,
+  Activity
 } from 'lucide-react';
 import { Avatar, Badge, Button } from './UI';
 import { trips, drivers } from '../data/mockData';
