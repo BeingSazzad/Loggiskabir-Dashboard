@@ -11,183 +11,343 @@ import { formatTime, formatShortDate, formatDateTime, tripTypeLabel, money } fro
 
 const TripDetailsModal = ({ trip, onClose }) => {
   const [editMode, setEditMode] = useState(false);
-  const [editedTime, setEditedTime] = useState(trip.scheduledTime.slice(11, 16));
+  const [editedTime, setEditedTime] = useState(trip.scheduledTime ? trip.scheduledTime.slice(11, 16) : '');
   const [editedDriverId, setEditedDriverId] = useState(trip.driverId);
   
-  // Robust search for driver (handling both string and number IDs)
   const driver = drivers.find(d => String(d.id) === String(editedDriverId));
   const canEdit = !['completed', 'cancelled', 'in_trip', 'en_route', 'arrived'].includes(trip.status);
 
   return (
-    <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 sm:p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-line-2 bg-bg/50">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 border-b border-line-2 bg-bg relative">
+          <div className="flex items-center gap-4 mb-4 sm:mb-0">
             <TripStatusBadge status={trip.status} />
             <div>
-              <h2 className="text-lg font-extrabold font-display text-ink uppercase tracking-tight">Trip #{trip.id}</h2>
-              <p className="text-xs font-bold text-ink-3">{formatDateTime(trip.scheduledTime)}</p>
+              <h2 className="text-xl font-extrabold font-display text-ink uppercase tracking-tight flex items-center gap-2">
+                Trip #{trip.id}
+                {trip.rating && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full flex items-center gap-1"><TrendingUp size={12}/> ★ {trip.rating}</span>}
+              </h2>
+              <p className="text-xs font-bold text-ink-3 mt-1">Submitted: {trip.submittedTime ? formatDateTime(trip.submittedTime) : 'N/A'}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {canEdit && !editMode && (
               <Button variant="outline" size="sm" onClick={() => setEditMode(true)}>Modify Trip</Button>
             )}
             {editMode && (
               <Button variant="primary" size="sm" onClick={() => {
-                // Apply changes to the trip object
                 trip.driverId = editedDriverId;
                 trip.scheduledTime = trip.scheduledTime.slice(0, 11) + editedTime + trip.scheduledTime.slice(16);
                 if (trip.status === 'pending_review' || !trip.status) trip.status = 'assigned';
                 setEditMode(false);
               }}>Save Changes</Button>
             )}
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-ink-4 hover:text-ink transition-colors">
+            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-line-2 hover:bg-line-2 hover:text-ink transition-colors text-ink-4 shadow-sm">
               <X size={20} />
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Content Body */}
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+          
+          {trip.cancelReason && (
+            <div className="mb-6 bg-urgent-light/40 border border-urgent/20 p-4 rounded-xl flex items-start gap-3">
+              <XCircle className="text-urgent shrink-0 mt-0.5" size={18} />
+              <div>
+                <p className="text-xs font-black text-urgent uppercase tracking-widest mb-1">Cancellation Reason</p>
+                <p className="text-sm font-medium text-ink">{trip.cancelReason}</p>
+              </div>
+            </div>
+          )}
 
-            {/* Left Column: Route & Rider */}
-            <div className="space-y-6">
-              {/* Schedule Edit Section */}
-              {editMode && (
-                <section className="bg-primary-tint/20 p-4 rounded-2xl border border-primary/20 animate-in slide-in-from-top-2">
-                  <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Clock size={12} /> Reschedule Trip
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1">
-                      <label className="block text-[9px] font-bold text-ink-3 uppercase mb-1">New Scheduled Time</label>
-                      <input 
-                        type="time" 
-                        value={editedTime} 
-                        onChange={(e) => setEditedTime(e.target.value)}
-                        className="w-full bg-white border border-line rounded-xl px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
-                      />
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Left Col: Trip Details & Rider Info */}
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Trip Overview */}
+              <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
+                <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Calendar size={14} /> Trip Overview
+                </h3>
+                
+                {editMode && (
+                  <div className="mb-5 p-4 bg-primary-tint/10 rounded-xl border border-primary/20">
+                    <label className="block text-[10px] font-bold text-ink-3 uppercase mb-1">Reschedule Time</label>
+                    <input 
+                      type="time" 
+                      value={editedTime} 
+                      onChange={(e) => setEditedTime(e.target.value)}
+                      className="w-full max-w-xs bg-white border border-line rounded-xl px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                    />
                   </div>
-                </section>
-              )}
+                )}
 
-              {/* Route */}
-              <section>
-                <h3 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Navigation size={12} /> Route Anatomy</h3>
-                <Card className="p-4 bg-bg border-line-2 relative overflow-hidden">
-                  <div className="absolute left-7 top-7 bottom-7 w-0.5 bg-line-2"></div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Scheduled Date</p>
+                    <p className="text-sm font-bold text-ink">{trip.scheduledTime ? formatShortDate(trip.scheduledTime) : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Scheduled Time</p>
+                    <p className="text-sm font-bold text-ink">{trip.scheduledTime ? formatTime(trip.scheduledTime) : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Appointment</p>
+                    <p className="text-sm font-bold text-primary">{trip.appointmentTime || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Trip Type</p>
+                    <p className="text-sm font-bold text-ink">{tripTypeLabel(trip.type)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Reason</p>
+                    <p className="text-sm font-medium text-ink">{trip.reason || 'Medical Visit'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Est. Distance</p>
+                    <p className="text-sm font-medium text-ink">{trip.distance || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Est. Duration</p>
+                    <p className="text-sm font-medium text-ink">{trip.duration || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Return Type</p>
+                    <p className="text-sm font-medium text-ink capitalize">{trip.returnType ? trip.returnType.replace('_', ' ') : 'N/A'}</p>
+                  </div>
+                </div>
+              </section>
 
-                  <div className="flex gap-4 relative z-10 mb-6">
-                    <div className="w-6 h-6 rounded-full bg-primary-light text-primary flex items-center justify-center flex-shrink-0 border-2 border-bg shadow-sm">
+              {/* Route Anatomy */}
+              <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
+                <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Navigation size={14} /> Route & Timeline
+                </h3>
+                
+                <div className="relative pl-4 space-y-6">
+                  <div className="absolute left-6 top-3 bottom-3 w-0.5 bg-line-2"></div>
+
+                  <div className="relative z-10 flex gap-4">
+                    <div className="w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
                     </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-0.5">Pickup</p>
-                      <p className="text-sm font-bold text-ink">{trip.pickup}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Pickup Location</p>
+                        {trip.actualPickup && <Badge variant="neutral" className="text-[9px]">Actual: {trip.actualPickup}</Badge>}
+                      </div>
+                      <p className="text-sm font-bold text-ink leading-snug max-w-lg">{trip.pickup}</p>
                     </div>
                   </div>
 
-                  <div className="flex gap-4 relative z-10">
-                    <div className="w-6 h-6 rounded-full bg-accent-light text-accent flex items-center justify-center flex-shrink-0 border-2 border-bg shadow-sm">
-                      <MapPin size={12} className="text-accent" />
+                  {trip.stop && (
+                    <div className="relative z-10 flex gap-4">
+                      <div className="w-5 h-5 rounded-full bg-white border-2 border-accent flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                        <div className="w-1.5 h-1.5 bg-accent"></div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Intermediate Stop</p>
+                          {trip.actualStop && <Badge variant="neutral" className="text-[9px]">Actual: {trip.actualStop}</Badge>}
+                        </div>
+                        <p className="text-sm font-bold text-ink leading-snug max-w-lg">{trip.stop}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-0.5">Dropoff</p>
-                      <p className="text-sm font-bold text-ink">{trip.dropoff}</p>
+                  )}
+
+                  <div className="relative z-10 flex gap-4">
+                    <div className="w-5 h-5 rounded-full bg-white border-2 border-urgent flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                      <MapPin size={10} className="text-urgent" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-0.5">Drop-off Location</p>
+                        {trip.actualDropoff ? <Badge variant="neutral" className="text-[9px]">Actual: {trip.actualDropoff}</Badge> : trip.actualArrived ? <Badge variant="neutral" className="text-[9px]">Arrived: {trip.actualArrived}</Badge> : null}
+                      </div>
+                      <p className="text-sm font-bold text-ink leading-snug max-w-lg">{trip.dropoff}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2 pt-4 border-t border-line-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-9" icon={Phone}>Call Rider</Button>
-                    <Button variant="outline" size="sm" className="flex-1 h-9" icon={MessageSquare}>Message</Button>
-                  </div>
-                </Card>
+                </div>
               </section>
 
-              {/* Rider */}
-              <section>
-                <h3 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest mb-3 flex items-center gap-1.5"><User size={12} /> Passenger Information</h3>
-                <Card className="p-4 border-line-2 flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
+              {/* Rider Info */}
+              <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
+                <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <User size={14} /> Passenger Information
+                </h3>
+                
+                <div className="flex flex-col sm:flex-row gap-6">
+                  <div className="flex items-center gap-4 border-r border-line-2 pr-6">
                     <Avatar initials={trip.rider.initials} size="lg" />
                     <div>
-                      <h4 className="text-base font-extrabold text-ink">{trip.rider.name}</h4>
-                      <Badge variant="neutral">{tripTypeLabel(trip.type)}</Badge>
+                      <h4 className="text-lg font-extrabold text-ink">{trip.rider.name}</h4>
+                      <p className="text-xs text-ink-4 mt-0.5 font-medium">{trip.rider.phone || 'No phone provided'}</p>
                     </div>
                   </div>
-                </Card>
+                  
+                  <div className="flex-1 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Age</p>
+                      <p className="text-sm font-bold text-ink">{trip.rider.age || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Mobility Need</p>
+                      <p className="text-sm font-bold text-ink flex items-center gap-1.5">
+                        <Badge variant="primary">{trip.mobility || 'Ambulatory'}</Badge>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Passengers</p>
+                      <p className="text-sm font-bold text-ink">{trip.passengers || 1}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Escort/Attendant</p>
+                      <p className="text-sm font-bold text-ink">{trip.escort || 'None'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {trip.notes && (
+                  <div className="mt-5 p-4 bg-bg rounded-xl border border-line-2">
+                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Special Instructions / Notes</p>
+                    <p className="text-sm font-medium text-ink">{trip.notes}</p>
+                  </div>
+                )}
               </section>
+
             </div>
 
-            {/* Right Column: Assigned Asset & Financials */}
+            {/* Right Col: Driver & Financials */}
             <div className="space-y-6">
-
-              {/* Fleet & Driver */}
-              <section>
-                <div className="flex items-center justify-between mb-3">
-                   <h3 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest flex items-center gap-1.5"><TruckIcon size={12} /> Fleet Assignment</h3>
-                   {editMode && <Badge variant="warning">Editing</Badge>}
+              
+              {/* Driver Assignment */}
+              <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                    <TruckIcon size={14} /> Fleet & Driver
+                  </h3>
+                  {editMode && <Badge variant="warning">Editing</Badge>}
                 </div>
-                
+
                 {editMode ? (
-                  <Card className="p-4 border-primary border-2 bg-primary-tint/5">
-                    <p className="text-[9px] font-bold text-ink-3 uppercase mb-3">Select New Driver</p>
-                    <div className="space-y-2">
-                      {drivers.slice(0, 4).map(d => (
-                        <button 
-                          key={d.id}
-                          onClick={() => setEditedDriverId(d.id)}
-                          className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all ${editedDriverId === d.id ? 'bg-primary text-white shadow-md' : 'hover:bg-bg border border-transparent hover:border-line-2'}`}
-                        >
+                  <div className="space-y-2">
+                    {drivers.slice(0, 5).map(d => (
+                      <button 
+                        key={d.id}
+                        onClick={() => setEditedDriverId(d.id)}
+                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all border ${editedDriverId === d.id ? 'bg-primary/5 border-primary text-primary shadow-sm' : 'hover:bg-bg border-line-2'}`}
+                      >
+                        <div className="flex items-center gap-3">
                           <Avatar initials={d.initials} size="xs" />
-                          <span className="text-xs font-bold">{d.name}</span>
-                          {editedDriverId === d.id && <CheckCircle2 size={14} className="ml-auto" />}
-                        </button>
-                      ))}
-                    </div>
-                  </Card>
+                          <div className="text-left">
+                            <p className="text-xs font-bold leading-tight">{d.name}</p>
+                            <p className="text-[10px] font-medium opacity-80">{d.vehicle.type}</p>
+                          </div>
+                        </div>
+                        {editedDriverId === d.id && <CheckCircle2 size={16} />}
+                      </button>
+                    ))}
+                  </div>
                 ) : (
                   driver ? (
-                    <Card className="p-4 border-line-2 border-primary/20 bg-primary-tint/10">
-                      <div className="flex items-center gap-3 mb-4">
+                    <div className="space-y-5">
+                      <div className="flex items-center gap-3">
                         <Avatar initials={driver.initials} size="md" online={driver.onDuty} />
-                        <div className="flex-1">
-                          <p className="text-sm font-extrabold text-ink">{driver.name}</p>
-                          <p className="text-[10px] text-ink-4 font-mono uppercase">{driver.vehicle.plate} · {driver.vehicle.type}</p>
+                        <div>
+                          <p className="text-base font-extrabold text-ink">{driver.name}</p>
+                          <p className="text-xs text-ink-3 font-medium">{driver.phone}</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                         <Button variant="outline" size="sm" className="flex-1 h-9" icon={Phone}>Call</Button>
-                         {canEdit && <Button variant="ghost" size="sm" className="flex-1 h-9 text-primary" onClick={() => setEditMode(true)}>Reassign</Button>}
+                      
+                      <div className="bg-bg rounded-xl p-3 border border-line-2 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-ink-4 uppercase">Vehicle Type</span>
+                          <span className="text-xs font-bold text-ink">{driver.vehicle.type}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-ink-4 uppercase">Plate Number</span>
+                          <span className="text-xs font-bold font-mono text-ink bg-white px-2 py-0.5 rounded border border-line">{driver.vehicle.plate}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-ink-4 uppercase">Driver Rating</span>
+                          <span className="text-xs font-bold text-ink">★ {driver.rating}</span>
+                        </div>
                       </div>
-                    </Card>
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1" icon={Phone}>Call</Button>
+                        <Button variant="outline" size="sm" className="flex-1" icon={MessageSquare}>Message</Button>
+                      </div>
+                    </div>
                   ) : (
-                    <Card className="p-8 border-line-2 border-dashed bg-bg/50 flex flex-col items-center justify-center text-center">
-                      <User size={24} className="text-ink-4 mb-2 opacity-50" />
-                      <p className="text-sm font-bold text-ink">No driver assigned</p>
-                      {canEdit && <Button variant="primary" size="sm" className="mt-3" onClick={() => setEditMode(true)}>Assign Now</Button>}
-                    </Card>
+                    <div className="py-8 flex flex-col items-center justify-center text-center bg-bg/50 border border-dashed border-line-2 rounded-xl">
+                      <Car size={32} className="text-ink-4 mb-3 opacity-50" />
+                      <p className="text-sm font-bold text-ink mb-1">Unassigned Request</p>
+                      <p className="text-xs text-ink-4 mb-4">No driver has been assigned yet.</p>
+                      {canEdit && <Button variant="primary" size="sm" onClick={() => setEditMode(true)}>Assign Driver</Button>}
+                    </div>
                   )
                 )}
               </section>
 
-              {/* Financials */}
-              <section>
-                <h3 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest mb-3 flex items-center gap-1.5"><CreditCard size={12} /> Billing Details</h3>
-                <Card className="p-4 border-line-2">
-                  <div className="flex items-center justify-between">
+              {/* Financial & Billing */}
+              <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
+                <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <CreditCard size={14} /> Billing & Payment
+                </h3>
+                
+                <div className="space-y-4">
+                  <div className="flex items-end justify-between bg-bg p-4 rounded-xl border border-line-2">
                     <div>
-                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Total Cost</p>
-                      <p className="text-xl font-extrabold text-primary">{money(trip.cost)}</p>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Total Trip Cost</p>
+                      <p className="text-2xl font-extrabold text-primary leading-none">{money(trip.cost)}</p>
                     </div>
-                    <Badge variant={trip.status === 'completed' ? 'accent' : 'warning'}>
-                      {trip.status === 'completed' ? 'Paid' : 'Pending'}
+                    <Badge variant={trip.paymentStatus === 'Paid' || trip.paymentStatus === 'Approved' || trip.paymentStatus === 'charged' ? 'accent' : 'warning'}>
+                      {trip.paymentStatus || 'Pending'}
                     </Badge>
                   </div>
-                </Card>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Payment Method</p>
+                      <p className="text-sm font-bold text-ink truncate" title={trip.paymentMethod || 'N/A'}>{trip.paymentMethod || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Auth / Claim ID</p>
+                      <p className="text-sm font-bold font-mono text-ink truncate" title={trip.authId || 'N/A'}>{trip.authId || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Action Logs / Audits (Placeholder) */}
+              <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
+                <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Shield size={14} /> Audit Trail
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-line-2 mt-1.5 shrink-0"></div>
+                    <div>
+                      <p className="text-xs font-medium text-ink-3">Trip submitted by <span className="font-bold text-ink">Dispatcher Portal</span></p>
+                      <p className="text-[10px] text-ink-4">{trip.submittedTime ? formatDateTime(trip.submittedTime) : 'N/A'}</p>
+                    </div>
+                  </div>
+                  {trip.driverId && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"></div>
+                      <div>
+                        <p className="text-xs font-medium text-ink-3">Assigned to <span className="font-bold text-ink">{driver?.name || trip.driverId}</span></p>
+                        <p className="text-[10px] text-ink-4">System Auto-log</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </section>
 
             </div>
