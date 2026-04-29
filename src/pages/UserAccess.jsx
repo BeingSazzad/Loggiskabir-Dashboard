@@ -6,46 +6,41 @@ import {
   MoreVertical,
   Mail,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Loader2
 } from 'lucide-react';
 import { Card, Badge, Avatar, Button } from '../components/UI';
+import { useUsers } from '../hooks/useUsers';
 
 const UserAccess = () => {
-  const [users, setUsers] = useState([
-    { id: 'LOG-882', name: 'Admin User', email: 'admin@logiss.com', role: 'admin', status: 'active', lastLogin: 'Just now' },
-    { id: 'LOG-941', name: 'Dispatcher User', email: 'dispatcher@logiss.com', role: 'dispatcher', status: 'active', lastLogin: '2 hours ago' },
-    { id: 'LOG-942', name: 'Sarah Jenkins', email: 's.jenkins@logiss.com', role: 'dispatcher', status: 'active', lastLogin: '1 day ago' },
-    { id: 'LOG-943', name: 'Marcus Cole', email: 'm.cole@logiss.com', role: 'dispatcher', status: 'inactive', lastLogin: '2 weeks ago' }
-  ]);
-
+  const { users, loading, toggleStatus, inviteUser } = useUsers();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteData, setInviteData] = useState({ name: '', email: '', role: 'dispatcher' });
 
-  const handleInvite = (e) => {
+  const handleInvite = async (e) => {
     e.preventDefault();
-    const newUser = {
-      id: `LOG-9${Math.floor(Math.random() * 90) + 10}`,
-      ...inviteData,
-      status: 'active',
-      lastLogin: 'Never'
-    };
-    setUsers([...users, newUser]);
-    setShowInviteModal(false);
-    setInviteData({ name: '', email: '', role: 'dispatcher' });
+    try {
+      await inviteUser(inviteData);
+      setShowInviteModal(false);
+      setInviteData({ name: '', email: '', role: 'dispatcher' });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const toggleStatus = (id) => {
-    setUsers(users.map(u => {
-      if (u.id === id) {
-        if (u.id === 'LOG-882') return u; // Prevent self-deactivation
-        return { ...u, status: u.status === 'active' ? 'inactive' : 'active' };
-      }
-      return u;
-    }));
-  };
+  if (loading && users.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-sm font-bold text-ink-3">Verifying Permissions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">User Access</h1>
@@ -54,8 +49,8 @@ const UserAccess = () => {
         <Button variant="primary" icon={UserPlus} onClick={() => setShowInviteModal(true)}>Invite User</Button>
       </div>
 
-      <Card className="overflow-hidden border-line-2">
-        <div className="overflow-x-auto">
+      <Card className="overflow-hidden border-line-2 shadow-sm">
+        <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left">
             <thead className="bg-bg/50 border-b border-line-2">
               <tr>
@@ -68,7 +63,7 @@ const UserAccess = () => {
             </thead>
             <tbody className="divide-y divide-line-2">
               {users.map(user => (
-                <tr key={user.id} className={`hover:bg-bg/50 transition-colors ${user.status === 'inactive' ? 'opacity-50 grayscale' : ''}`}>
+                <tr key={user.id} className={`hover:bg-bg/50 transition-colors group ${user.status === 'inactive' ? 'opacity-50 grayscale' : ''}`}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <Avatar initials={user.name.split(' ').map(n=>n[0]).join('')} size="sm" />
@@ -105,7 +100,7 @@ const UserAccess = () => {
                     {user.id !== 'LOG-882' && (
                       <button 
                         onClick={() => toggleStatus(user.id)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors border ${user.status === 'active' ? 'text-urgent border-urgent hover:bg-urgent hover:text-white' : 'text-accent border-accent hover:bg-accent hover:text-white'}`}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all border opacity-0 group-hover:opacity-100 ${user.status === 'active' ? 'text-urgent border-urgent hover:bg-urgent hover:text-white' : 'text-accent border-accent hover:bg-accent hover:text-white'}`}
                       >
                         {user.status === 'active' ? 'Revoke Access' : 'Restore Access'}
                       </button>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
   ChevronLeft, ChevronRight, Clock, Truck, Users,
-  Search, AlertTriangle, CheckCircle2, Coffee, X, Wrench
+  Search, AlertTriangle, CheckCircle2, Coffee, X, Wrench, Loader2
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button } from '../components/UI';
-import { drivers, vehicles } from '../data/mockData';
+import { useDrivers } from '../hooks/useDrivers';
+import { useFleet } from '../hooks/useFleet';
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -78,11 +79,16 @@ const StatusUpdateModal = ({ item, date, onClose }) => {
 
 /* ── Schedule Page ───────────────────────────────────────────────── */
 const Schedule = () => {
+  const { drivers, loading: driversLoading } = useDrivers();
+  const { vehicles, loading: fleetLoading } = useFleet();
+
   const [activeTab, setActiveTab]     = useState('driver');
   const [viewMode, setViewMode]       = useState('week');
   const [searchTerm, setSearchTerm]   = useState('');
   const [weekOffset, setWeekOffset]   = useState(0);
   const [editingCell, setEditingCell] = useState(null);
+
+  const loading = driversLoading || fleetLoading;
 
   // Week date labels
   const weekStart = new Date();
@@ -98,7 +104,6 @@ const Schedule = () => {
     return d.getDate() === t.getDate() && d.getMonth() === t.getMonth();
   };
 
-  // Fleet derived from vehicles
   const fleet = vehicles.map(v => ({
     id:       v.id,
     plate:    v.plate,
@@ -115,15 +120,24 @@ const Schedule = () => {
     return item.plate.toLowerCase().includes(q) || item.make.toLowerCase().includes(q);
   });
 
-  // Summary stats
-  const onDutyCount   = drivers.filter(d => d.onDuty).length;
-  const offDutyCount  = drivers.length - onDutyCount;
+  const onDutyCount   = (drivers || []).filter(d => d?.onDuty).length;
+  const offDutyCount  = (drivers || []).length - onDutyCount;
+
+  if (loading && items.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-sm font-bold text-ink-3">Loading Shifts...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 animate-in fade-in duration-500">
       {editingCell && <StatusUpdateModal item={editingCell.item} date={editingCell.date} onClose={() => setEditingCell(null)} />}
 
-      {/* ── Page Header ─────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">
@@ -134,7 +148,6 @@ const Schedule = () => {
           </p>
         </div>
 
-        {/* Week nav */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setWeekOffset(w => w - 1)}
@@ -154,13 +167,12 @@ const Schedule = () => {
         </div>
       </div>
 
-      {/* ── Summary Stats Strip ──────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { icon: Users,        label: 'Total Drivers',  value: drivers.length,  color: 'bg-primary-light text-primary' },
+          { icon: Users,        label: 'Total Drivers',  value: (drivers || []).length,  color: 'bg-primary-light text-primary' },
           { icon: CheckCircle2, label: 'On Duty Today',  value: onDutyCount,     color: 'bg-accent-light text-accent'   },
           { icon: Coffee,       label: 'Off Duty Today', value: offDutyCount,    color: 'bg-bg border text-ink-3'       },
-          { icon: Truck,        label: 'Fleet Vehicles', value: fleet.length,    color: 'bg-primary-light text-primary' },
+          { icon: Truck,        label: 'Fleet Vehicles', value: (fleet || []).length,    color: 'bg-primary-light text-primary' },
         ].map(s => (
           <Card key={s.label} className="p-4 flex items-center gap-4">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${s.color}`}>
@@ -174,7 +186,6 @@ const Schedule = () => {
         ))}
       </div>
 
-      {/* ── Tab Bar + Search ─────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line-2 pb-3">
         <div className="flex gap-1 bg-bg p-1 rounded-xl border border-line-2 w-fit">
           {[
@@ -207,10 +218,7 @@ const Schedule = () => {
         </div>
       </div>
 
-      {/* ── Calendar Grid ────────────────────────────────────────── */}
       <Card className="overflow-hidden border-line-2">
-
-        {/* Column headers */}
         <div className="grid border-b border-line-2 bg-bg/50" style={{ gridTemplateColumns: '220px repeat(7, 1fr)' }}>
           <div className="px-4 py-3 border-r border-line-2">
             <p className="text-[10px] font-bold text-ink-4 uppercase tracking-widest">
@@ -235,9 +243,8 @@ const Schedule = () => {
           ))}
         </div>
 
-        {/* Rows */}
         <div className="divide-y divide-line-2">
-          {filtered.length === 0 && (
+          {filtered.length === 0 && !loading && (
             <div className="py-16 text-center text-sm font-bold text-ink-3">
               No results match your search.
             </div>
@@ -249,7 +256,6 @@ const Schedule = () => {
               className="grid hover:bg-bg/30 transition-colors group"
               style={{ gridTemplateColumns: '220px repeat(7, 1fr)' }}
             >
-              {/* Identity Column */}
               <div className="px-4 py-3 border-r border-line-2 flex items-center gap-3 bg-white group-hover:bg-bg/20 transition-colors">
                 {activeTab === 'driver' ? (
                   <>
@@ -278,7 +284,6 @@ const Schedule = () => {
                 )}
               </div>
 
-              {/* Day Cells */}
               {weekDates.map((d, dayIdx) => {
                 const shift = getShift(idx, dayIdx);
                 return (
@@ -310,7 +315,6 @@ const Schedule = () => {
         </div>
       </Card>
 
-      {/* ── Legend ───────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-4 px-1">
         <div className="flex flex-wrap items-center gap-5">
           {[

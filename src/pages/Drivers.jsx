@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
+import {
   Plus, Search, Phone, Mail, Car, MapPin, ShieldCheck,
   CalendarClock, AlertTriangle, Star, ChevronRight, ExternalLink,
-  X, UserPlus, Truck, FileCheck
+  X, UserPlus, Truck, FileCheck, Users
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button, Pagination } from '../components/UI';
-import { drivers } from '../data/mockData';
+import { useDrivers } from '../hooks/useDrivers';
 
 const COUNTIES = ['Chesterfield', 'Henrico', 'Richmond City', 'Hanover', 'Goochland', 'Powhatan'];
 const VEHICLE_TYPES = ['Ambulatory Van', 'Wheelchair Van', 'Stretcher Van'];
@@ -22,12 +22,35 @@ const EMPTY_FORM = {
 
 const AddDriverModal = ({ onClose, onSave }) => {
   const [form, setForm] = useState(EMPTY_FORM);
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
+  const [stepError, setStepError] = useState('');
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
   const toggleCounty = (county) => set('counties', form.counties.includes(county)
     ? form.counties.filter(c => c !== county)
     : [...form.counties, county]);
+
+  const validateStep = () => {
+    if (step === 1) {
+      if (!form.name) return 'Full name is required';
+      if (!form.email) return 'Email is required';
+      if (!form.phone) return 'Phone number is required';
+      if (form.counties.length === 0) return 'Select at least one service county';
+      return '';
+    }
+    if (step === 2) {
+      if (!form.licenseNumber || !form.licenseExpiry) return 'Driver license details are required';
+      if (!form.insurancePolicy || !form.insuranceExpiry) return 'Insurance details are required';
+      if (!form.certNumber || !form.certExpiry) return 'NEMT certification is required';
+      return '';
+    }
+    if (step === 3) {
+      if (!form.vehicleMake || !form.vehicleModel || !form.vehicleYear) return 'Vehicle make, model, and year are required';
+      if (!form.vehiclePlate) return 'License plate number is required';
+      return '';
+    }
+    return '';
+  };
 
   const steps = ['Personal', 'Documents', 'Vehicle'];
 
@@ -172,13 +195,30 @@ const AddDriverModal = ({ onClose, onSave }) => {
           )}
         </div>
 
+        {stepError && (
+          <div className="mx-6 mb-3 px-4 py-2.5 bg-urgent-light rounded-xl border border-urgent/20 text-xs font-bold text-urgent flex items-center gap-2">
+            <AlertTriangle size={14} className="shrink-0" /> {stepError}
+          </div>
+        )}
         <div className="px-6 py-4 border-t border-line-2 flex items-center justify-between">
           <button onClick={onClose} className="text-sm font-bold text-ink-4 hover:text-ink transition-colors">Cancel</button>
           <div className="flex gap-3">
-            {step > 1 && <Button variant="outline" onClick={() => setStep(s => s - 1)}>← Back</Button>}
+            {step > 1 && (
+              <Button variant="outline" onClick={() => { setStepError(''); setStep(s => s - 1); }}>← Back</Button>
+            )}
             {step < 3
-              ? <Button variant="primary" onClick={() => setStep(s => s + 1)}>Continue →</Button>
-              : <Button variant="primary" icon={UserPlus} onClick={() => { onSave(form); onClose(); }}>Create Account</Button>
+              ? <Button variant="primary" onClick={() => {
+                  const err = validateStep();
+                  if (err) { setStepError(err); return; }
+                  setStepError('');
+                  setStep(s => s + 1);
+                }}>Continue →</Button>
+              : <Button variant="primary" icon={UserPlus} onClick={() => {
+                  const err = validateStep();
+                  if (err) { setStepError(err); return; }
+                  onSave(form);
+                  onClose();
+                }}>Create Account</Button>
             }
           </div>
         </div>
@@ -188,6 +228,7 @@ const AddDriverModal = ({ onClose, onSave }) => {
 };
 
 const Drivers = ({ role }) => {
+  const { drivers, loading, error, addDriver } = useDrivers();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState(null);
@@ -195,19 +236,47 @@ const Drivers = ({ role }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const filteredDrivers = drivers.filter(d => {
-    const matchesSearch = d.name.toLowerCase().includes(search.toLowerCase()) || d.id.toLowerCase().includes(search.toLowerCase());
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-4 duration-300 pb-12">
+         <div className="flex items-center justify-between">
+           <div className="space-y-2">
+             <div className="w-48 h-8 bg-line-2 rounded-xl animate-pulse"></div>
+             <div className="w-64 h-4 bg-line-2 rounded-lg animate-pulse"></div>
+           </div>
+         </div>
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+           {[1,2,3,4].map(i => <div key={i} className="h-24 bg-bg rounded-2xl animate-pulse"></div>)}
+         </div>
+         <div className="h-[400px] bg-bg rounded-2xl animate-pulse"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertTriangle size={48} className="text-urgent mb-4 opacity-50" />
+        <h3 className="text-lg font-bold text-ink mb-2">Failed to load drivers</h3>
+        <p className="text-ink-3 text-sm">{error}</p>
+      </div>
+    );
+  }
+
+  const filteredDrivers = (drivers || []).filter(d => {
+    const nameMatch = (d?.name || '').toLowerCase().includes((search || '').toLowerCase());
+    const idMatch = (d?.id || '').toLowerCase().includes((search || '').toLowerCase());
     let matchesTab = true;
-    if (activeTab === 'on_duty') matchesTab = d.onDuty;
-    if (activeTab === 'off_duty') matchesTab = !d.onDuty;
-    if (activeTab === 'attention') matchesTab = d.pendingDocUpdates > 0;
-    return matchesSearch && matchesTab;
+    if (activeTab === 'on_duty') matchesTab = d?.onDuty;
+    if (activeTab === 'off_duty') matchesTab = !d?.onDuty;
+    if (activeTab === 'attention') matchesTab = (d?.pendingDocUpdates || 0) > 0;
+    return (nameMatch || idMatch) && matchesTab;
   });
 
   const totalPages = Math.ceil(filteredDrivers.length / itemsPerPage);
   const paginatedDrivers = filteredDrivers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const selectedDriver = drivers.find(d => d.id === selectedDriverId);
+  const selectedDriver = (drivers || []).find(d => d.id === selectedDriverId);
 
   const getStatusBadge = (status) => {
     const config = {
@@ -241,7 +310,7 @@ const Drivers = ({ role }) => {
           <div className="bg-gradient-to-r from-primary to-primary-dark p-8 h-40 relative">
             <div className="absolute -bottom-10 left-8">
               <div className="w-28 h-28 rounded-2xl bg-white p-1.5 shadow-xl">
-                <Avatar initials={selectedDriver.initials} size="full" shape="square" className="rounded-xl overflow-hidden" />
+                <Avatar initials={selectedDriver?.initials || '?'} size="full" shape="square" className="rounded-xl overflow-hidden" />
               </div>
             </div>
           </div>
@@ -249,33 +318,33 @@ const Drivers = ({ role }) => {
           <div className="pt-14 px-8 pb-8 space-y-8">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-3xl font-extrabold font-display text-ink leading-tight">{selectedDriver.name}</h2>
+                <h2 className="text-3xl font-extrabold font-display text-ink leading-tight">{selectedDriver?.name || 'Unknown Driver'}</h2>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="font-mono text-sm font-bold text-ink-4 tracking-tight uppercase">{selectedDriver.id}</span>
-                  <span className="text-sm text-ink-3">Member since 2022</span>
+                  <span className="font-mono text-sm font-bold text-ink-4 tracking-tight uppercase">{selectedDriver?.id || '---'}</span>
+                  <span className="text-sm text-ink-3">Member since {selectedDriver?.joinedDate ? new Date(selectedDriver.joinedDate).getFullYear() : '—'}</span>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <span className="flex items-center gap-1.5 text-xl font-bold text-warning">
                   <Star size={20} fill="currentColor" />
-                  {selectedDriver.rating}
+                  {selectedDriver?.rating || 0}
                 </span>
-                {selectedDriver.onDuty && <Badge variant="accent" dot>On Duty</Badge>}
+                {selectedDriver?.onDuty && <Badge variant="accent" dot>On Duty</Badge>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-bg rounded-xl p-5 border border-line-2 text-center">
                 <p className="text-xs font-bold text-ink-4 uppercase tracking-wider mb-1">Today's Trips</p>
-                <p className="text-2xl font-extrabold text-ink">{selectedDriver.tripsToday}</p>
+                <p className="text-2xl font-extrabold text-ink">{selectedDriver?.tripsToday || 0}</p>
               </div>
               <div className="bg-bg rounded-xl p-5 border border-line-2 text-center">
                 <p className="text-xs font-bold text-ink-4 uppercase tracking-wider mb-1">Completed</p>
-                <p className="text-2xl font-extrabold text-accent">{selectedDriver.completedToday}</p>
+                <p className="text-2xl font-extrabold text-accent">{selectedDriver?.completedToday || 0}</p>
               </div>
               <div className="bg-bg rounded-xl p-5 border border-line-2 text-center">
                 <p className="text-xs font-bold text-ink-4 uppercase tracking-wider mb-1">Total Trips</p>
-                <p className="text-2xl font-extrabold text-ink">{selectedDriver.totalTrips.toLocaleString()}</p>
+                <p className="text-2xl font-extrabold text-ink">{(selectedDriver?.totalTrips || 0).toLocaleString()}</p>
               </div>
             </div>
 
@@ -286,11 +355,11 @@ const Drivers = ({ role }) => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-4 p-4 bg-bg rounded-xl border border-line-2">
                       <div className="p-2.5 bg-white rounded-lg text-ink-3 shadow-sm"><Phone size={18} /></div>
-                      <span className="text-base font-bold text-ink">{selectedDriver.phone}</span>
+                      <span className="text-base font-bold text-ink">{selectedDriver?.phone || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-bg rounded-xl border border-line-2">
                       <div className="p-2.5 bg-white rounded-lg text-ink-3 shadow-sm"><Mail size={18} /></div>
-                      <span className="text-base font-bold text-ink">{selectedDriver.email}</span>
+                      <span className="text-base font-bold text-ink">{selectedDriver?.email || 'N/A'}</span>
                     </div>
                   </div>
                 </section>
@@ -298,7 +367,7 @@ const Drivers = ({ role }) => {
                 <section>
                   <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Service Counties</h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedDriver.counties.map(county => (
+                    {(selectedDriver?.counties || []).map(county => (
                       <div key={county} className="flex items-center gap-2 px-4 py-2 bg-bg rounded-full border border-line-2 text-xs font-bold text-ink-2">
                         <MapPin size={14} className="text-ink-4" />
                         {county}
@@ -314,10 +383,10 @@ const Drivers = ({ role }) => {
                   <Card className="p-5 flex items-center gap-5 bg-tint/10 border-primary/10">
                     <div className="p-3.5 bg-primary-light text-primary rounded-xl"><Car size={28} /></div>
                     <div className="flex-1">
-                      <p className="text-base font-bold text-ink">{selectedDriver.vehicle.color} {selectedDriver.vehicle.make}</p>
+                      <p className="text-base font-bold text-ink">{selectedDriver?.vehicle?.color || ''} {selectedDriver?.vehicle?.make || 'No Vehicle'}</p>
                       <div className="flex items-center gap-3 mt-1.5">
-                        <span className="font-mono text-sm font-bold text-ink-3 tracking-tighter uppercase">{selectedDriver.vehicle.plate}</span>
-                        <Badge variant="neutral">{selectedDriver.vehicle.type}</Badge>
+                        <span className="font-mono text-sm font-bold text-ink-3 tracking-tighter uppercase">{selectedDriver?.vehicle?.plate || '---'}</span>
+                        <Badge variant="neutral">{selectedDriver?.vehicle?.type || 'Standard'}</Badge>
                       </div>
                     </div>
                   </Card>
@@ -327,20 +396,20 @@ const Drivers = ({ role }) => {
                   <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Documents & Compliance</h4>
                   <div className="space-y-3">
                     {[
-                      { label: 'Driver License', data: selectedDriver.license },
-                      { label: 'Commercial Insurance', data: selectedDriver.insurance },
-                      { label: 'NEMT Certification', data: selectedDriver.cert }
+                      { label: 'Driver License', data: selectedDriver?.license },
+                      { label: 'Commercial Insurance', data: selectedDriver?.insurance },
+                      { label: 'NEMT Certification', data: selectedDriver?.cert }
                     ].map((doc, idx) => (
                       <div key={idx} className="flex items-center justify-between p-4 bg-bg rounded-xl border border-line-2">
                         <div className="flex items-center gap-4">
-                          {doc.data.status === 'valid' ? <ShieldCheck size={20} className="text-accent" /> : (doc.data.status === 'expiring' ? <CalendarClock size={20} className="text-warning" /> : <AlertTriangle size={20} className="text-urgent" />)}
+                          {doc.data?.status === 'valid' ? <ShieldCheck size={20} className="text-accent" /> : (doc.data?.status === 'expiring' ? <CalendarClock size={20} className="text-warning" /> : <AlertTriangle size={20} className="text-urgent" />)}
                           <div>
                             <p className="text-sm font-bold text-ink">{doc.label}</p>
-                            <p className="text-xs font-mono text-ink-4 uppercase tracking-tighter mt-0.5">{doc.data.number} · Exp {doc.data.expires}</p>
+                            <p className="text-xs font-mono text-ink-4 uppercase tracking-tighter mt-0.5">{doc.data?.number || '---'} · Exp {doc.data?.expires || '---'}</p>
                           </div>
                         </div>
-                        <Badge variant={doc.data.status === 'valid' ? 'accent' : (doc.data.status === 'expiring' ? 'warning' : 'urgent')}>
-                          {doc.data.status}
+                        <Badge variant={doc.data?.status === 'valid' ? 'accent' : (doc.data?.status === 'expiring' ? 'warning' : 'urgent')}>
+                          {doc.data?.status || 'unknown'}
                         </Badge>
                       </div>
                     ))}
@@ -359,7 +428,14 @@ const Drivers = ({ role }) => {
       {showAddModal && (
         <AddDriverModal
           onClose={() => setShowAddModal(false)}
-          onSave={(data) => { console.log('New driver data:', data); }}
+          onSave={async (data) => { 
+            try {
+              await addDriver(data);
+              setShowAddModal(false);
+            } catch (err) {
+              console.error(err);
+            }
+          }}
         />
       )}
 
@@ -377,10 +453,10 @@ const Drivers = ({ role }) => {
       {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Drivers',  value: drivers.length,                                          sub: 'registered accounts',  icon: Users,       color: 'bg-primary-light text-primary' },
-          { label: 'On Duty',        value: drivers.filter(d => d.onDuty).length,                    sub: 'currently active',     icon: Car,         color: 'bg-accent-light text-accent'   },
-          { label: 'In Trip',        value: drivers.filter(d => d.status === 'in_trip').length,      sub: 'on the road now',      icon: Truck,       color: 'bg-primary-light/60 text-primary' },
-          { label: 'Needs Attention',value: drivers.filter(d => d.pendingDocUpdates > 0).length,     sub: 'document issues',      icon: AlertTriangle,color: 'bg-urgent-light text-urgent'  },
+          { label: 'Total Drivers',  value: (drivers || []).length,                                          sub: 'registered accounts',  icon: Users,       color: 'bg-primary-light text-primary' },
+          { label: 'On Duty',        value: (drivers || []).filter(d => d?.onDuty).length,                    sub: 'currently active',     icon: Car,         color: 'bg-accent-light text-accent'   },
+          { label: 'In Trip',        value: (drivers || []).filter(d => d?.status === 'in_trip').length,      sub: 'on the road now',      icon: Truck,       color: 'bg-primary-light/60 text-primary' },
+          { label: 'Needs Attention',value: (drivers || []).filter(d => (d?.pendingDocUpdates || 0) > 0).length,     sub: 'document issues',      icon: AlertTriangle,color: 'bg-urgent-light text-urgent'  },
         ].map(s => (
           <Card key={s.label} className={`p-5 flex items-center gap-4 ${s.label === 'Needs Attention' && s.value > 0 ? 'border-urgent/20' : ''}`}>
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${s.color}`}>
@@ -403,7 +479,7 @@ const Drivers = ({ role }) => {
               { id: 'all',       label: 'All Drivers' },
               { id: 'on_duty',   label: 'On Duty' },
               { id: 'off_duty',  label: 'Off Duty' },
-              { id: 'attention', label: `Needs Attention${drivers.some(d => d.pendingDocUpdates > 0) ? ' (1)' : ''}` },
+              { id: 'attention', label: `Needs Attention${(drivers || []).some(d => (d?.pendingDocUpdates || 0) > 0) ? ' (1)' : ''}` },
             ].map(tab => (
               <button key={tab.id} onClick={() => { setActiveTab(tab.id); setCurrentPage(1); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab.id ? 'bg-white shadow-sm text-primary border border-line' : 'text-ink-3 hover:text-ink'}`}>
@@ -448,26 +524,26 @@ const Drivers = ({ role }) => {
                   </td>
                   <td className="px-5 py-4">{getStatusBadge(driver.status)}</td>
                   <td className="px-5 py-4">
-                    <p className="text-xs font-bold text-ink whitespace-nowrap">{driver.vehicle.make}</p>
-                    <p className="font-mono text-[10px] text-ink-4 uppercase">{driver.vehicle.plate}</p>
+                    <p className="text-xs font-bold text-ink whitespace-nowrap">{driver?.vehicle?.make || '---'}</p>
+                    <p className="font-mono text-[10px] text-ink-4 uppercase">{driver?.vehicle?.plate || '---'}</p>
                   </td>
                   <td className="px-5 py-4">
                     <span className="flex items-center gap-1 text-xs font-bold text-warning">
-                      <Star size={12} fill="currentColor" /> {driver.rating}
+                      <Star size={12} fill="currentColor" /> {driver?.rating || 0}
                     </span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className="text-sm font-bold text-ink">{driver.tripsToday}</span>
-                    <span className="text-ink-4 text-[10px]"> / {driver.completedToday}</span>
+                    <span className="text-sm font-bold text-ink">{driver?.tripsToday || 0}</span>
+                    <span className="text-ink-4 text-[10px]"> / {driver?.completedToday || 0}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className="text-sm font-bold text-ink">{driver.totalTrips.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-ink">{(driver?.totalTrips || 0).toLocaleString()}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className="text-xs font-medium text-ink-3 whitespace-nowrap">{driver.phone}</span>
+                    <span className="text-xs font-medium text-ink-3 whitespace-nowrap">{driver?.phone || '---'}</span>
                   </td>
                   <td className="px-5 py-4">
-                    {driver.pendingDocUpdates > 0 ? (
+                    {(driver?.pendingDocUpdates || 0) > 0 ? (
                       <span className="flex items-center gap-1 text-[10px] font-bold text-urgent bg-urgent-light px-2 py-1 rounded-full w-fit whitespace-nowrap">
                         <AlertTriangle size={10} /> Attention
                       </span>

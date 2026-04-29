@@ -6,6 +6,11 @@ export const vehicles = [
     status: 'in_trip', assignedDriverId: 'DRV-2024-8421',
     mileage: 48200, lastService: '2026-02-10', nextService: '2026-08-10',
     insurance: { policy: 'INS-48291', expires: '2026-02-14', status: 'expiring' },
+    maintenance: [
+      { date: '2026-02-10', type: 'Oil Change & Inspection', cost: 120, mileage: 47100, shop: 'QuickLube' },
+      { date: '2025-11-05', type: 'Tire Rotation', cost: 60, mileage: 42000, shop: 'QuickLube' },
+      { date: '2025-08-15', type: 'Brake Pad Replacement', cost: 450, mileage: 38000, shop: 'Fleet Pros' }
+    ]
   },
   {
     id: 'VEH-002', make: 'Honda Odyssey', model: 'EX-L', year: 2021,
@@ -14,6 +19,10 @@ export const vehicles = [
     status: 'available', assignedDriverId: 'DRV-2024-7710',
     mileage: 62100, lastService: '2026-01-15', nextService: '2026-07-15',
     insurance: { policy: 'INS-39184', expires: '2026-08-30', status: 'valid' },
+    maintenance: [
+      { date: '2026-01-15', type: 'Transmission Fluid Flush', cost: 280, mileage: 61500, shop: 'Master Mechanic' },
+      { date: '2025-10-10', type: 'Battery Replacement', cost: 180, mileage: 55000, shop: 'Fleet Pros' }
+    ]
   },
   {
     id: 'VEH-003', make: 'Toyota Sienna', model: 'XLE', year: 2023,
@@ -58,7 +67,7 @@ export const drivers = [
     insurance: { policy: 'INS-48291', expires: '2026-02-14', status: 'expiring' },
     cert: { number: 'NEMT-VA-3829', expires: '2027-08-12', status: 'valid' },
     counties: ['Chesterfield', 'Henrico', 'Richmond City'],
-    tripsToday: 5, completedToday: 2, pendingDocUpdates: 1 },
+    tripsToday: 5, completedToday: 2, pendingDocUpdates: 1, joinedDate: '2022-03-15', battery: 72, connectivity: 'LTE' },
 
   { id: 'DRV-2024-7710', name: 'Maria Garcia', initials: 'MG', phone: '(804) 555-0224',
     email: 'm.garcia@logiss-drivers.com', rating: 4.8, totalTrips: 967,
@@ -68,7 +77,7 @@ export const drivers = [
     insurance: { policy: 'INS-39184', expires: '2026-08-30', status: 'valid' },
     cert: { number: 'NEMT-VA-2841', expires: '2026-11-15', status: 'valid' },
     counties: ['Henrico', 'Hanover'],
-    tripsToday: 3, completedToday: 1, pendingDocUpdates: 0 },
+    tripsToday: 3, completedToday: 1, pendingDocUpdates: 0, joinedDate: '2022-08-22', battery: 91, connectivity: '5G' },
 
   { id: 'DRV-2024-9082', name: 'James Carter', initials: 'JC', phone: '(804) 555-0341',
     email: 'j.carter@logiss-drivers.com', rating: 4.7, totalTrips: 612,
@@ -78,7 +87,7 @@ export const drivers = [
     insurance: { policy: 'INS-50923', expires: '2026-03-12', status: 'valid' },
     cert: { number: 'NEMT-VA-4019', expires: '2026-05-20', status: 'valid' },
     counties: ['Chesterfield', 'Powhatan'],
-    tripsToday: 4, completedToday: 0, pendingDocUpdates: 0 },
+    tripsToday: 4, completedToday: 0, pendingDocUpdates: 0, joinedDate: '2023-01-10', battery: 45, connectivity: 'LTE' },
 
   { id: 'DRV-2024-6531', name: 'Patricia Lee', initials: 'PL', phone: '(804) 555-0492',
     email: 'p.lee@logiss-drivers.com', rating: 4.9, totalTrips: 1542,
@@ -88,7 +97,7 @@ export const drivers = [
     insurance: { policy: 'INS-29871', expires: '2026-01-10', status: 'expiring' },
     cert: { number: 'NEMT-VA-1208', expires: '2026-04-15', status: 'valid' },
     counties: ['Goochland', 'Henrico'],
-    tripsToday: 0, completedToday: 0, pendingDocUpdates: 0 },
+    tripsToday: 0, completedToday: 0, pendingDocUpdates: 0, joinedDate: '2021-11-05', battery: 88, connectivity: 'LTE' },
 
   { id: 'DRV-2024-4407', name: 'Robert Kim', initials: 'RK', phone: '(804) 555-0117',
     email: 'r.kim@logiss-drivers.com', rating: 4.6, totalTrips: 389,
@@ -98,7 +107,7 @@ export const drivers = [
     insurance: { policy: 'INS-61029', expires: '2025-12-22', status: 'expired' },
     cert: { number: 'NEMT-VA-3712', expires: '2027-07-08', status: 'valid' },
     counties: ['Richmond City', 'Henrico'],
-    tripsToday: 2, completedToday: 2, pendingDocUpdates: 1 },
+    tripsToday: 2, completedToday: 2, pendingDocUpdates: 1, joinedDate: '2024-02-28', battery: 31, connectivity: 'LTE' },
 ];
 
 export const trips = [
@@ -559,3 +568,4 @@ export const opsStats = {
   todaysTrips: 23, inProgress: 1, pendingReview: 3, driversOnDuty: 4, driversTotal: 5,
   completionRate: 96, avgRating: 4.83, willCallStandby: 1, expiringDocuments: 2
 };
+export const mockUsers = [{ id: 'LOG-882', name: 'Admin User', email: 'admin@logiss.com', role: 'admin', status: 'active', lastLogin: 'Just now' }];

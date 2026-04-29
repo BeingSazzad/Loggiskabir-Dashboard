@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   CreditCard, 
   Search, 
@@ -6,30 +6,36 @@ import {
   RotateCcw,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { Card, Badge, Avatar, Button, StatCard } from '../components/UI';
-import { trips } from '../data/mockData';
+import { useTrips } from '../hooks/useTrips';
 import { formatDateTime, formatShortDate, money } from '../utils/helpers';
 
 const Transactions = () => {
+  const { trips, loading } = useTrips();
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [showRefundModal, setShowRefundModal] = useState(null);
 
-  // Generate mock transactions based on trips
-  const transactions = trips.map(t => ({
-    id: `TXN-${t.id.split('-')[1]}`,
-    tripId: t.id,
-    amount: t.cost || 0,
-    date: t.scheduledTime,
-    rider: t.rider,
-    method: 'Credit Card •••• 4242',
-    status: t.status === 'completed' ? 'paid' : t.status === 'cancelled' ? 'refunded' : 'pending'
-  })).sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Generate transactions based on trips
+  const transactions = useMemo(() => {
+    return (trips || []).map(t => ({
+      id: `TXN-${(t?.id || '').split('-')[1] || (t?.id || '').slice(-4)}`,
+      tripId: t?.id || '---',
+      amount: t?.cost || 0,
+      date: t?.scheduledTime,
+      rider: t?.rider || { name: 'Unknown', initials: '?' },
+      method: 'Credit Card •••• 4242',
+      status: t?.status === 'completed' ? 'paid' : t?.status === 'cancelled' ? 'refunded' : 'pending'
+    })).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [trips]);
 
   const filteredData = transactions.filter(t => {
-    const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) || t.tripId.toLowerCase().includes(search.toLowerCase()) || t.rider.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) || 
+                          t.tripId.toLowerCase().includes(search.toLowerCase()) || 
+                          t.rider.name.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filter === 'all' ? true : t.status === filter;
     return matchesSearch && matchesStatus;
   });
@@ -42,8 +48,19 @@ const Transactions = () => {
     setShowRefundModal(null);
   };
 
+  if (loading && trips.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-sm font-bold text-ink-3">Compiling Financial Data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Financial Transactions</h1>
@@ -58,19 +75,19 @@ const Transactions = () => {
         <StatCard label="Total Refunded" value={money(totalRefunds)} icon={RotateCcw} accent="urgent" />
       </div>
 
-      <Card className="overflow-hidden border-line-2">
+      <Card className="overflow-hidden border-line-2 shadow-sm">
         <div className="p-6 border-b border-line-2 bg-bg/30 flex flex-col md:flex-row gap-4 justify-between">
           <div className="relative max-w-md w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4" size={20} />
             <input 
               type="text" 
               placeholder="Search by TXN ID, Trip ID, or Rider..." 
-              className="w-full pl-12 pr-4 py-2.5 bg-white border border-line rounded-xl text-sm focus:ring-4 focus:ring-primary/10 outline-none"
+              className="w-full pl-12 pr-4 py-2.5 bg-white border border-line rounded-xl text-sm focus:ring-4 focus:ring-primary/10 outline-none transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex bg-bg border border-line p-1 rounded-xl">
+          <div className="flex bg-bg border border-line p-1 rounded-xl shadow-inner">
             {['all', 'paid', 'pending', 'refunded'].map(f => (
               <button 
                 key={f}
@@ -83,7 +100,7 @@ const Transactions = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left">
             <thead className="bg-bg/50 border-b border-line-2">
               <tr>
@@ -97,7 +114,7 @@ const Transactions = () => {
             </thead>
             <tbody className="divide-y divide-line-2">
               {filteredData.map(txn => (
-                <tr key={txn.id} className="hover:bg-bg/50 transition-colors">
+                <tr key={txn.id} className="hover:bg-bg/50 transition-colors group">
                   <td className="px-6 py-4">
                     <p className="text-xs font-bold text-ink font-mono">{txn.id}</p>
                     <p className="text-[10px] text-ink-4 font-mono mt-0.5">Ref: {txn.tripId}</p>
@@ -110,7 +127,7 @@ const Transactions = () => {
                     <Avatar initials={txn.rider.initials} size="xs" />
                     <div>
                       <p className="text-xs font-bold text-ink">{txn.rider.name}</p>
-                      <p className="text-[10px] text-ink-4 mt-0.5">{txn.method}</p>
+                      <p className="text-[10px] text-ink-4 mt-0.5 whitespace-nowrap">{txn.method}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -123,7 +140,7 @@ const Transactions = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     {txn.status === 'paid' && (
-                      <Button variant="outline" size="sm" className="text-urgent hover:bg-urgent-light border-urgent/20" onClick={() => setShowRefundModal(txn)}>
+                      <Button variant="outline" size="sm" className="text-urgent hover:bg-urgent-light border-urgent/20 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setShowRefundModal(txn)}>
                         Issue Refund
                       </Button>
                     )}

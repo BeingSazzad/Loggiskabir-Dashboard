@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import {
-  Search, Filter, Download, ChevronRight, MapPin, ArrowRight,
+  Search, Download, ChevronRight, MapPin, ArrowRight,
   Clock, User, Truck as TruckIcon, CheckCircle2, XCircle, TrendingUp,
-  BarChart3, X, Calendar, Phone, CreditCard, Shield, Navigation, Car,
-  MoveRight, Repeat, RefreshCcw, MessageSquare, UserPlus
+  X, Calendar, Phone, CreditCard, Shield, Navigation, Car,
+  MoveRight, Repeat, MessageSquare, UserPlus, Loader2
 } from 'lucide-react';
-import { Card, StatCard, Badge, Avatar, TripStatusBadge, Pagination, Button } from '../components/UI';
-import { trips, drivers } from '../data/mockData';
+import { Card, Badge, Avatar, TripStatusBadge, Pagination, Button } from '../components/UI';
+import { useTrips } from '../hooks/useTrips';
+import { useDrivers } from '../hooks/useDrivers';
 import { formatTime, formatShortDate, formatDateTime, tripTypeLabel, money } from '../utils/helpers';
 
-const TripDetailsModal = ({ trip, onClose }) => {
+const TripDetailsModal = ({ trip, drivers, onClose }) => {
   const [editMode, setEditMode] = useState(false);
-  const [editedTime, setEditedTime] = useState(trip.scheduledTime ? trip.scheduledTime.slice(11, 16) : '');
+  const [editedTime, setEditedTime] = useState(trip?.scheduledTime ? trip.scheduledTime.slice(11, 16) : '');
   const [editedDriverId, setEditedDriverId] = useState(trip.driverId);
   
-  const driver = drivers.find(d => String(d.id) === String(editedDriverId));
+  const driver = (drivers || []).find(d => String(d?.id) === String(editedDriverId));
   const canEdit = !['completed', 'cancelled', 'in_trip', 'en_route', 'arrived'].includes(trip.status);
 
   return (
@@ -39,6 +40,7 @@ const TripDetailsModal = ({ trip, onClose }) => {
             )}
             {editMode && (
               <Button variant="primary" size="sm" onClick={() => {
+                // In a real app, this would be an API call
                 trip.driverId = editedDriverId;
                 trip.scheduledTime = trip.scheduledTime.slice(0, 11) + editedTime + trip.scheduledTime.slice(16);
                 if (trip.status === 'pending_review' || !trip.status) trip.status = 'assigned';
@@ -183,31 +185,31 @@ const TripDetailsModal = ({ trip, onClose }) => {
                 
                 <div className="flex flex-col sm:flex-row gap-6">
                   <div className="flex items-center gap-4 border-r border-line-2 pr-6">
-                    <Avatar initials={trip.rider.initials} size="lg" />
+                    <Avatar initials={trip?.rider?.initials || '?'} size="lg" />
                     <div>
-                      <h4 className="text-lg font-extrabold text-ink">{trip.rider.name}</h4>
-                      <p className="text-xs text-ink-4 mt-0.5 font-medium">{trip.rider.phone || 'No phone provided'}</p>
+                      <h4 className="text-lg font-extrabold text-ink">{trip?.rider?.name || 'Unknown Rider'}</h4>
+                      <p className="text-xs text-ink-4 mt-0.5 font-medium">{trip?.rider?.phone || 'No phone provided'}</p>
                     </div>
                   </div>
                   
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Age</p>
-                      <p className="text-sm font-bold text-ink">{trip.rider.age || 'N/A'}</p>
+                      <p className="text-sm font-bold text-ink">{trip?.rider?.age || 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Mobility Need</p>
                       <p className="text-sm font-bold text-ink flex items-center gap-1.5">
-                        <Badge variant="primary">{trip.mobility || 'Ambulatory'}</Badge>
+                        <Badge variant="primary">{trip?.mobility || 'Ambulatory'}</Badge>
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Passengers</p>
-                      <p className="text-sm font-bold text-ink">{trip.passengers || 1}</p>
+                      <p className="text-sm font-bold text-ink">{trip?.passengers || 1}</p>
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Escort/Attendant</p>
-                      <p className="text-sm font-bold text-ink">{trip.escort || 'None'}</p>
+                      <p className="text-sm font-bold text-ink">{trip?.escort || 'None'}</p>
                     </div>
                   </div>
                 </div>
@@ -325,7 +327,7 @@ const TripDetailsModal = ({ trip, onClose }) => {
                 </div>
               </section>
 
-              {/* Action Logs / Audits (Placeholder) */}
+              {/* Action Logs / Audits */}
               <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
                 <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Shield size={14} /> Audit Trail
@@ -359,30 +361,34 @@ const TripDetailsModal = ({ trip, onClose }) => {
 };
 
 const TripHistory = () => {
-  const historyTrips = trips.filter(t => t.status !== 'pending_review');
+  const { trips, loading: tripsLoading } = useTrips();
+  const { drivers, loading: driversLoading } = useDrivers();
+
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
-  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [selectedTripId, setSelectedTripId] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
-  const [timeFilter, setTimeFilter] = useState('all'); // 'today', 'tomorrow', 'week', 'month', 'all'
+  const [timeFilter, setTimeFilter] = useState('all'); 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const loading = tripsLoading || driversLoading;
+
+  const historyTrips = (trips || []).filter(t => t?.status !== 'pending_review');
+
   const filteredTrips = historyTrips.filter(trip => {
     const matchesSearch =
-      trip.id.toLowerCase().includes(search.toLowerCase()) ||
-      trip.rider.name.toLowerCase().includes(search.toLowerCase()) ||
-      (trip.pickup && trip.pickup.toLowerCase().includes(search.toLowerCase())) ||
-      (trip.dropoff && trip.dropoff.toLowerCase().includes(search.toLowerCase()));
+      (trip?.id || '').toLowerCase().includes(search.toLowerCase()) ||
+      (trip?.rider?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (trip?.pickup && trip.pickup.toLowerCase().includes(search.toLowerCase())) ||
+      (trip?.dropoff && trip.dropoff.toLowerCase().includes(search.toLowerCase()));
 
-    // Status Filter
     let matchesStatus = true;
     if (filter === 'active') matchesStatus = ['in_trip', 'en_route', 'arrived', 'assigned'].includes(trip.status);
     else if (filter === 'completed') matchesStatus = trip.status === 'completed';
     else if (filter === 'cancelled') matchesStatus = trip.status === 'cancelled';
 
-    // Time Filter Logic
     let matchesTime = true;
     if (timeFilter !== 'all') {
       const now = new Date();
@@ -412,12 +418,14 @@ const TripHistory = () => {
   const sortedTrips = [...filteredTrips].sort((a, b) => {
     if (sortBy === 'newest') return new Date(b.scheduledTime) - new Date(a.scheduledTime);
     if (sortBy === 'oldest') return new Date(a.scheduledTime) - new Date(b.scheduledTime);
-    if (sortBy === 'rider') return a.rider.name.localeCompare(b.rider.name);
+    if (sortBy === 'rider') return (a?.rider?.name || '').localeCompare(b?.rider?.name || '');
     return 0;
   });
 
   const totalPages = Math.ceil(sortedTrips.length / itemsPerPage);
   const paginatedTrips = sortedTrips.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const selectedTrip = selectedTripId ? (trips || []).find(t => t?.id === selectedTripId) : null;
 
   const toggleSelectAll = () => {
     if (selectedIds.length === paginatedTrips.length) setSelectedIds([]);
@@ -436,16 +444,14 @@ const TripHistory = () => {
 
     if (tripsToExport.length === 0) return;
 
-    // Define headers
     const headers = ['Trip ID', 'Date', 'Time', 'Rider Name', 'Driver Name', 'Pickup', 'Dropoff', 'Status', 'Cost', 'Type'];
 
-    // Map data to rows
     const rows = tripsToExport.map(trip => [
       trip.id,
       formatShortDate(trip.scheduledTime),
       formatTime(trip.scheduledTime),
-      trip.rider.name,
-      drivers.find(d => d.id === trip.driverId)?.name || 'Unassigned',
+      trip?.rider?.name || 'Unknown',
+      drivers.find(d => String(d.id) === String(trip.driverId))?.name || 'Unassigned',
       `"${trip.pickup}"`,
       `"${trip.dropoff}"`,
       trip.status,
@@ -453,13 +459,11 @@ const TripHistory = () => {
       trip.type
     ]);
 
-    // Combine headers and rows
     const csvContent = [
       headers.join(','),
       ...rows.map(row => row.join(','))
     ].join('\n');
 
-    // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -469,18 +473,28 @@ const TripHistory = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setSelectedIds([]); // Clear selection after export
+    setSelectedIds([]); 
   };
 
-
+  if (loading && trips.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-sm font-bold text-ink-3">Accessing Trip Records...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {selectedTrip && (
         <TripDetailsModal 
           key={selectedTrip.id} 
           trip={selectedTrip} 
-          onClose={() => setSelectedTrip(null)} 
+          drivers={drivers}
+          onClose={() => setSelectedTripId(null)} 
         />
       )}
 
@@ -494,12 +508,8 @@ const TripHistory = () => {
         </div>
       </div>
 
-
-
       <Card className="overflow-hidden border-line-2 shadow-sm">
-        {/* Advanced Filter Bar */}
         <div className="p-6 border-b border-line-2 bg-bg/30 space-y-5">
-          {/* Row 1: Search & Sort */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex-1 max-w-2xl relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4" size={20} />
@@ -557,8 +567,7 @@ const TripHistory = () => {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-bg/50 border-b border-line-2">
@@ -585,7 +594,7 @@ const TripHistory = () => {
               {paginatedTrips.map(trip => (
                 <tr
                   key={trip.id}
-                  onClick={() => setSelectedTrip(trip)}
+                  onClick={() => setSelectedTripId(trip.id)}
                   className={`hover:bg-primary-tint/20 transition-colors group cursor-pointer ${selectedIds.includes(trip.id) ? 'bg-primary-tint/10' : ''}`}
                 >
                   <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
@@ -614,12 +623,12 @@ const TripHistory = () => {
                   <td className="px-6 py-4">
                     {trip.driverId ? (
                       <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                         <Avatar initials={drivers.find(d => String(d.id) === String(trip.driverId))?.initials} size="xs" />
-                         <span className="text-xs font-bold text-ink">{drivers.find(d => String(d.id) === String(trip.driverId))?.name}</span>
+                          <Avatar initials={(drivers || []).find(d => String(d?.id) === String(trip?.driverId))?.initials} size="xs" />
+                          <span className="text-xs font-bold text-ink whitespace-nowrap">{(drivers || []).find(d => String(d?.id) === String(trip?.driverId))?.name}</span>
                       </div>
                     ) : (
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setSelectedTrip(trip); }}
+                        onClick={(e) => { e.stopPropagation(); setSelectedTripId(trip.id); }}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/5 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all text-[10px] font-bold uppercase tracking-wider"
                       >
                         <UserPlus size={12} /> Assign
@@ -667,7 +676,7 @@ const TripHistory = () => {
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
           />
-          {filteredTrips.length === 0 && (
+          {filteredTrips.length === 0 && !loading && (
             <div className="p-12 text-center text-ink-4">
               <Search size={48} className="mx-auto mb-4 opacity-20" />
               <p className="font-bold">No trips found</p>

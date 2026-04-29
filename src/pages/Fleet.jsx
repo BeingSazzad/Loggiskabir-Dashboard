@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Truck, AlertTriangle, CheckCircle2, Clock,
   Wrench, ShieldCheck, X, Check, Plus, Search,
   User, ChevronRight, FileText, Calendar, Gauge,
-  CreditCard, MapPin, Star, Hash, Shield, Info
+  CreditCard, MapPin, Star, Hash, Shield, Info, Loader2
 } from 'lucide-react';
 import { Card, Badge, Avatar, Button, Pagination } from '../components/UI';
-import { vehicles as initialVehicles, drivers } from '../data/mockData';
+import { useFleet } from '../hooks/useFleet';
+import { useDrivers } from '../hooks/useDrivers';
+import { useTrips } from '../hooks/useTrips';
 
 const VEHICLE_TYPES = ['Ambulatory Van', 'Wheelchair Van', 'Stretcher Van'];
 
@@ -17,7 +20,6 @@ const EMPTY_FORM = {
   insuranceProvider: '', insurancePolicy: '', insuranceExpiry: '',
 };
 
-/* ─── Add Vehicle Modal ─────────────────────────────────────────── */
 const AddVehicleModal = ({ onClose, onSave }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [step, setStep] = useState(1);
@@ -125,213 +127,8 @@ const AddVehicleModal = ({ onClose, onSave }) => {
   );
 };
 
-/* ─── Vehicle Detail Drawer ─────────────────────────────────────── */
-const DetailRow = ({ label, value, mono = false, icon: Icon }) => (
-  <div className="flex items-start justify-between py-3 border-b border-line-2 last:border-0">
-    <div className="flex items-center gap-2 text-[10px] font-bold text-ink-4 uppercase tracking-widest">
-      {Icon && <Icon size={11} className="text-ink-4" />}
-      {label}
-    </div>
-    <span className={`text-xs font-bold text-ink text-right max-w-[55%] ${mono ? 'font-mono' : ''}`}>{value}</span>
-  </div>
-);
-
-const VehicleDetailView = ({ vehicle, allDrivers, onClose, onAssign, role }) => {
-  const driver = allDrivers.find(d => d.id === vehicle.assignedDriverId);
-  const s = statusConfig[vehicle.status] || statusConfig.available;
-  const insVariant = { valid: 'accent', expiring: 'warning', expired: 'urgent' }[vehicle.insurance.status] || 'neutral';
-  const nextServiceDays = Math.ceil((new Date(vehicle.nextService) - new Date()) / 86400000);
-  const serviceWarning = nextServiceDays < 60;
-  const [assigning, setAssigning] = useState(false);
-
-  return (
-    <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-4 duration-300 pb-12">
-      <div className="flex items-center justify-between">
-        <button 
-          onClick={onClose}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-ink-3 hover:text-ink hover:bg-white rounded-xl transition-all shadow-sm border border-line-2 bg-bg"
-        >
-          ← Back to Fleet List
-        </button>
-        <div className="flex gap-3">
-          {role === 'admin' && <Button variant="outline" icon={Wrench}>Log Service</Button>}
-          {role === 'admin' && <Button variant="primary">Edit Vehicle</Button>}
-        </div>
-      </div>
-
-      <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-primary to-primary-dark p-8 h-40 relative">
-          <div className="absolute -bottom-10 left-8">
-            <div className="w-28 h-28 rounded-2xl bg-white p-1.5 shadow-xl flex items-center justify-center">
-              <div className="w-full h-full bg-primary-light rounded-xl flex items-center justify-center text-primary border border-primary/10">
-                <Truck size={48} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-14 px-8 pb-8 space-y-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-3xl font-extrabold font-display text-ink leading-tight">
-                {vehicle.year} {vehicle.make} {vehicle.model}
-              </h2>
-              <div className="flex items-center gap-3 mt-1.5">
-                <span className="font-mono text-sm font-bold text-ink-4 tracking-tight uppercase">{vehicle.plate}</span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-bg border border-line-2 rounded-full text-[10px] font-bold text-ink-4 font-mono">
-                  <Hash size={10} /> {vehicle.id}
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
-                vehicle.status === 'available'   ? 'bg-accent-light text-accent border-accent/20' :
-                vehicle.status === 'in_trip'     ? 'bg-primary-tint/40 text-primary border-primary/20' :
-                vehicle.status === 'break'       ? 'bg-warning-light text-warning-dark border-warning/20' :
-                vehicle.status === 'maintenance' ? 'bg-urgent-light text-urgent border-urgent/20' :
-                'bg-bg text-ink-3 border-line-2'
-              }`}>
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
-                {s.label}
-              </span>
-              <Badge variant={insVariant} className="capitalize">{vehicle.insurance.status} Insurance</Badge>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-8">
-              <section>
-                <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Vehicle Specifications</h4>
-                <div className="bg-bg rounded-2xl border border-line-2 px-4 py-2">
-                  <DetailRow label="Make & Model" value={`${vehicle.make} ${vehicle.model}`} />
-                  <DetailRow label="Year" value={vehicle.year} />
-                  <DetailRow label="Color" value={vehicle.color || '—'} />
-                  <DetailRow label="Type" value={vehicle.type} />
-                  <DetailRow label="Passenger Seats" value={`${vehicle.seats} seats`} />
-                  <DetailRow label="VIN" value={vehicle.vin} mono icon={Hash} />
-                  <DetailRow label="License Plate" value={vehicle.plate} mono />
-                </div>
-              </section>
-
-              <section>
-                <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Mileage & Maintenance</h4>
-                <div className="bg-bg rounded-2xl border border-line-2 px-4 py-2">
-                  <DetailRow label="Current Mileage" value={`${vehicle.mileage.toLocaleString()} mi`} mono />
-                  <DetailRow label="Last Service" value={vehicle.lastService} icon={Calendar} />
-                  <DetailRow
-                    label="Next Service Due"
-                    value={
-                      <span className={serviceWarning ? 'text-warning-dark' : ''}>
-                        {vehicle.nextService}{serviceWarning ? ` (${nextServiceDays}d)` : ''}
-                      </span>
-                    }
-                    icon={Wrench}
-                  />
-                </div>
-                {serviceWarning && (
-                  <div className="mt-3 flex items-center gap-3 px-4 py-3 bg-warning-light/40 border border-warning/20 rounded-xl">
-                    <AlertTriangle size={16} className="text-warning-dark flex-shrink-0" />
-                    <p className="text-xs font-bold text-warning-dark">Service overdue in {nextServiceDays} days — schedule now</p>
-                  </div>
-                )}
-              </section>
-            </div>
-
-            <div className="space-y-8">
-              <section>
-                <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4 flex items-center justify-between">
-                  Assigned Driver
-                  {driver && role === 'admin' && (
-                    <button onClick={() => setAssigning(!assigning)} className="text-xs text-primary hover:underline">Change</button>
-                  )}
-                </h4>
-
-                {!assigning ? (
-                  driver ? (
-                    <div className="bg-bg rounded-2xl border border-line-2 p-5 flex items-center gap-4">
-                      <Avatar initials={driver.initials} size="xl" online={driver.onDuty} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-base font-extrabold text-ink">{driver.name}</p>
-                        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                          <span className="text-xs font-bold text-ink-4 flex items-center gap-1">
-                            <Star size={12} className="text-warning fill-warning" /> {driver.rating}
-                          </span>
-                          <span className="text-xs font-bold text-ink-4 px-2 py-1 bg-white rounded-md">{driver.totalTrips} trips</span>
-                          <Badge variant={driver.onDuty ? 'accent' : 'neutral'} dot>
-                            {driver.onDuty ? 'On Duty' : 'Off Duty'}
-                          </Badge>
-                        </div>
-                        <p className="text-xs font-bold text-ink-4 mt-2 flex items-center gap-1.5"><Phone size={12}/> {driver.phone}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-bg rounded-2xl border-2 border-dashed border-line p-8 text-center">
-                      <User size={32} className="text-ink-4 mx-auto mb-3" />
-                      <p className="text-sm font-bold text-ink-3 mb-4">No driver assigned to this vehicle</p>
-                      {role === 'admin' && <Button variant="primary-light" onClick={() => setAssigning(true)}>Assign Driver</Button>}
-                    </div>
-                  )
-                ) : (
-                  <div className="bg-bg rounded-2xl border border-line-2 divide-y divide-line-2 overflow-hidden shadow-sm max-h-80 overflow-y-auto">
-                    {allDrivers.map(d => (
-                      <button
-                        key={d.id}
-                        onClick={() => { onAssign(vehicle.id, d.id); setAssigning(false); }}
-                        className="w-full flex items-center gap-3 px-5 py-4 hover:bg-white transition-colors text-left"
-                      >
-                        <Avatar initials={d.initials} size="md" online={d.onDuty} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-ink truncate">{d.name}</p>
-                          <p className="text-xs text-ink-4 font-bold capitalize mt-0.5">{d.status.replace('_', ' ')} · ★{d.rating}</p>
-                        </div>
-                        {vehicle.assignedDriverId === d.id && <Check size={18} className="text-accent flex-shrink-0" />}
-                      </button>
-                    ))}
-                    {vehicle.assignedDriverId && (
-                      <button
-                        onClick={() => { onAssign(vehicle.id, null); setAssigning(false); }}
-                        className="w-full px-5 py-4 text-sm font-bold text-urgent hover:bg-urgent-light/20 transition-colors text-left"
-                      >
-                        Remove Assignment
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setAssigning(false)}
-                      className="w-full px-5 py-3 text-sm font-bold text-ink-4 hover:text-ink text-center transition-colors bg-white sticky bottom-0"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </section>
-
-              <section>
-                <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Commercial Insurance</h4>
-                <div className="bg-bg rounded-2xl border border-line-2 px-4 py-2">
-                  <DetailRow label="Policy Number" value={vehicle.insurance.policy} mono icon={FileText} />
-                  <DetailRow label="Status" value={
-                    <Badge variant={insVariant} className="capitalize">{vehicle.insurance.status}</Badge>
-                  } />
-                  <DetailRow label="Expiry Date" value={vehicle.insurance.expires} icon={Calendar} />
-                </div>
-                {vehicle.insurance.status !== 'valid' && (
-                  <div className="mt-3 flex items-center gap-3 px-4 py-3 bg-urgent-light/40 border border-urgent/20 rounded-xl">
-                    <AlertTriangle size={16} className="text-urgent flex-shrink-0" />
-                    <p className="text-xs font-bold text-urgent">
-                      Insurance {vehicle.insurance.status} — renew by {vehicle.insurance.expires}
-                    </p>
-                  </div>
-                )}
-              </section>
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
 };
 
-/* ─── Config Maps ───────────────────────────────────────────────── */
 const statusConfig = {
   available:   { label: 'Available',  dot: 'bg-accent',  text: 'text-accent'  },
   in_trip:     { label: 'In Trip',    dot: 'bg-primary', text: 'text-primary' },
@@ -348,8 +145,7 @@ const typeBadge = {
   'Stretcher Van':  'warning',
 };
 
-/* ─── Assign Driver Inline (table cell) ─────────────────────────── */
-const AssignDriverCell = ({ vehicle, allDrivers, onAssign }) => {
+const AssignDriverCell = ({ vehicle, allDrivers, onAssign, role }) => {
   const [open, setOpen] = useState(false);
   const driver = allDrivers.find(d => d.id === vehicle.assignedDriverId);
 
@@ -397,24 +193,46 @@ const AssignDriverCell = ({ vehicle, allDrivers, onAssign }) => {
   );
 };
 
-/* ─── Main Fleet Page ───────────────────────────────────────────── */
 const Fleet = ({ role }) => {
-  const [vehicles, setVehicles] = useState(initialVehicles);
-  const [activeTab, setActiveTab] = useState('all');
-  const [search, setSearch] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { vehicles, loading: fleetLoading, error, addVehicle, handleAssign } = useFleet();
+  const { drivers, loading: driversLoading } = useDrivers();
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const filtered = vehicles.filter(v => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || v.make.toLowerCase().includes(q) || v.model.toLowerCase().includes(q)
-      || v.plate.toLowerCase().includes(q) || v.id.toLowerCase().includes(q);
+  useEffect(() => {
+    if (id && vehicles.length > 0) {
+      const v = vehicles.find(veh => veh.id === id);
+      if (v) setSelectedVehicle(v);
+    } else if (!id) {
+      setSelectedVehicle(null);
+    }
+  }, [id, vehicles]);
+
+  const handleSelectVehicle = (v) => {
+    if (v) {
+      navigate(`/fleet/${v.id}`);
+    } else {
+      navigate('/fleet');
+    }
+  };
+
+  const loading = fleetLoading || driversLoading;
+
+  const filtered = (vehicles || []).filter(v => {
+    const q = (search || '').toLowerCase();
+    const matchSearch = !q || (v?.make || '').toLowerCase().includes(q) || (v?.model || '').toLowerCase().includes(q)
+      || (v?.plate || '').toLowerCase().includes(q) || (v?.id || '').toLowerCase().includes(q);
     const matchTab =
-      activeTab === 'available' ? v.status === 'available' :
-      activeTab === 'in_trip'   ? v.status === 'in_trip' :
-      activeTab === 'issues'    ? v.insurance.status !== 'valid' : true;
+      filter === 'available' ? v?.status === 'available' :
+      filter === 'in_trip'   ? v?.status === 'in_trip' :
+      filter === 'issues'    ? (v?.insurance?.status !== 'valid') : true;
     return matchSearch && matchTab;
   });
 
@@ -422,37 +240,31 @@ const Fleet = ({ role }) => {
   const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const stats = {
-    total: vehicles.length,
-    available: vehicles.filter(v => v.status === 'available').length,
-    inTrip: vehicles.filter(v => v.status === 'in_trip').length,
-    issues: vehicles.filter(v => v.insurance.status !== 'valid').length,
+    total: (vehicles || []).length,
+    available: (vehicles || []).filter(v => v?.status === 'available').length,
+    inTrip: (vehicles || []).filter(v => v?.status === 'in_trip').length,
+    issues: (vehicles || []).filter(v => v?.insurance?.status !== 'valid').length,
   };
 
-  const handleAssign = (vehicleId, driverId) => {
-    setVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, assignedDriverId: driverId } : v));
-    // Keep drawer vehicle data in sync
-    if (selectedVehicle?.id === vehicleId) {
-      setSelectedVehicle(prev => ({ ...prev, assignedDriverId: driverId }));
-    }
-  };
 
-  if (selectedVehicle) {
+
+  if (loading && vehicles.length === 0) {
     return (
-      <VehicleDetailView
-        vehicle={selectedVehicle}
-        allDrivers={drivers}
-        onClose={() => setSelectedVehicle(null)}
-        onAssign={handleAssign}
-        role={role}
-      />
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-sm font-bold text-ink-3">Scanning Fleet...</p>
+        </div>
+      </div>
     );
   }
 
+
+
   return (
     <div className="space-y-7 pb-12 animate-in slide-in-from-bottom-4 duration-300">
-      {showAddModal && <AddVehicleModal onClose={() => setShowAddModal(false)} onSave={() => {}} />}
+      {showAddModal && <AddVehicleModal onClose={() => setShowAddModal(false)} onSave={addVehicle} />}
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Fleet Management</h1>
@@ -463,7 +275,6 @@ const Fleet = ({ role }) => {
         )}
       </div>
 
-      {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Total Fleet',       value: stats.total,     sub: 'registered vehicles', icon: Truck,        color: 'bg-primary-light text-primary' },
@@ -484,9 +295,7 @@ const Fleet = ({ role }) => {
         ))}
       </div>
 
-      {/* Table Card */}
       <Card className="overflow-hidden border-line-2">
-        {/* Toolbar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 border-b border-line-2 bg-bg/30">
           <div className="flex items-center gap-1">
             {[
@@ -495,8 +304,8 @@ const Fleet = ({ role }) => {
               { id: 'in_trip',   label: 'In Trip' },
               { id: 'issues',    label: `Issues${stats.issues ? ` (${stats.issues})` : ''}` },
             ].map(tab => (
-              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setCurrentPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab.id ? 'bg-white shadow-sm text-primary border border-line' : 'text-ink-3 hover:text-ink'}`}>
+              <button key={tab.id} onClick={() => { setFilter(tab.id); setCurrentPage(1); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === tab.id ? 'bg-white shadow-sm text-primary border border-line' : 'text-ink-3 hover:text-ink'}`}>
                 {tab.label}
               </button>
             ))}
@@ -509,7 +318,6 @@ const Fleet = ({ role }) => {
           </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-bg/40 border-b border-line-2">
@@ -522,12 +330,12 @@ const Fleet = ({ role }) => {
             <tbody className="divide-y divide-line-2">
               {paginated.map(v => {
                 const s = statusConfig[v.status] || statusConfig.available;
-                const nextServiceDays = Math.ceil((new Date(v.nextService) - new Date()) / 86400000);
-                const serviceWarning = nextServiceDays < 60;
+                const nextServiceDate = v?.nextService ? new Date(v.nextService) : null;
+                const nextServiceDays = nextServiceDate ? Math.ceil((nextServiceDate - new Date()) / 86400000) : null;
+                const serviceWarning = nextServiceDays !== null && nextServiceDays < 60;
 
                 return (
                   <tr key={v.id} className="hover:bg-bg/40 transition-colors group">
-                    {/* Vehicle */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-bg rounded-xl flex items-center justify-center flex-shrink-0 border border-line-2 group-hover:border-primary/20 overflow-hidden transition-colors relative">
@@ -547,12 +355,10 @@ const Fleet = ({ role }) => {
                       </div>
                     </td>
 
-                    {/* Type */}
                     <td className="px-5 py-4">
                       <Badge variant={typeBadge[v.type] || 'neutral'}>{v.type}</Badge>
                     </td>
 
-                    {/* Status */}
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
                         v.status === 'available'   ? 'bg-accent-light text-accent border-accent/20' :
@@ -566,18 +372,15 @@ const Fleet = ({ role }) => {
                       </span>
                     </td>
 
-                    {/* Assigned Driver */}
                     <td className="px-5 py-4">
-                      <AssignDriverCell vehicle={v} allDrivers={drivers} onAssign={handleAssign} />
+                      <AssignDriverCell vehicle={v} allDrivers={drivers} onAssign={handleAssign} role={role} />
                     </td>
 
-                    {/* Mileage */}
                     <td className="px-5 py-4">
-                      <p className="text-sm font-bold text-ink font-mono">{v.mileage.toLocaleString()}</p>
-                      <p className="text-[10px] text-ink-4">mi · {v.seats} seats</p>
+                      <p className="text-sm font-bold text-ink font-mono">{(v?.mileage || 0).toLocaleString()}</p>
+                      <p className="text-[10px] text-ink-4">mi · {v?.seats || 0} seats</p>
                     </td>
 
-                    {/* Next Service */}
                     <td className="px-5 py-4">
                       <div className={`flex items-center gap-1.5 ${serviceWarning ? 'text-warning-dark' : 'text-ink-3'}`}>
                         {serviceWarning && <Wrench size={12} className="flex-shrink-0" />}
@@ -586,7 +389,6 @@ const Fleet = ({ role }) => {
                       {serviceWarning && <p className="text-[10px] font-bold text-warning-dark mt-0.5">Due in {nextServiceDays}d</p>}
                     </td>
 
-                    {/* Insurance */}
                     <td className="px-5 py-4">
                       <Badge variant={insuranceBadge[v.insurance.status] || 'neutral'} className="capitalize">
                         {v.insurance.status}
@@ -594,10 +396,9 @@ const Fleet = ({ role }) => {
                       <p className="text-[10px] text-ink-4 mt-1 font-mono">Exp {v.insurance.expires}</p>
                     </td>
 
-                    {/* Details Button */}
                     <td className="px-5 py-4">
                       <button
-                        onClick={() => setSelectedVehicle(v)}
+                        onClick={() => handleSelectVehicle(v)}
                         className="flex items-center gap-1 text-xs font-bold text-ink-3 hover:text-primary transition-colors whitespace-nowrap"
                       >
                         Details <ChevronRight size={14} />
