@@ -32,7 +32,7 @@ const Profile = ({ role }) => {
         <div className="flex items-center gap-6">
           <div className="relative group">
             <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-white shadow-xl">
-              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="xl" className="w-full h-full" />
+              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="full" shape="square" />
             </div>
             <button className="absolute -bottom-2 -right-2 p-2 bg-primary text-white rounded-xl shadow-lg hover:bg-primary-dark transition-all scale-90 group-hover:scale-100">
               <Camera size={16} />

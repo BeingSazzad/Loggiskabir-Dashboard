@@ -312,13 +312,7 @@ const TripHistory = () => {
     setSelectedIds([]); // Clear selection after export
   };
 
-  const now = new Date();
-  const todayTrips = historyTrips.filter(t => new Date(t.scheduledTime).toDateString() === now.toDateString());
-  const completedToday = todayTrips.filter(t => t.status === 'completed').length;
-  const activeToday = todayTrips.filter(t => ['assigned', 'confirmed', 'in_trip', 'en_route', 'arrived'].includes(t.status)).length;
-  const monthlyRevenue = historyTrips
-    .filter(t => new Date(t.scheduledTime).getMonth() === now.getMonth())
-    .reduce((acc, curr) => acc + curr.cost, 0);
+
 
   return (
     <div className="space-y-8">
@@ -340,13 +334,7 @@ const TripHistory = () => {
         </div>
       </div>
 
-      {/* KPI Cells */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Today's Trips" value={todayTrips.length} icon={Calendar} accent="primary" />
-        <StatCard label="Completed Today" value={completedToday} icon={CheckCircle2} accent="accent" />
-        <StatCard label="Active / Pending" value={activeToday} icon={Clock} accent="warning" />
-        <StatCard label="MTD Revenue" value={money(monthlyRevenue)} icon={TrendingUp} accent="primary" />
-      </div>
+
 
       <Card className="overflow-hidden border-line-2 shadow-sm">
         {/* Advanced Filter Bar */}

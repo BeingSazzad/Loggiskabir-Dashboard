@@ -260,42 +260,171 @@ const Drivers = ({ role }) => {
         ))}
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: List */}
-        <div className="lg:col-span-5 flex flex-col gap-3 overflow-y-auto pr-2">
-          {paginatedDrivers.map(driver => (
-            <Card 
-              key={driver.id} 
-              hover 
-              onClick={() => setSelectedDriverId(driver.id)}
-              className={`p-4 ${selectedDriverId === driver.id ? 'border-primary bg-primary-tint/30' : ''}`}
+    <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-4 duration-300">
+      {selectedDriver ? (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <button 
+              onClick={() => setSelectedDriverId(null)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-ink-3 hover:text-ink hover:bg-white rounded-xl transition-all shadow-sm border border-line-2 bg-bg"
             >
-              <div className="flex items-center gap-4">
-                <Avatar initials={driver.initials} size="md" online={driver.onDuty} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-bold text-ink truncate">{driver.name}</h4>
-                    {getStatusBadge(driver.status)}
-                  </div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-mono text-[10px] font-bold text-ink-4 tracking-tighter uppercase">{driver.id}</span>
-                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-warning">
-                      <Star size={10} fill="currentColor" />
-                      {driver.rating}
-                    </span>
-                    <span className="text-[10px] text-ink-3">{driver.totalTrips} trips</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="text-[10px] font-mono font-bold text-ink-4 uppercase">{driver.vehicle.plate}</span>
-                    {driver.insurance.status === 'expiring' && <Badge variant="warning">Insurance Expiring</Badge>}
-                    {driver.insurance.status === 'expired' && <Badge variant="urgent">Insurance Expired</Badge>}
+              ← Back to Drivers List
+            </button>
+            <div className="flex gap-3">
+              <Button variant="outline" icon={Phone}>Call</Button>
+              <Button variant="outline" icon={Mail}>Email</Button>
+              {role === 'admin' && <Button variant="primary">Edit Driver</Button>}
+            </div>
+          </div>
+
+          <Card className="overflow-hidden">
+            <div className="bg-gradient-to-r from-primary to-primary-dark p-8 h-40 relative">
+              <div className="absolute -bottom-10 left-8">
+                <div className="w-28 h-28 rounded-2xl bg-white p-1.5 shadow-xl">
+                  <Avatar initials={selectedDriver.initials} size="full" shape="square" className="rounded-xl overflow-hidden" />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-14 px-8 pb-8 space-y-8">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-3xl font-extrabold font-display text-ink leading-tight">{selectedDriver.name}</h2>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="font-mono text-sm font-bold text-ink-4 tracking-tight uppercase">{selectedDriver.id}</span>
+                    <span className="text-sm text-ink-3">Member since 2022</span>
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-ink-4" />
+                <div className="flex flex-col items-end gap-2">
+                  <span className="flex items-center gap-1.5 text-xl font-bold text-warning">
+                    <Star size={20} fill="currentColor" />
+                    {selectedDriver.rating}
+                  </span>
+                  {selectedDriver.onDuty && <Badge variant="accent" dot>On Duty</Badge>}
+                </div>
               </div>
-            </Card>
-          ))}
-          <div className="mt-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-bg rounded-xl p-5 border border-line-2 text-center">
+                  <p className="text-xs font-bold text-ink-4 uppercase tracking-wider mb-1">Today's Trips</p>
+                  <p className="text-2xl font-extrabold text-ink">{selectedDriver.tripsToday}</p>
+                </div>
+                <div className="bg-bg rounded-xl p-5 border border-line-2 text-center">
+                  <p className="text-xs font-bold text-ink-4 uppercase tracking-wider mb-1">Completed</p>
+                  <p className="text-2xl font-extrabold text-accent">{selectedDriver.completedToday}</p>
+                </div>
+                <div className="bg-bg rounded-xl p-5 border border-line-2 text-center">
+                  <p className="text-xs font-bold text-ink-4 uppercase tracking-wider mb-1">Total Trips</p>
+                  <p className="text-2xl font-extrabold text-ink">{selectedDriver.totalTrips.toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-8">
+                  <section>
+                    <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Contact Information</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-4 p-4 bg-bg rounded-xl border border-line-2">
+                        <div className="p-2.5 bg-white rounded-lg text-ink-3 shadow-sm"><Phone size={18} /></div>
+                        <span className="text-base font-bold text-ink">{selectedDriver.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-4 p-4 bg-bg rounded-xl border border-line-2">
+                        <div className="p-2.5 bg-white rounded-lg text-ink-3 shadow-sm"><Mail size={18} /></div>
+                        <span className="text-base font-bold text-ink">{selectedDriver.email}</span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Service Counties</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedDriver.counties.map(county => (
+                        <div key={county} className="flex items-center gap-2 px-4 py-2 bg-bg rounded-full border border-line-2 text-xs font-bold text-ink-2">
+                          <MapPin size={14} className="text-ink-4" />
+                          {county}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                <div className="space-y-8">
+                  <section>
+                    <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Vehicle Assignment</h4>
+                    <Card className="p-5 flex items-center gap-5 bg-tint/10 border-primary/10">
+                      <div className="p-3.5 bg-primary-light text-primary rounded-xl"><Car size={28} /></div>
+                      <div className="flex-1">
+                        <p className="text-base font-bold text-ink">{selectedDriver.vehicle.color} {selectedDriver.vehicle.make}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="font-mono text-sm font-bold text-ink-3 tracking-tighter uppercase">{selectedDriver.vehicle.plate}</span>
+                          <Badge variant="neutral">{selectedDriver.vehicle.type}</Badge>
+                        </div>
+                      </div>
+                    </Card>
+                  </section>
+
+                  <section>
+                    <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Documents & Compliance</h4>
+                    <div className="space-y-3">
+                      {[
+                        { label: 'Driver License', data: selectedDriver.license },
+                        { label: 'Commercial Insurance', data: selectedDriver.insurance },
+                        { label: 'NEMT Certification', data: selectedDriver.cert }
+                      ].map((doc, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-4 bg-bg rounded-xl border border-line-2">
+                          <div className="flex items-center gap-4">
+                            {doc.data.status === 'valid' ? <ShieldCheck size={20} className="text-accent" /> : (doc.data.status === 'expiring' ? <CalendarClock size={20} className="text-warning" /> : <AlertTriangle size={20} className="text-urgent" />)}
+                            <div>
+                              <p className="text-sm font-bold text-ink">{doc.label}</p>
+                              <p className="text-xs font-mono text-ink-4 uppercase tracking-tighter mt-0.5">{doc.data.number} · Exp {doc.data.expires}</p>
+                            </div>
+                          </div>
+                          <Badge variant={doc.data.status === 'valid' ? 'accent' : (doc.data.status === 'expiring' ? 'warning' : 'urgent')}>
+                            {doc.data.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      ) : (
+        <>
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto pb-4 pr-2">
+            {paginatedDrivers.map(driver => (
+              <Card 
+                key={driver.id} 
+                hover 
+                onClick={() => setSelectedDriverId(driver.id)}
+                className="p-5"
+              >
+                <div className="flex items-start gap-4">
+                  <Avatar initials={driver.initials} size="lg" online={driver.onDuty} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="text-base font-bold text-ink truncate">{driver.name}</h4>
+                      <ChevronRight size={16} className="text-ink-4" />
+                    </div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="font-mono text-[10px] font-bold text-ink-4 tracking-tighter uppercase">{driver.id}</span>
+                      <span className="text-[10px] text-ink-3 px-1.5 py-0.5 bg-bg rounded">{driver.totalTrips} trips</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-auto">
+                      {getStatusBadge(driver.status)}
+                      <span className="flex items-center gap-1 text-xs font-bold text-warning">
+                        <Star size={12} fill="currentColor" />
+                        {driver.rating}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+          <div className="mt-2">
             <Pagination 
               currentPage={currentPage}
               totalPages={totalPages}
@@ -304,130 +433,8 @@ const Drivers = ({ role }) => {
               onPageChange={setCurrentPage}
             />
           </div>
-        </div>
-
-        {/* Right Column: Detail */}
-        <div className="lg:col-span-7 overflow-y-auto pr-2">
-          {selectedDriver ? (
-            <Card className="overflow-hidden">
-              <div className="bg-gradient-to-r from-primary to-primary-dark p-6 h-32 relative">
-                <div className="absolute -bottom-8 left-6">
-                  <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-lg">
-                    <Avatar initials={selectedDriver.initials} size="xl" className="w-full h-full rounded-xl overflow-hidden" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-12 px-6 pb-6 space-y-8">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="text-2xl font-extrabold font-display text-ink leading-tight">{selectedDriver.name}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="font-mono text-xs font-bold text-ink-4 tracking-tight uppercase">{selectedDriver.id}</span>
-                      <span className="text-xs text-ink-3">Member since 2022</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1 text-lg font-bold text-warning">
-                      <Star size={18} fill="currentColor" />
-                      {selectedDriver.rating}
-                    </span>
-                    {selectedDriver.onDuty && <Badge variant="accent" dot>On Duty</Badge>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-bg rounded-xl p-4 border border-line-2 text-center">
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Today's Trips</p>
-                    <p className="text-lg font-bold text-ink">{selectedDriver.tripsToday}</p>
-                  </div>
-                  <div className="bg-bg rounded-xl p-4 border border-line-2 text-center">
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Completed</p>
-                    <p className="text-lg font-bold text-accent">{selectedDriver.completedToday}</p>
-                  </div>
-                  <div className="bg-bg rounded-xl p-4 border border-line-2 text-center">
-                    <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mb-1">Total Trips</p>
-                    <p className="text-lg font-bold text-ink">{selectedDriver.totalTrips.toLocaleString()}</p>
-                  </div>
-                </div>
-
-                <section>
-                  <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Contact Information</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 bg-bg rounded-xl border border-line-2">
-                      <div className="p-2 bg-white rounded-lg text-ink-3"><Phone size={16} /></div>
-                      <span className="text-sm font-bold text-ink">{selectedDriver.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-bg rounded-xl border border-line-2">
-                      <div className="p-2 bg-white rounded-lg text-ink-3"><Mail size={16} /></div>
-                      <span className="text-sm font-bold text-ink">{selectedDriver.email}</span>
-                    </div>
-                  </div>
-                </section>
-
-                <section>
-                  <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Vehicle Assignment</h4>
-                  <Card className="p-4 flex items-center gap-4 bg-tint/10 border-primary/10">
-                    <div className="p-3 bg-primary-light text-primary rounded-xl"><Car size={24} /></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-ink">{selectedDriver.vehicle.color} {selectedDriver.vehicle.make}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono text-xs font-bold text-ink-3 tracking-tighter uppercase">{selectedDriver.vehicle.plate}</span>
-                        <Badge variant="neutral">{selectedDriver.vehicle.type}</Badge>
-                      </div>
-                    </div>
-                  </Card>
-                </section>
-
-                <section>
-                  <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Service Counties</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedDriver.counties.map(county => (
-                      <div key={county} className="flex items-center gap-1.5 px-3 py-1.5 bg-bg rounded-full border border-line-2 text-xs font-bold text-ink-2">
-                        <MapPin size={12} className="text-ink-4" />
-                        {county}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <h4 className="text-xs font-bold text-ink uppercase tracking-widest mb-3">Documents & Compliance</h4>
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Driver License', data: selectedDriver.license },
-                      { label: 'Commercial Insurance', data: selectedDriver.insurance },
-                      { label: 'NEMT Certification', data: selectedDriver.cert }
-                    ].map((doc, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-bg rounded-xl border border-line-2">
-                        <div className="flex items-center gap-3">
-                          {doc.data.status === 'valid' ? <ShieldCheck size={18} className="text-accent" /> : (doc.data.status === 'expiring' ? <CalendarClock size={18} className="text-warning" /> : <AlertTriangle size={18} className="text-urgent" />)}
-                          <div>
-                            <p className="text-xs font-bold text-ink">{doc.label}</p>
-                            <p className="text-[10px] font-mono text-ink-4 uppercase tracking-tighter">{doc.data.number} · Exp {doc.data.expires}</p>
-                          </div>
-                        </div>
-                        <Badge variant={doc.data.status === 'valid' ? 'accent' : (doc.data.status === 'expiring' ? 'warning' : 'urgent')}>
-                          {doc.data.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <div className="flex gap-3 pt-4">
-                  <Button variant="outline" className="flex-1" icon={Phone}>Call Driver</Button>
-                  <Button variant="outline" className="flex-1" icon={Mail}>Email</Button>
-                  <Button variant="primary-light" className="flex-1" icon={ExternalLink}>Full Profile</Button>
-                </div>
-              </div>
-            </Card>
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <p className="text-ink-4 font-bold">Select a driver to view details</p>
-            </div>
-          )}
-        </div>
+        </>
+      )}
       </div>
     </div>
   );

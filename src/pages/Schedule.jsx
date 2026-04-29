@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import {
   ChevronLeft, ChevronRight, Clock, Truck, Users,
-  Search, AlertTriangle, CheckCircle2, Coffee
+  Search, AlertTriangle, CheckCircle2, Coffee, X, Wrench
 } from 'lucide-react';
-import { Card, Avatar, Badge } from '../components/UI';
+import { Card, Avatar, Badge, Button } from '../components/UI';
 import { drivers, vehicles } from '../data/mockData';
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const TODAY_IDX = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1; // 0=Mon
 
-// Deterministic mock shift pattern per driver+day
+// Deterministic mock schedule per driver+day
 const getShift = (driverIdx, dayIdx) => {
-  const seed = (driverIdx * 7 + dayIdx) % 5;
-  if (seed === 0) return { type: 'full',  label: 'Full Shift',   time: '07:00 – 15:00', color: 'primary' };
-  if (seed === 1) return { type: 'split', label: 'Split Shift',  time: '06:00 – 10:00\n14:00 – 18:00', color: 'warning' };
+  const seed = (driverIdx * 7 + dayIdx) % 6;
+  if (seed === 0) return { type: 'heavy',  label: '8 Trips', time: '07:00 – 16:00', color: 'primary' };
+  if (seed === 1) return { type: 'split',  label: '4 Trips', time: '06:00 – 10:00\n14:00 – 18:00', color: 'warning' };
   if (seed === 2) return null; // Off
-  if (seed === 3) return { type: 'full',  label: 'Full Shift',   time: '15:00 – 23:00', color: 'primary' };
+  if (seed === 3) return { type: 'normal', label: '5 Trips', time: '12:00 – 20:00', color: 'accent' };
+  if (seed === 4) return { type: 'light',  label: '2 Trips', time: '09:00 – 13:00', color: 'primary' };
   return { type: 'leave', label: 'Leave',  time: 'All Day', color: 'neutral' };
 };
 
@@ -27,12 +28,61 @@ const shiftStyle = {
   accent:  'bg-accent-light/40 border-accent/20 text-accent-dark',
 };
 
+/* ── Components ──────────────────────────────────────────────────── */
+
+const StatusUpdateModal = ({ item, date, onClose }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4">
+      <Card className="w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="p-4 border-b border-line-2 flex justify-between items-center bg-bg">
+          <h3 className="font-bold text-sm text-ink">Update Status</h3>
+          <button onClick={onClose} className="text-ink-4 hover:text-ink transition-colors p-1 rounded-lg hover:bg-line-2"><X size={16} /></button>
+        </div>
+        <div className="p-5 space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-xl border border-line-2 flex items-center justify-center shadow-sm">
+              {item.plate ? <Truck size={18} className="text-primary" /> : <Users size={18} className="text-primary" />}
+            </div>
+            <div>
+              <p className="font-extrabold text-sm text-ink">{item.name || item.plate}</p>
+              <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider mt-0.5">{date.toDateString()}</p>
+            </div>
+          </div>
+          
+          <div className="space-y-2.5">
+            <label className="text-[10px] font-bold text-ink-3 uppercase tracking-widest">Set Status For This Day</label>
+            <div className="grid grid-cols-2 gap-2">
+               {item.plate ? (
+                 <>
+                   <button className="py-3 rounded-xl border-2 border-line hover:border-primary font-bold text-xs bg-bg text-ink-3 hover:text-primary transition-all">Active Duty</button>
+                   <button className="py-3 rounded-xl border-2 border-transparent font-bold text-xs bg-urgent-light/40 text-urgent hover:bg-urgent-light transition-all flex flex-col items-center justify-center gap-1">
+                     <Wrench size={14} /> Maintenance
+                   </button>
+                 </>
+               ) : (
+                 <>
+                   <button className="py-3 rounded-xl border-2 border-line hover:border-primary font-bold text-xs bg-bg text-ink-3 hover:text-primary transition-all">Assign Shift</button>
+                   <button className="py-3 rounded-xl border-2 border-line font-bold text-xs bg-white text-ink-4 hover:border-ink-4 hover:text-ink transition-all flex flex-col items-center justify-center gap-1">
+                     <Coffee size={14} /> Weekend / Off
+                   </button>
+                 </>
+               )}
+            </div>
+          </div>
+          <Button variant="primary" className="w-full mt-2 py-3" onClick={onClose}>Save & Update Schedule</Button>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
 /* ── Schedule Page ───────────────────────────────────────────────── */
 const Schedule = () => {
   const [activeTab, setActiveTab]     = useState('driver');
   const [viewMode, setViewMode]       = useState('week');
   const [searchTerm, setSearchTerm]   = useState('');
   const [weekOffset, setWeekOffset]   = useState(0);
+  const [editingCell, setEditingCell] = useState(null);
 
   // Week date labels
   const weekStart = new Date();
@@ -61,9 +111,8 @@ const Schedule = () => {
   const items = activeTab === 'driver' ? drivers : fleet;
   const filtered = items.filter(item => {
     const q = searchTerm.toLowerCase();
-    return !q
-      || (item.name  || '').toLowerCase().includes(q)
-      || (item.plate || '').toLowerCase().includes(q);
+    if (activeTab === 'driver') return item.name.toLowerCase().includes(q) || item.vehicle?.plate?.toLowerCase().includes(q);
+    return item.plate.toLowerCase().includes(q) || item.make.toLowerCase().includes(q);
   });
 
   // Summary stats
@@ -72,6 +121,7 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6 pb-12">
+      {editingCell && <StatusUpdateModal item={editingCell.item} date={editingCell.date} onClose={() => setEditingCell(null)} />}
 
       {/* ── Page Header ─────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -234,7 +284,8 @@ const Schedule = () => {
                 return (
                   <div
                     key={dayIdx}
-                    className={`px-2 py-2 border-r border-line-2 last:border-r-0 min-h-[72px] flex flex-col justify-center ${
+                    onClick={() => setEditingCell({ item, date: d })}
+                    className={`px-2 py-2 border-r border-line-2 last:border-r-0 min-h-[72px] flex flex-col justify-center cursor-pointer hover:bg-bg transition-colors ${
                       isToday(d) ? 'bg-primary-tint/10' : ''
                     }`}
                   >
@@ -263,10 +314,11 @@ const Schedule = () => {
       <div className="flex flex-wrap items-center justify-between gap-4 px-1">
         <div className="flex flex-wrap items-center gap-5">
           {[
-            { color: 'bg-primary',    label: 'Full Shift'  },
-            { color: 'bg-warning',    label: 'Split Shift' },
-            { color: 'bg-line',       label: 'Off Day'     },
-            { color: 'bg-ink-4',      label: 'Leave'       },
+            { color: 'bg-primary',    label: 'Heavy (8+ Trips)'  },
+            { color: 'bg-warning',    label: 'Split (4+ Trips)'  },
+            { color: 'bg-accent',     label: 'Normal (5+ Trips)' },
+            { color: 'bg-line',       label: 'Off Day'           },
+            { color: 'bg-ink-4',      label: 'Leave / Maintenance' },
           ].map(l => (
             <div key={l.label} className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-sm ${l.color}`} />

@@ -65,28 +65,30 @@ const avatarMap = {
   'DS': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop', // Dispatcher
 };
 
-export const Avatar = ({ initials, src, size = 'md', online = false, className = '' }) => {
+export const Avatar = ({ initials, src, size = 'md', online = false, className = '', shape = 'circle' }) => {
   const sizes = {
     xs: 'w-6 h-6 text-[10px]',
     sm: 'w-8 h-8 text-xs',
     md: 'w-10 h-10 text-sm',
     lg: 'w-12 h-12 text-base',
     xl: 'w-16 h-16 text-xl',
+    full: 'w-full h-full',
   };
 
   const imageSrc = src || avatarMap[initials];
+  const roundedClass = shape === 'square' ? 'rounded-[inherit]' : 'rounded-full';
 
   return (
     <div className={`relative flex-shrink-0 ${className}`}>
       {imageSrc ? (
-        <img src={imageSrc} alt={initials} className={`${sizes[size]} rounded-full object-cover shadow-sm ring-1 ring-black/5`} />
+        <img src={imageSrc} alt={initials} className={`${sizes[size]} ${roundedClass} object-cover shadow-sm ring-1 ring-black/5`} />
       ) : (
-        <div className={`${sizes[size]} rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold tracking-tighter shadow-sm`}>
+        <div className={`${sizes[size]} ${roundedClass} bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold tracking-tighter shadow-sm`}>
           {initials}
         </div>
       )}
       {online && (
-        <span className="absolute bottom-0 right-0 w-[28%] h-[28%] bg-emerald-500 border-2 border-white rounded-full"></span>
+        <span className={`absolute bottom-0 right-0 ${size === 'full' ? 'w-4 h-4' : 'w-[28%] h-[28%]'} bg-emerald-500 border-2 border-white rounded-full`}></span>
       )}
     </div>
   );

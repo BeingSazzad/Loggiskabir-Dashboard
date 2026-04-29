@@ -58,7 +58,7 @@ const Settings = ({ role }) => {
         <div className="flex items-start justify-between mb-6 border-b border-line-2 pb-6">
           <div className="flex items-center gap-4">
             <div className="relative group cursor-pointer w-16 h-16 rounded-2xl overflow-hidden border-2 border-line group-hover:border-primary transition-colors">
-              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="xl" className="w-full h-full" />
+              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="full" shape="square" />
               <div className="absolute inset-0 bg-ink/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="text-[10px] font-bold text-white uppercase tracking-wider text-center leading-tight">Change<br/>Photo</span>
               </div>
