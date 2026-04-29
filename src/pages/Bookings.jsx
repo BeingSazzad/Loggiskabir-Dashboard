@@ -378,11 +378,11 @@ const Bookings = ({ setPage }) => {
                       />
                     </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Trip ID</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Created</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Rider</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Route</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Type</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Cost</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Created</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest">Scheduled</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-ink-4 uppercase tracking-widest text-right">Action</th>
                   </tr>
@@ -404,6 +404,12 @@ const Bookings = ({ setPage }) => {
                       </td>
                       <td className="px-6 py-6 whitespace-nowrap">
                         <span className="font-mono text-xs font-bold text-ink uppercase">#{booking.id}</span>
+                      </td>
+                      <td className="px-6 py-6 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-ink">{booking.submittedTime ? formatShortDate(booking.submittedTime) : '-'}</span>
+                          <span className="text-[10px] font-semibold text-ink-3 mt-0.5">{booking.submittedTime ? formatTime(booking.submittedTime) : '-'}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-6">
                         <div className="flex items-center gap-3">
@@ -442,12 +448,6 @@ const Bookings = ({ setPage }) => {
                       </td>
                       <td className="px-6 py-6">
                         <span className="text-sm font-black font-mono text-ink">{money(booking.cost)}</span>
-                      </td>
-                      <td className="px-6 py-6 whitespace-nowrap">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-ink">{booking.submittedTime ? formatShortDate(booking.submittedTime) : '-'}</span>
-                          <span className="text-[10px] font-semibold text-ink-3 mt-0.5">{booking.submittedTime ? formatTime(booking.submittedTime) : '-'}</span>
-                        </div>
                       </td>
                       <td className="px-6 py-6 whitespace-nowrap">
                         <div className="flex flex-col">
