@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   AlertTriangle, ShieldAlert, Clock, ChevronRight, MessageSquare,
   Phone, CheckCircle2, Flag, ArrowRight, ShieldCheck, AlertOctagon,
@@ -11,10 +11,10 @@ import { timeAgo, formatDateTime } from '../utils/helpers';
 const CreateReportModal = ({ onClose, onSave }) => {
   const [reason, setReason] = useState('Rider not present');
   const reasons = [
-    { id: 'Rider not present', label: 'Rider not present', sub: 'Passenger is not available at the pickup location.' },
+    { id: 'Rider not present', label: 'Rider not present', sub: 'Rider is not available at the pickup location.' },
     { id: 'Incorrect pickup location', label: 'Incorrect pickup location', sub: 'Pickup address is missing or cannot be located.' },
-    { id: 'Rider behavior issue', label: 'Rider behavior issue', sub: 'Passenger behavior caused a problem during the trip.' },
-    { id: 'Excessive wait time', label: 'Excessive wait time', sub: 'Passenger caused an unusually long wait at pickup.' },
+    { id: 'Rider behavior issue', label: 'Rider behavior issue', sub: 'Rider behavior caused a problem during the trip.' },
+    { id: 'Excessive wait time', label: 'Excessive wait time', sub: 'Rider caused an unusually long wait at pickup.' },
     { id: 'Other reason', label: 'Other reason', sub: "I'll explain to dispatch if needed" },
   ];
 
@@ -363,8 +363,8 @@ const Reports = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Incident Center</h1>
-          <p className="text-ink-3 font-medium">Manage and resolve reports between riders and drivers</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Incident Reports</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Monitor and resolve safety alerts and operational reports</p>
         </div>
         <Button variant="danger" icon={Plus} onClick={() => setShowCreateModal(true)}>
           File Report

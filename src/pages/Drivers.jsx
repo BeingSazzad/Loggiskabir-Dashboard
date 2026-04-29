@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Plus, Search, Phone, Mail, Car, MapPin, ShieldCheck,
   CalendarClock, AlertTriangle, Star, ChevronRight, ExternalLink,
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Card, Avatar, Badge, Button, Pagination } from '../components/UI';
 import { useDrivers } from '../hooks/useDrivers';
+import { useTrips } from '../hooks/useTrips';
 
 const COUNTIES = ['Chesterfield', 'Henrico', 'Richmond City', 'Hanover', 'Goochland', 'Powhatan'];
 const VEHICLE_TYPES = ['Ambulatory Van', 'Wheelchair Van', 'Stretcher Van'];
@@ -229,6 +230,7 @@ const AddDriverModal = ({ onClose, onSave }) => {
 
 const Drivers = ({ role }) => {
   const { drivers, loading, error, addDriver } = useDrivers();
+  const { trips } = useTrips();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState(null);
@@ -310,7 +312,11 @@ const Drivers = ({ role }) => {
           <div className="bg-gradient-to-r from-primary to-primary-dark p-8 h-40 relative">
             <div className="absolute -bottom-10 left-8">
               <div className="w-28 h-28 rounded-2xl bg-white p-1.5 shadow-xl">
-                <Avatar initials={selectedDriver?.initials || '?'} size="full" shape="square" className="rounded-xl overflow-hidden" />
+                {selectedDriver?.image ? (
+                  <img src={selectedDriver.image} alt={selectedDriver.name} className="w-full h-full rounded-xl object-cover" />
+                ) : (
+                  <Avatar initials={selectedDriver?.initials || '?'} size="full" shape="square" className="rounded-xl overflow-hidden" />
+                )}
               </div>
             </div>
           </div>
@@ -360,6 +366,17 @@ const Drivers = ({ role }) => {
                     <div className="flex items-center gap-4 p-4 bg-bg rounded-xl border border-line-2">
                       <div className="p-2.5 bg-white rounded-lg text-ink-3 shadow-sm"><Mail size={18} /></div>
                       <span className="text-base font-bold text-ink">{selectedDriver?.email || 'N/A'}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Emergency Contact</h4>
+                  <div className="flex items-center gap-4 p-4 bg-bg rounded-xl border border-line-2">
+                    <div className="p-2.5 bg-urgent-light text-urgent rounded-lg shadow-sm"><AlertTriangle size={18} /></div>
+                    <div>
+                      <p className="text-sm font-bold text-ink">{selectedDriver?.emergencyContact?.name || 'N/A'}</p>
+                      <p className="text-xs font-medium text-ink-3">{selectedDriver?.emergencyContact?.relation || 'N/A'} · {selectedDriver?.emergencyContact?.phone || 'N/A'}</p>
                     </div>
                   </div>
                 </section>
@@ -415,6 +432,48 @@ const Drivers = ({ role }) => {
                     ))}
                   </div>
                 </section>
+
+                <section>
+                  <h4 className="text-sm font-bold text-ink uppercase tracking-widest mb-4">Trip History</h4>
+                  <div className="space-y-3">
+                    {(() => {
+                      const driverTrips = (trips || []).filter(t => t.driverId === selectedDriver?.id);
+                      if (driverTrips.length === 0) {
+                        return (
+                          <div className="text-center py-8 bg-bg rounded-xl border border-line-2">
+                             <p className="text-sm font-bold text-ink-3">No trips recorded</p>
+                          </div>
+                        );
+                      }
+                      return driverTrips.slice(0, 5).map((trip, i) => (
+                        <div key={i} className="flex flex-col gap-2 p-4 bg-bg rounded-xl border border-line-2 hover:border-line transition-all group">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-ink-4 uppercase tracking-tighter">#{trip.id.slice(-4)}</span>
+                            <Badge variant={trip.status === 'completed' ? 'accent' : 'neutral'} className="text-[9px] uppercase">
+                              {trip.status}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-[10px] text-ink-4 font-bold uppercase tracking-widest">Rider</p>
+                              <p className="text-xs font-bold text-ink truncate">{trip.rider?.name}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-ink-4 font-bold uppercase tracking-widest">Date</p>
+                              <p className="text-xs font-bold text-ink truncate">{new Date(trip.scheduledTime).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-ink-4 mt-1">
+                             <MapPin size={12} className="shrink-0" />
+                             <span className="text-[10px] font-medium truncate">{trip.pickup}</span>
+                             <span className="text-[10px] mx-1">→</span>
+                             <span className="text-[10px] font-medium truncate text-primary">{trip.dropoff}</span>
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </section>
               </div>
             </div>
           </div>
@@ -442,8 +501,8 @@ const Drivers = ({ role }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Drivers</h1>
-          <p className="text-ink-3 font-medium">Manage driver accounts and compliance</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Driver Network</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Manage driver accounts and compliance auditing</p>
         </div>
         {role === 'admin' && (
           <Button variant="primary" icon={UserPlus} onClick={() => setShowAddModal(true)}>Create Driver Account</Button>

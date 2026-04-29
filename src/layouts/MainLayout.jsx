@@ -69,6 +69,7 @@ const NAV_CONFIG = [
     roles: ['admin', 'dispatcher'],
     items: [
       { id: '/drivers', label: 'Drivers', icon: Users, roles: ['admin', 'dispatcher'] },
+      { id: '/riders', label: 'Riders', icon: User, roles: ['admin', 'dispatcher'] },
       { id: '/applications', label: 'Applications', icon: FileCheck, badge: '3', roles: ['admin', 'dispatcher'] },
       { id: '/fleet', label: 'Fleet Management', icon: Car, roles: ['admin', 'dispatcher'] },
       { id: '/schedule', label: 'Shift Schedule', icon: CalendarDays, roles: ['admin', 'dispatcher'] },
@@ -81,7 +82,7 @@ const NAV_CONFIG = [
       { id: '/trips', label: 'Trip History', icon: Truck, roles: ['admin', 'dispatcher'] },
       { id: '/reports', label: 'Incident Reports', icon: Flag, roles: ['admin', 'dispatcher'] },
       { id: '/transactions', label: 'Financials', icon: CreditCard, roles: ['admin'] },
-      { id: '/staff', label: 'Staff Management', icon: UserPlus, roles: ['admin'] },
+      { id: '/staff', label: 'User Management', icon: UserPlus, roles: ['admin'] },
     ]
   }
 ];
@@ -152,13 +153,15 @@ const MainLayout = ({ role, onLogout }) => {
                     </div>
                   ) : item.badge;
                   
+                  const isActive = page === item.id || (item.id !== '/' && page.startsWith(item.id));
+                  
                   return (
                     <NavItem 
                       key={item.id}
                       icon={item.icon} 
                       label={item.label} 
                       badge={liveBadge}
-                      active={page === item.id} 
+                      active={isActive} 
                       onClick={() => navigate(item.id)} 
                     />
                   );
@@ -178,7 +181,7 @@ const MainLayout = ({ role, onLogout }) => {
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 text-urgent hover:bg-urgent-light/60 group"
           >
             <LogOut size={18} className="text-urgent" />
-            <span className="text-xs font-bold">Log Out Session</span>
+            <span className="text-xs font-bold">Sign Out</span>
           </div>
         </div>
 
@@ -250,17 +253,17 @@ const MainLayout = ({ role, onLogout }) => {
                 className={`w-9 h-9 rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 hover:shadow-sm ${profileOpen || page === '/profile' ? 'border-primary' : 'border-line hover:border-primary'}`}
                 title="Account"
               >
-                <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="sm" className="w-full h-full" />
+                <Avatar initials={role === 'admin' ? 'MH' : 'SR'} size="sm" className="w-full h-full" />
               </button>
 
               {profileOpen && (
                 <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-line overflow-hidden animate-in slide-in-from-top-2 duration-200 z-50">
                   <div className="p-5 border-b border-line bg-bg/30">
                     <div className="flex items-center gap-3 mb-3">
-                      <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="md" />
+                      <Avatar initials={role === 'admin' ? 'MH' : 'SR'} size="md" />
                       <div>
-                        <p className="text-sm font-black text-ink leading-none capitalize">{role} User</p>
-                        <p className="text-[10px] font-bold text-ink-4 mt-1">ID: #LOG-{role === 'admin' ? '882' : '941'}</p>
+                        <p className="text-sm font-black text-ink leading-none">{role === 'admin' ? 'Marcus A. Holloway' : 'Sandra K. Reynolds'}</p>
+                        <p className="text-[10px] font-bold text-ink-4 mt-1">ID: #{role === 'admin' ? 'LOGISS-882' : 'LOGISS-941'}</p>
                       </div>
                     </div>
                     <Badge variant="primary-light" className="w-full justify-center py-1 text-[9px] uppercase tracking-widest">
@@ -270,47 +273,17 @@ const MainLayout = ({ role, onLogout }) => {
 
                   <div className="p-2">
                     <button
-                      onClick={() => navigate('/profile')}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all group"
+                      onClick={() => { navigate('/profile'); setProfileOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all group"
                     >
-                      <div className="flex items-center gap-3">
-                        <User size={16} className="text-ink-3 group-hover:text-primary" />
-                        <span>Account Info</span>
-                      </div>
-                      <ChevronDown size={14} className="text-ink-4 -rotate-90" />
-                    </button>
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Settings size={16} className="text-ink-3 group-hover:text-primary" />
-                        <span>Settings</span>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Lock size={16} className="text-ink-3 group-hover:text-primary" />
-                        <span>Security & Privacy</span>
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="p-2 border-t border-line bg-bg/20">
-                    <button
-                      onClick={() => navigate('/support')}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-ink-2 hover:bg-bg transition-all"
-                    >
-                      <HelpCircle size={16} className="text-ink-3" /> Help & Support
+                      <User size={15} className="text-ink-3 group-hover:text-primary" />
+                      <span>Account Info</span>
                     </button>
                     <button
                       onClick={onLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-urgent hover:bg-urgent-light transition-all mt-1"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-urgent hover:bg-urgent-light transition-all"
                     >
-                      <LogOut size={16} /> Log Out Session
+                      <LogOut size={15} /> Sign Out
                     </button>
                   </div>
                 </div>

@@ -4,7 +4,9 @@ import {
   Truck, AlertTriangle, CheckCircle2, Clock,
   Wrench, ShieldCheck, X, Check, Plus, Search,
   User, ChevronRight, FileText, Calendar, Gauge,
-  CreditCard, MapPin, Star, Hash, Shield, Info, Loader2
+  CreditCard, MapPin, Star, Hash, Shield, Info, Loader2,
+  Settings, Zap, ShieldAlert, ClipboardCheck, LayoutGrid, List,
+  Activity
 } from 'lucide-react';
 import { Card, Badge, Avatar, Button, Pagination } from '../components/UI';
 import { useFleet } from '../hooks/useFleet';
@@ -20,105 +22,155 @@ const EMPTY_FORM = {
   insuranceProvider: '', insurancePolicy: '', insuranceExpiry: '',
 };
 
+const VEHICLE_PLACEHOLDER = "C:\\Users\\being\\.gemini\\antigravity\\brain\\f72299ac-f7db-4b11-8522-53b8903b8c83\\modern_medical_transport_van_1777469722489.png";
+
 const AddVehicleModal = ({ onClose, onSave }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [step, setStep] = useState(1);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   return (
-    <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-line-2">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-primary-light rounded-xl flex items-center justify-center text-primary">
-              <Truck size={18} />
+    <div className="fixed inset-0 bg-ink/60 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col border border-line-2 ring-1 ring-ink/5 animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between px-8 py-7 border-b border-line-2 bg-bg/20">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+              <Plus size={24} />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-ink">Add New Vehicle</h2>
-              <p className="text-[10px] text-ink-4 font-medium">Step {step} of 2 — {step === 1 ? 'Details' : 'Compliance'}</p>
+              <h2 className="text-xl font-black font-display text-ink tracking-tight">Register New Unit</h2>
+              <p className="text-[10px] text-ink-3 font-semibold uppercase tracking-[0.15em] mt-1">Deployment Step {step} of 2</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-ink-4 hover:text-ink transition-colors"><X size={18} /></button>
+          <button onClick={onClose} className="w-10 h-10 rounded-xl hover:bg-urgent-light hover:text-urgent text-ink-4 transition-all flex items-center justify-center border border-transparent hover:border-urgent/10"><X size={20} /></button>
         </div>
 
-        <div className="flex px-6 pt-4 gap-2">
-          {['Details', 'Compliance'].map((s, i) => (
+        <div className="flex px-8 pt-6 gap-3">
+          {['Vehicle Specifications', 'Compliance & Safety'].map((s, i) => (
             <div key={s} className="flex-1">
-              <div className={`h-1 rounded-full transition-all ${step > i ? 'bg-primary' : 'bg-line-2'}`} />
-              <p className={`text-[10px] font-bold mt-1 ${step === i + 1 ? 'text-primary' : 'text-ink-4'}`}>{s}</p>
+              <div className={`h-1.5 rounded-full transition-all duration-500 ${step > i ? 'bg-primary' : 'bg-line-2'}`} />
+              <p className={`text-[9px] font-black uppercase tracking-widest mt-2 ${step === i + 1 ? 'text-primary' : 'text-ink-4'}`}>{s}</p>
             </div>
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
           {step === 1 && (
-            <div className="grid grid-cols-2 gap-4">
-              {[['Make *', 'make', 'Ford', 'text'], ['Model *', 'model', 'Transit', 'text'],
-                ['Year *', 'year', '2024', 'number'], ['Plate No. *', 'plate', 'VA · AAA-0000', 'text']].map(([label, key, ph, type]) => (
-                <div key={key}>
-                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">{label}</label>
-                  <input className="input-base w-full" type={type} placeholder={ph} value={form[key]} onChange={e => set(key, e.target.value)} />
+            <div className="grid grid-cols-2 gap-5">
+              {[
+                { label: 'Make / Manufacturer', key: 'make', ph: 'Ford' },
+                { label: 'Model Series', key: 'model', ph: 'Transit 250' },
+                { label: 'Year', key: 'year', ph: '2024' },
+                { label: 'License Plate', key: 'plate', ph: 'VA · AAA-0000' }
+              ].map(field => (
+                <div key={field.key}>
+                  <label className="block text-[10px] font-black text-ink-4 uppercase tracking-[0.2em] mb-2.5 ml-1">{field.label}</label>
+                  <input 
+                    className="w-full h-12 px-4 rounded-xl bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20 text-sm font-bold text-ink outline-none transition-all placeholder:text-ink-4/50" 
+                    type="text" 
+                    placeholder={field.ph} 
+                    value={form[field.key]} 
+                    onChange={e => set(field.key, e.target.value)} 
+                  />
                 </div>
               ))}
               <div className="col-span-2">
-                <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">VIN *</label>
-                <input className="input-base w-full font-mono" placeholder="1FD..." value={form.vin} onChange={e => set('vin', e.target.value)} />
+                <label className="block text-[10px] font-black text-ink-4 uppercase tracking-[0.2em] mb-2.5 ml-1">VIN Number (17 Characters)</label>
+                <input 
+                   className="w-full h-12 px-4 rounded-xl bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20 text-sm font-bold text-ink font-mono outline-none transition-all placeholder:text-ink-4/50 uppercase" 
+                   placeholder="1FD..." 
+                   value={form.vin} 
+                   onChange={e => set('vin', e.target.value)} 
+                />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Vehicle Type *</label>
-                <select className="input-base w-full" value={form.type} onChange={e => set('type', e.target.value)}>
+                <label className="block text-[10px] font-black text-ink-4 uppercase tracking-[0.2em] mb-2.5 ml-1">Configuration Type</label>
+                <select 
+                   className="w-full h-12 px-4 rounded-xl bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20 text-sm font-bold text-ink outline-none transition-all cursor-pointer" 
+                   value={form.type} 
+                   onChange={e => set('type', e.target.value)}
+                >
                   {VEHICLE_TYPES.map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Passenger Seats *</label>
-                <input className="input-base w-full" type="number" placeholder="4" value={form.seats} onChange={e => set('seats', e.target.value)} />
+                <label className="block text-[10px] font-black text-ink-4 uppercase tracking-[0.2em] mb-2.5 ml-1">Max Passengers</label>
+                <input 
+                   className="w-full h-12 px-4 rounded-xl bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20 text-sm font-bold text-ink outline-none transition-all" 
+                   type="number" 
+                   placeholder="4" 
+                   value={form.seats} 
+                   onChange={e => set('seats', e.target.value)} 
+                />
               </div>
             </div>
           )}
           {step === 2 && (
-            <>
-              <div className="bg-bg rounded-xl p-4 border border-line-2 space-y-4">
-                <p className="text-xs font-extrabold text-ink flex items-center gap-2"><Wrench size={14} className="text-warning-dark" /> Maintenance</p>
-                <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+              <div className="bg-bg/40 rounded-2xl p-6 border-2 border-line-2 space-y-5">
+                <p className="text-[10px] font-black text-ink uppercase tracking-[0.25em] flex items-center gap-2 mb-2">
+                  <Wrench size={14} className="text-primary" /> Maintenance Schedule
+                </p>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Current Mileage *</label>
-                    <input className="input-base w-full" type="number" placeholder="0" value={form.mileage} onChange={e => set('mileage', e.target.value)} />
+                    <label className="block text-[9px] font-black text-ink-4 uppercase tracking-widest mb-2 ml-1">Current Odometer</label>
+                    <input className="w-full h-11 px-4 rounded-xl bg-white border border-line-2 focus:border-primary/30 text-sm font-bold text-ink outline-none" type="number" placeholder="0" value={form.mileage} onChange={e => set('mileage', e.target.value)} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Next Service Due *</label>
-                    <input className="input-base w-full" type="date" value={form.nextService} onChange={e => set('nextService', e.target.value)} />
+                    <label className="block text-[9px] font-black text-ink-4 uppercase tracking-widest mb-2 ml-1">Next Service Date</label>
+                    <input className="w-full h-11 px-4 rounded-xl bg-white border border-line-2 focus:border-primary/30 text-sm font-bold text-ink outline-none" type="date" value={form.nextService} onChange={e => set('nextService', e.target.value)} />
                   </div>
                 </div>
               </div>
-              <div className="bg-bg rounded-xl p-4 border border-line-2 space-y-4">
-                <p className="text-xs font-extrabold text-ink flex items-center gap-2"><ShieldCheck size={14} className="text-primary" /> Commercial Insurance</p>
+              <div className="bg-bg/40 rounded-3xl p-6 border-2 border-line-2 space-y-5">
+                <p className="text-[10px] font-black text-ink uppercase tracking-[0.25em] flex items-center gap-2 mb-2">
+                  <ShieldCheck size={14} className="text-accent" /> Insurance Records
+                </p>
                 <div>
-                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Provider *</label>
-                  <input className="input-base w-full" placeholder="e.g., Progressive Commercial" value={form.insuranceProvider} onChange={e => set('insuranceProvider', e.target.value)} />
+                  <label className="block text-[9px] font-black text-ink-4 uppercase tracking-widest mb-2 ml-1">Carrier Provider</label>
+                  <input className="w-full h-11 px-4 rounded-xl bg-white border border-line-2 focus:border-primary/30 text-sm font-bold text-ink outline-none" placeholder="e.g., Progressive Commercial" value={form.insuranceProvider} onChange={e => set('insuranceProvider', e.target.value)} />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Policy No. *</label>
-                    <input className="input-base w-full" placeholder="POL-00000" value={form.insurancePolicy} onChange={e => set('insurancePolicy', e.target.value)} />
+                    <label className="block text-[9px] font-black text-ink-4 uppercase tracking-widest mb-2 ml-1">Policy Number</label>
+                    <input className="w-full h-11 px-4 rounded-xl bg-white border border-line-2 focus:border-primary/30 text-sm font-bold text-ink outline-none" placeholder="POL-00000" value={form.insurancePolicy} onChange={e => set('insurancePolicy', e.target.value)} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1.5">Expiry Date *</label>
-                    <input className="input-base w-full" type="date" value={form.insuranceExpiry} onChange={e => set('insuranceExpiry', e.target.value)} />
+                    <label className="block text-[9px] font-black text-ink-4 uppercase tracking-widest mb-2 ml-1">Expiration Date</label>
+                    <input className="w-full h-11 px-4 rounded-xl bg-white border border-line-2 focus:border-primary/30 text-sm font-bold text-ink outline-none" type="date" value={form.insuranceExpiry} onChange={e => set('insuranceExpiry', e.target.value)} />
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-line-2 flex items-center justify-between">
-          <button onClick={onClose} className="text-sm font-bold text-ink-4 hover:text-ink transition-colors">Cancel</button>
-          <div className="flex gap-3">
-            {step > 1 && <Button variant="outline" onClick={() => setStep(s => s - 1)}>← Back</Button>}
+        <div className="px-8 py-7 border-t border-line-2 flex items-center justify-between bg-bg/10">
+          <button onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-ink-4 hover:text-urgent transition-colors">Abort</button>
+          <div className="flex gap-4">
+            {step > 1 && <Button variant="outline" className="rounded-xl px-6" onClick={() => setStep(s => s - 1)}>Back</Button>}
             {step < 2
-              ? <Button variant="primary" onClick={() => setStep(s => s + 1)}>Continue →</Button>
-              : <Button variant="primary" icon={Check} onClick={() => { onSave(form); onClose(); }}>Add Vehicle</Button>
+              ? <Button variant="primary" className="rounded-xl px-8" onClick={() => setStep(s => s + 1)}>Continue to Compliance</Button>
+              : <Button 
+                  variant="primary" 
+                  className="rounded-xl px-8 shadow-xl shadow-primary/20" 
+                  icon={Check} 
+                  onClick={() => { 
+                    const formattedData = {
+                      ...form,
+                      insurance: {
+                        provider: form.insuranceProvider,
+                        policy: form.insurancePolicy,
+                        expires: form.insuranceExpiry,
+                        status: 'valid'
+                      }
+                    };
+                    onSave(formattedData); 
+                    onClose(); 
+                  }}
+                >
+                  Finalize Registration
+                </Button>
             }
           </div>
         </div>
@@ -127,14 +179,12 @@ const AddVehicleModal = ({ onClose, onSave }) => {
   );
 };
 
-};
-
 const statusConfig = {
-  available:   { label: 'Available',  dot: 'bg-accent',  text: 'text-accent'  },
-  in_trip:     { label: 'In Trip',    dot: 'bg-primary', text: 'text-primary' },
-  break:       { label: 'On Break',   dot: 'bg-warning', text: 'text-warning' },
-  off_duty:    { label: 'Off Duty',   dot: 'bg-ink-4',   text: 'text-ink-4'   },
-  maintenance: { label: 'In Service', dot: 'bg-urgent',  text: 'text-urgent'  },
+  available:   { label: 'Available',  dot: 'bg-accent',  text: 'text-accent', bg: 'bg-accent-light border-accent/20'  },
+  in_trip:     { label: 'In Trip',    dot: 'bg-primary', text: 'text-primary', bg: 'bg-primary-tint/40 border-primary/20' },
+  break:       { label: 'On Break',   dot: 'bg-warning', text: 'text-warning-dark', bg: 'bg-warning-light border-warning/20' },
+  off_duty:    { label: 'Off Duty',   dot: 'bg-ink-4',   text: 'text-ink-4', bg: 'bg-bg border-line-2'   },
+  maintenance: { label: 'In Maintenance', dot: 'bg-urgent',  text: 'text-urgent', bg: 'bg-urgent-light border-urgent/20'  },
 };
 
 const insuranceBadge = { valid: 'accent', expiring: 'warning', expired: 'urgent' };
@@ -145,46 +195,54 @@ const typeBadge = {
   'Stretcher Van':  'warning',
 };
 
-const AssignDriverCell = ({ vehicle, allDrivers, onAssign, role }) => {
+const AssignDriverCell = ({ vehicle, allDrivers, onAssign }) => {
   const [open, setOpen] = useState(false);
   const driver = allDrivers.find(d => d.id === vehicle.assignedDriverId);
 
   return (
     <div className="relative">
       {driver ? (
-        <div className="flex items-center gap-2.5">
-          <Avatar initials={driver.initials} size="xs" online={driver.onDuty} />
+        <div className="flex items-center gap-3">
+          <Avatar initials={driver.initials} size="xs" online={driver.onDuty} className="ring-2 ring-white shadow-sm" />
           <div className="min-w-0">
-            <p className="text-xs font-bold text-ink truncate">{driver.name}</p>
-            <p className="text-[10px] text-ink-4">★{driver.rating} · {driver.totalTrips} trips</p>
+            <p className="text-[11px] font-black text-ink truncate tracking-tight">{driver.name}</p>
+            <div className="flex items-center gap-1.5">
+               <span className="text-[9px] text-ink-4 font-bold uppercase tracking-tighter flex items-center gap-0.5"><Star size={8} className="fill-warning text-warning" /> {driver.rating}</span>
+               <span className="text-[9px] text-primary font-black uppercase tracking-tighter">#{driver.totalTrips}T</span>
+            </div>
           </div>
-          <button onClick={() => setOpen(o => !o)} className="ml-1 text-[10px] font-bold text-primary hover:underline whitespace-nowrap">
-            Change
+          <button onClick={() => setOpen(o => !o)} className="ml-1 w-6 h-6 rounded-lg bg-bg flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+            <Settings size={12} />
           </button>
         </div>
       ) : (
-        <button onClick={() => setOpen(o => !o)} className="flex items-center gap-1.5 text-xs font-bold text-ink-4 hover:text-primary transition-colors">
-          <User size={13} /> Assign
+        <button onClick={() => setOpen(o => !o)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-bg border border-dashed border-line text-[10px] font-black text-ink-4 hover:text-primary hover:border-primary/30 transition-all uppercase tracking-widest">
+          <User size={12} /> Assign Operator
         </button>
       )}
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-xl border border-line shadow-xl z-30 py-1 animate-in slide-in-from-top-2 duration-150">
-          {allDrivers.map(d => (
-            <button key={d.id} onClick={() => { onAssign(vehicle.id, d.id); setOpen(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-bg transition-colors">
-              <Avatar initials={d.initials} size="xs" online={d.onDuty} />
-              <div className="flex-1 text-left min-w-0">
-                <p className="text-xs font-bold text-ink truncate">{d.name}</p>
-                <p className="text-[10px] text-ink-4 capitalize">{d.status.replace('_', ' ')}</p>
-              </div>
-              {vehicle.assignedDriverId === d.id && <Check size={13} className="text-accent flex-shrink-0" />}
-            </button>
-          ))}
+        <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-[24px] border border-line-2 shadow-2xl z-50 py-2 animate-in slide-in-from-top-3 duration-200 ring-1 ring-ink/5">
+          <div className="px-4 py-2 border-b border-line-2 mb-2">
+             <p className="text-[9px] font-black text-ink-4 uppercase tracking-[0.2em]">Select Deployment Operator</p>
+          </div>
+          <div className="max-h-60 overflow-y-auto scrollbar-hide">
+            {allDrivers.map(d => (
+              <button key={d.id} onClick={() => { onAssign(vehicle.id, d.id); setOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-bg transition-colors group">
+                <Avatar initials={d.initials} size="xs" online={d.onDuty} />
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-xs font-bold text-ink truncate group-hover:text-primary transition-colors">{d.name}</p>
+                  <p className="text-[9px] text-ink-4 font-black uppercase tracking-widest">{d.status.replace('_', ' ')}</p>
+                </div>
+                {vehicle.assignedDriverId === d.id && <CheckCircle2 size={14} className="text-accent flex-shrink-0" />}
+              </button>
+            ))}
+          </div>
           {vehicle.assignedDriverId && (
             <button onClick={() => { onAssign(vehicle.id, null); setOpen(false); }}
-              className="w-full px-3 py-2 text-xs font-bold text-urgent hover:bg-urgent-light/20 transition-colors text-left border-t border-line-2 mt-1">
-              Remove Assignment
+              className="w-full px-4 py-3 text-[10px] font-black text-urgent hover:bg-urgent-light transition-colors text-center border-t border-line-2 mt-2 uppercase tracking-[0.2em]">
+              Vacate Unit Assignment
             </button>
           )}
         </div>
@@ -194,34 +252,19 @@ const AssignDriverCell = ({ vehicle, allDrivers, onAssign, role }) => {
 };
 
 const Fleet = ({ role }) => {
-  const { id } = useParams();
   const navigate = useNavigate();
-  const { vehicles, loading: fleetLoading, error, addVehicle, handleAssign } = useFleet();
+  const { vehicles, loading: fleetLoading, addVehicle, handleAssign } = useFleet();
   const { drivers, loading: driversLoading } = useDrivers();
   
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
   useEffect(() => {
-    if (id && vehicles.length > 0) {
-      const v = vehicles.find(veh => veh.id === id);
-      if (v) setSelectedVehicle(v);
-    } else if (!id) {
-      setSelectedVehicle(null);
-    }
-  }, [id, vehicles]);
-
-  const handleSelectVehicle = (v) => {
-    if (v) {
-      navigate(`/fleet/${v.id}`);
-    } else {
-      navigate('/fleet');
-    }
-  };
+    window.scrollTo(0, 0);
+  }, []);
 
   const loading = fleetLoading || driversLoading;
 
@@ -232,7 +275,7 @@ const Fleet = ({ role }) => {
     const matchTab =
       filter === 'available' ? v?.status === 'available' :
       filter === 'in_trip'   ? v?.status === 'in_trip' :
-      filter === 'issues'    ? (v?.insurance?.status !== 'valid') : true;
+      filter === 'issues'    ? (v?.insurance?.status !== 'valid' || v?.status === 'maintenance') : true;
     return matchSearch && matchTab;
   });
 
@@ -243,87 +286,84 @@ const Fleet = ({ role }) => {
     total: (vehicles || []).length,
     available: (vehicles || []).filter(v => v?.status === 'available').length,
     inTrip: (vehicles || []).filter(v => v?.status === 'in_trip').length,
-    issues: (vehicles || []).filter(v => v?.insurance?.status !== 'valid').length,
+    issues: (vehicles || []).filter(v => v?.insurance?.status !== 'valid' || v?.status === 'maintenance').length,
   };
-
-
 
   if (loading && vehicles.length === 0) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-sm font-bold text-ink-3">Scanning Fleet...</p>
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <p className="text-sm font-black text-ink-3 tracking-widest uppercase">Initializing Fleet Protocol...</p>
         </div>
       </div>
     );
   }
 
-
-
   return (
-    <div className="space-y-7 pb-12 animate-in slide-in-from-bottom-4 duration-300">
+    <div className="space-y-8 pb-12 animate-in fade-in duration-500">
       {showAddModal && <AddVehicleModal onClose={() => setShowAddModal(false)} onSave={addVehicle} />}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Fleet Management</h1>
-          <p className="text-ink-3 font-medium">Vehicles, assignments, mileage and compliance</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Fleet Management</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Real-time asset tracking, compliance auditing, and operator logistics</p>
         </div>
         {role === 'admin' && (
-          <Button variant="primary" icon={Plus} onClick={() => setShowAddModal(true)}>Add Vehicle</Button>
+          <Button variant="primary" className="rounded-2xl px-8 py-6 shadow-xl shadow-primary/20" icon={Plus} onClick={() => setShowAddModal(true)}>Deploy New Unit</Button>
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Fleet',       value: stats.total,     sub: 'registered vehicles', icon: Truck,        color: 'bg-primary-light text-primary' },
-          { label: 'Available Now',      value: stats.available, sub: 'ready to dispatch',   icon: CheckCircle2, color: 'bg-accent-light text-accent'   },
-          { label: 'Currently In Trip',  value: stats.inTrip,    sub: 'active assignments',  icon: Clock,        color: 'bg-primary-light/60 text-primary' },
-          { label: 'Compliance Issues',  value: stats.issues,    sub: 'need attention',      icon: AlertTriangle,color: 'bg-urgent-light text-urgent'   },
+          { label: 'Fleet Assets',       value: stats.total,     sub: 'Managed Units', icon: Truck,        color: 'from-primary to-primary/80', iconColor: 'text-white' },
+          { label: 'Mission Ready',      value: stats.available, sub: 'Active Duty',   icon: Zap,          color: 'from-accent to-accent/80', iconColor: 'text-white'   },
+          { label: 'Live Deployments',   value: stats.inTrip,    sub: 'En Route',      icon: Activity,     color: 'from-primary-tint to-primary/60', iconColor: 'text-white' },
+          { label: 'Risk & Service',    value: stats.issues,    sub: 'Attention Required', icon: ShieldAlert, color: 'from-urgent to-urgent/80', iconColor: 'text-white'   },
         ].map(s => (
-          <Card key={s.label} className={`p-5 flex items-center gap-4 ${s.label === 'Compliance Issues' && stats.issues > 0 ? 'border-urgent/20' : ''}`}>
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${s.color}`}>
-              <s.icon size={20} />
+          <Card key={s.label} className={`p-6 flex items-center gap-5 border-none shadow-xl ring-1 ring-ink/5 bg-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300`}>
+            <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${s.color} opacity-5 -mr-12 -mt-12 rounded-full`} />
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${s.color} shadow-lg shadow-primary/10 group-hover:rotate-6 transition-transform duration-500`}>
+              <s.icon size={24} className="text-white" />
             </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider leading-none">{s.label}</p>
-              <p className="text-3xl font-extrabold text-ink mt-1 leading-none">{s.value}</p>
-              <p className="text-[10px] text-ink-4 mt-1">{s.sub}</p>
+            <div className="min-w-0 relative z-10">
+              <p className="text-[10px] font-black text-ink-4 uppercase tracking-[0.25em] leading-none mb-2">{s.label}</p>
+              <p className="text-3xl font-black text-ink tracking-tighter leading-none">{s.value}</p>
+              <p className="text-[10px] font-black text-ink-3 mt-2 uppercase tracking-widest flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-line-2" /> {s.sub}</p>
             </div>
           </Card>
         ))}
       </div>
 
-      <Card className="overflow-hidden border-line-2">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 border-b border-line-2 bg-bg/30">
-          <div className="flex items-center gap-1">
+      <Card className="overflow-hidden border-line-2 shadow-xl shadow-ink/5 ring-1 ring-ink/5 rounded-2xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-8 py-6 border-b border-line-2 bg-bg/20">
+          <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-xl shadow-inner ring-1 ring-ink/5 overflow-x-auto scrollbar-hide">
             {[
-              { id: 'all',       label: 'All Vehicles' },
+              { id: 'all',       label: 'All Units' },
               { id: 'available', label: 'Available' },
               { id: 'in_trip',   label: 'In Trip' },
-              { id: 'issues',    label: `Issues${stats.issues ? ` (${stats.issues})` : ''}` },
+              { id: 'issues',    label: `Maintenance${stats.issues ? ` (${stats.issues})` : ''}` },
             ].map(tab => (
               <button key={tab.id} onClick={() => { setFilter(tab.id); setCurrentPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === tab.id ? 'bg-white shadow-sm text-primary border border-line' : 'text-ink-3 hover:text-ink'}`}>
+                className={`px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filter === tab.id ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-ink-4 hover:text-ink hover:bg-bg'}`}>
                 {tab.label}
               </button>
             ))}
           </div>
-          <div className="relative w-full sm:w-56">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-4" size={14} />
-            <input type="text" placeholder="Search make, plate, ID..."
-              className="w-full pl-8 pr-3 py-2 bg-white border border-line rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/10 outline-none"
+          <div className="relative w-full lg:w-72 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" size={16} />
+            <input type="text" placeholder="Search Assets, Plates, or IDs..."
+              className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-transparent focus:border-primary/20 rounded-2xl text-xs font-bold text-ink shadow-sm ring-1 ring-ink/5 outline-none transition-all placeholder:text-ink-4/60"
               value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1); }} />
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead className="bg-bg/40 border-b border-line-2">
               <tr>
-                {['Vehicle', 'Type', 'Status', 'Assigned Driver', 'Mileage', 'Next Service', 'Insurance', ''].map(h => (
-                  <th key={h} className="px-5 py-3 text-[10px] font-bold text-ink-4 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                {['Asset Details', 'Vehicle Type', 'Deployment Status', 'Operator', 'Telematics', 'Scheduled Service', 'Compliance', ''].map(h => (
+                  <th key={h} className="px-8 py-5 text-[10px] font-black text-ink-4 uppercase tracking-[0.2em] whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -335,73 +375,64 @@ const Fleet = ({ role }) => {
                 const serviceWarning = nextServiceDays !== null && nextServiceDays < 60;
 
                 return (
-                  <tr key={v.id} className="hover:bg-bg/40 transition-colors group">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-bg rounded-xl flex items-center justify-center flex-shrink-0 border border-line-2 group-hover:border-primary/20 overflow-hidden transition-colors relative">
-                          {v.image ? (
-                            <img src={v.image} alt={v.plate} className="w-full h-full object-cover" />
-                          ) : (
-                            <Truck size={16} className="text-primary" />
-                          )}
+                  <tr key={v.id} className="hover:bg-bg/40 transition-all duration-300 group">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 ring-1 ring-ink/5 group-hover:ring-primary/30 group-hover:shadow-lg overflow-hidden transition-all duration-500 relative bg-bg shadow-inner">
+                          <img src={v.image || VEHICLE_PLACEHOLDER} alt={v.plate} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-extrabold text-ink">{v.year} {v.make} {v.model}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="font-mono text-[11px] font-bold text-ink-3">{v.plate}</span>
-                            <span className="text-[9px] text-ink-4 font-mono border border-line-2 px-1 rounded">{v.id}</span>
+                          <p className="text-sm font-black text-ink group-hover:text-primary transition-colors tracking-tight">{v.year} {v.make} {v.model}</p>
+                          <div className="flex items-center gap-2.5 mt-1.5">
+                            <span className="font-mono text-[10px] font-black text-ink bg-bg px-2.5 py-0.5 rounded-lg border border-line-2 shadow-sm">{v.plate}</span>
+                            <span className="text-[9px] text-ink-4 font-black uppercase tracking-widest border-l border-line-2 pl-2">ID: {v.id.slice(0,8)}</span>
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-5 py-4">
-                      <Badge variant={typeBadge[v.type] || 'neutral'}>{v.type}</Badge>
+                    <td className="px-8 py-5">
+                      <Badge variant={typeBadge[v.type] || 'neutral'} className="text-[8px] font-black tracking-widest uppercase px-3 py-1 ring-1 ring-ink/5">{v.type}</Badge>
                     </td>
 
-                    <td className="px-5 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        v.status === 'available'   ? 'bg-accent-light text-accent border-accent/20' :
-                        v.status === 'in_trip'     ? 'bg-primary-tint/40 text-primary border-primary/20' :
-                        v.status === 'break'       ? 'bg-warning-light text-warning-dark border-warning/20' :
-                        v.status === 'maintenance' ? 'bg-urgent-light text-urgent border-urgent/20' :
-                        'bg-bg text-ink-3 border-line-2'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+                    <td className="px-8 py-5">
+                      <span className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-[9px] font-black tracking-[0.1em] border uppercase transition-all duration-300 group-hover:scale-105 ${s.bg}`}>
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot} shadow-sm animate-pulse`} />
                         {s.label}
                       </span>
                     </td>
 
-                    <td className="px-5 py-4">
-                      <AssignDriverCell vehicle={v} allDrivers={drivers} onAssign={handleAssign} role={role} />
+                    <td className="px-8 py-5">
+                      <AssignDriverCell vehicle={v} allDrivers={drivers} onAssign={handleAssign} />
                     </td>
 
-                    <td className="px-5 py-4">
-                      <p className="text-sm font-bold text-ink font-mono">{(v?.mileage || 0).toLocaleString()}</p>
-                      <p className="text-[10px] text-ink-4">mi · {v?.seats || 0} seats</p>
+                    <td className="px-8 py-5">
+                      <p className="text-sm font-black text-ink tracking-tight">{(v?.mileage || 0).toLocaleString()}<span className="text-[10px] text-ink-4 font-bold ml-1 uppercase">mi</span></p>
+                      <p className="text-[9px] font-black text-ink-4 mt-1 uppercase tracking-widest flex items-center gap-1.5"><User size={10}/> {v?.seats || 0} Capacity</p>
                     </td>
 
-                    <td className="px-5 py-4">
-                      <div className={`flex items-center gap-1.5 ${serviceWarning ? 'text-warning-dark' : 'text-ink-3'}`}>
-                        {serviceWarning && <Wrench size={12} className="flex-shrink-0" />}
-                        <span className="text-xs font-bold">{v.nextService}</span>
+                    <td className="px-8 py-5">
+                      <div className={`flex items-center gap-2 ${serviceWarning ? 'text-urgent' : 'text-ink-3'}`}>
+                        {serviceWarning ? <ShieldAlert size={14} className="animate-bounce" /> : <ClipboardCheck size={14} className="text-accent" />}
+                        <span className="text-[11px] font-black tracking-tight">{v.nextService}</span>
                       </div>
-                      {serviceWarning && <p className="text-[10px] font-bold text-warning-dark mt-0.5">Due in {nextServiceDays}d</p>}
+                      {serviceWarning && <p className="text-[9px] font-black uppercase tracking-widest mt-1">Due in {nextServiceDays} Days</p>}
                     </td>
 
-                    <td className="px-5 py-4">
-                      <Badge variant={insuranceBadge[v.insurance.status] || 'neutral'} className="capitalize">
-                        {v.insurance.status}
+                    <td className="px-8 py-5">
+                      <Badge variant={insuranceBadge[v.insurance?.status] || 'neutral'} className="capitalize text-[8px] font-black tracking-widest px-3">
+                        {v.insurance?.status || 'Unknown'}
                       </Badge>
-                      <p className="text-[10px] text-ink-4 mt-1 font-mono">Exp {v.insurance.expires}</p>
+                      <p className="text-[9px] text-ink-4 mt-2 font-black uppercase tracking-widest">Expires {v.insurance?.expires || 'N/A'}</p>
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-8 py-5">
                       <button
-                        onClick={() => handleSelectVehicle(v)}
-                        className="flex items-center gap-1 text-xs font-bold text-ink-3 hover:text-primary transition-colors whitespace-nowrap"
+                        onClick={() => navigate(`/fleet/${v.id}`)}
+                        className="w-12 h-12 rounded-2xl bg-bg flex items-center justify-center text-ink-4 hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/20 transition-all group-hover:scale-110"
                       >
-                        Details <ChevronRight size={14} />
+                        <ChevronRight size={20} />
                       </button>
                     </td>
                   </tr>
@@ -409,9 +440,12 @@ const Fleet = ({ role }) => {
               })}
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-16 text-center">
-                    <Truck size={32} className="text-line mx-auto mb-3" />
-                    <p className="text-sm font-bold text-ink-3">No vehicles match your filter</p>
+                  <td colSpan={8} className="px-8 py-24 text-center">
+                    <div className="w-20 h-20 bg-bg rounded-[32px] flex items-center justify-center text-ink-4 mx-auto mb-6 shadow-inner border-2 border-dashed border-line group">
+                       <Truck size={40} className="group-hover:text-primary transition-colors" />
+                    </div>
+                    <p className="text-lg font-black text-ink tracking-tight">No Matching Assets Identified</p>
+                    <p className="text-sm font-medium text-ink-3 mt-1">Refine your search parameters or filter criteria.</p>
                   </td>
                 </tr>
               )}
@@ -419,13 +453,15 @@ const Fleet = ({ role }) => {
           </table>
         </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={filtered.length}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
+        <div className="bg-bg/20 px-8 py-6 border-t border-line-2">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </Card>
     </div>
   );

@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Phone, 
-  MessageSquare, 
-  AlertTriangle, 
-  MapPin, 
-  ChevronRight, 
-  Clock, 
+import {
+  Phone,
+  MessageSquare,
+  AlertTriangle,
+  ChevronRight,
   Truck,
   Plus,
   Minus,
-  Navigation,
   Battery,
   Wifi,
   Loader2
@@ -43,7 +40,7 @@ const LiveTrips = () => {
       <div className="flex items-center justify-center h-[80vh]">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-sm font-bold text-ink-3">Initializing Live Map...</p>
+          <p className="text-sm font-bold text-ink-3">Loading Live Trips...</p>
         </div>
       </div>
     );
@@ -96,8 +93,8 @@ const LiveTrips = () => {
       )}
 
       <div>
-        <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Live Trips</h1>
-        <p className="text-ink-3 font-medium">Monitoring {activeTrips.length} active assignments</p>
+        <h1 className="text-4xl font-black font-display text-ink tracking-tight">Deployment Console</h1>
+        <p className="text-ink-3 font-semibold mt-1 tracking-wide">Monitoring {activeTrips.length} active operational assignments</p>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -295,7 +292,7 @@ const LiveTrips = () => {
                   <div className="text-ink-4"><ChevronRight size={16} /></div>
                   <div><p className="text-[10px] font-bold text-ink-4 uppercase mb-0.5">Destination</p><p className="text-xs font-bold text-ink max-w-[180px] truncate">{selectedTrip.dropoff}</p></div>
                 </div>
-                <Button variant="primary-light" size="sm" icon={MessageSquare}>Message Dispatch</Button>
+                <Button variant="primary-light" size="sm" icon={MessageSquare}>Message Driver</Button>
               </div>
             </Card>
           )}

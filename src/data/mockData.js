@@ -61,6 +61,8 @@ export const vehicles = [
 export const drivers = [
   { id: 'DRV-2024-8421', name: 'David Wilson', initials: 'DW', phone: '(804) 555-0189',
     email: 'd.wilson@logiss-drivers.com', rating: 4.9, totalTrips: 1284,
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'Sarah Wilson', relation: 'Wife', phone: '(804) 555-0999' },
     onDuty: true, status: 'in_trip', currentTripId: 'LOGISS-2847', vehicleId: 'VEH-001',
     vehicle: { make: 'Ford Transit', color: 'White', plate: 'VA · 4KL-8392', type: 'Ambulatory Van' },
     license: { number: 'DL-VA-94281', expires: '2027-12-14', status: 'valid' },
@@ -71,6 +73,8 @@ export const drivers = [
 
   { id: 'DRV-2024-7710', name: 'Maria Garcia', initials: 'MG', phone: '(804) 555-0224',
     email: 'm.garcia@logiss-drivers.com', rating: 4.8, totalTrips: 967,
+    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'Carlos Garcia', relation: 'Husband', phone: '(804) 555-0888' },
     onDuty: true, status: 'available', currentTripId: null, vehicleId: 'VEH-002',
     vehicle: { make: 'Honda Odyssey', color: 'Silver', plate: 'VA · 7XR-1129', type: 'Wheelchair Van' },
     license: { number: 'DL-VA-87392', expires: '2028-04-22', status: 'valid' },
@@ -81,6 +85,8 @@ export const drivers = [
 
   { id: 'DRV-2024-9082', name: 'James Carter', initials: 'JC', phone: '(804) 555-0341',
     email: 'j.carter@logiss-drivers.com', rating: 4.7, totalTrips: 612,
+    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'Linda Carter', relation: 'Sister', phone: '(804) 555-0777' },
     onDuty: true, status: 'available', currentTripId: null, vehicleId: 'VEH-003',
     vehicle: { make: 'Toyota Sienna', color: 'Gray', plate: 'VA · 2HT-5560', type: 'Ambulatory Van' },
     license: { number: 'DL-VA-62815', expires: '2027-09-08', status: 'valid' },
@@ -91,6 +97,8 @@ export const drivers = [
 
   { id: 'DRV-2024-6531', name: 'Patricia Lee', initials: 'PL', phone: '(804) 555-0492',
     email: 'p.lee@logiss-drivers.com', rating: 4.9, totalTrips: 1542,
+    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'Michael Lee', relation: 'Son', phone: '(804) 555-0666' },
     onDuty: false, status: 'off_duty', currentTripId: null, vehicleId: 'VEH-004',
     vehicle: { make: 'Ford Transit', color: 'White', plate: 'VA · 9KE-3320', type: 'Ambulatory Van' },
     license: { number: 'DL-VA-30182', expires: '2027-02-28', status: 'valid' },
@@ -101,6 +109,8 @@ export const drivers = [
 
   { id: 'DRV-2024-4407', name: 'Robert Kim', initials: 'RK', phone: '(804) 555-0117',
     email: 'r.kim@logiss-drivers.com', rating: 4.6, totalTrips: 389,
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'Grace Kim', relation: 'Wife', phone: '(804) 555-0555' },
     onDuty: true, status: 'break', currentTripId: null, vehicleId: 'VEH-005',
     vehicle: { make: 'Chrysler Pacifica', color: 'Blue', plate: 'VA · 5DL-7821', type: 'Wheelchair Van' },
     license: { number: 'DL-VA-71203', expires: '2026-12-01', status: 'valid' },
@@ -568,4 +578,32 @@ export const opsStats = {
   todaysTrips: 23, inProgress: 1, pendingReview: 3, driversOnDuty: 4, driversTotal: 5,
   completionRate: 96, avgRating: 4.83, willCallStandby: 1, expiringDocuments: 2
 };
-export const mockUsers = [{ id: 'LOG-882', name: 'Admin User', email: 'admin@logiss.com', role: 'admin', status: 'active', lastLogin: 'Just now' }];
+
+export const riders = [
+  {
+    id: 'RDR-2024-001', name: 'Margaret Thompson', initials: 'MT', phone: '(804) 555-0142',
+    email: 'm.thompson@example.com', joinedDate: '2023-05-12',
+    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'Sarah Thompson', relation: 'Daughter', phone: '(804) 555-1234' },
+    mobility: 'Ambulatory', defaultPickup: '2401 Robious Rd, Chesterfield', defaultDropoff: 'Chippenham Medical Center',
+    totalTrips: 45, rating: 5, status: 'active', paymentMethod: 'Medicaid - VA'
+  },
+  {
+    id: 'RDR-2024-002', name: 'Robert Johnson', initials: 'RJ', phone: '(804) 555-0831',
+    email: 'r.johnson@example.com', joinedDate: '2024-01-18',
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'Mary Johnson', relation: 'Wife', phone: '(804) 555-4321' },
+    mobility: 'Wheelchair', defaultPickup: '8720 Meadowbridge Rd, Mechanicsville', defaultDropoff: 'Memorial Regional Medical Center',
+    totalTrips: 12, rating: 4.8, status: 'active', paymentMethod: 'Medicaid - VA'
+  },
+  {
+    id: 'RDR-2024-003', name: 'Elizabeth Harris', initials: 'EH', phone: '(804) 555-0277',
+    email: 'e.harris@example.com', joinedDate: '2022-11-05',
+    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop',
+    emergencyContact: { name: 'John Harris', relation: 'Son', phone: '(804) 555-8765' },
+    mobility: 'Cane', defaultPickup: '1547 Huguenot Rd, Chesterfield', defaultDropoff: 'Johnston-Willis Hospital',
+    totalTrips: 87, rating: 4.9, status: 'active', paymentMethod: 'Self-Pay (Card)'
+  }
+];
+
+export const mockUsers = [{ id: 'LOGISS-882', name: 'Admin User', email: 'admin@logiss.com', role: 'admin', status: 'active', lastLogin: 'Just now' }];

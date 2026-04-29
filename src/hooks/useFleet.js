@@ -41,5 +41,14 @@ export const useFleet = () => {
     }
   };
 
-  return { vehicles, loading, error, addVehicle, handleAssign, refresh: fetchVehicles };
+  const updateStatus = async (id, status) => {
+    try {
+      await fleetService.updateVehicleStatus(id, status);
+      setVehicles(prev => prev.map(v => v.id === id ? { ...v, status } : v));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return { vehicles, loading, error, addVehicle, handleAssign, updateStatus, refresh: fetchVehicles };
 };

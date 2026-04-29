@@ -19,6 +19,7 @@ import CMS from './pages/CMS';
 import AdminDashboard from './pages/AdminDashboard';
 import Transactions from './pages/Transactions';
 import UserAccess from './pages/UserAccess';
+import Riders from './pages/Riders';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, role, allowedRoles }) => {
@@ -59,6 +60,7 @@ function App() {
           <Route path="bookings" element={<Bookings role={role} />} />
           <Route path="live" element={<LiveTrips role={role} />} />
           <Route path="drivers" element={<Drivers role={role} />} />
+          <Route path="riders" element={<Riders role={role} />} />
           <Route path="applications" element={<Applications role={role} />} />
           <Route path="reports" element={<Reports role={role} />} />
           <Route path="trips" element={<TripHistory role={role} />} />
@@ -78,7 +80,7 @@ function App() {
           <Route path="transactions" element={
             <ProtectedRoute role={role} allowedRoles={['admin']}><Transactions /></ProtectedRoute>
           } />
-          <Route path="users" element={
+          <Route path="staff" element={
             <ProtectedRoute role={role} allowedRoles={['admin']}><UserAccess /></ProtectedRoute>
           } />
           <Route path="cms" element={

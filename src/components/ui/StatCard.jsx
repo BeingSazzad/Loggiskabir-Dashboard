@@ -20,7 +20,7 @@ export const StatCard = ({ label, value, sub, icon: Icon, accent = 'primary', tr
           </div>
         )}
       </div>
-      <div className="text-2xl font-extrabold font-display text-ink mb-1">{value}</div>
+      <div className="text-2xl font-black font-display text-ink mb-1">{value}</div>
       {(sub || trend) && (
         <div className="flex items-center gap-2">
           {trend && (

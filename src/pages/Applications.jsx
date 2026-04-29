@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   CheckCircle2, 
   Clock, 
@@ -44,7 +44,7 @@ const Applications = () => {
       <div className="flex items-center justify-center h-[80vh]">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-sm font-bold text-ink-3">Retrieving Applications...</p>
+          <p className="text-sm font-bold text-ink-3">Loading Applications...</p>
         </div>
       </div>
     );
@@ -53,8 +53,8 @@ const Applications = () => {
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Driver Applications</h1>
-        <p className="text-ink-3 font-medium">Review and approve new driver onboarding requests</p>
+        <h1 className="text-4xl font-black font-display text-ink tracking-tight">Driver Applications</h1>
+        <p className="text-ink-3 font-semibold mt-1 tracking-wide">Review and approve new driver onboarding requests</p>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[calc(100vh-250px)]">
@@ -65,7 +65,7 @@ const Applications = () => {
               key={app.id} 
               hover 
               onClick={() => setSelectedAppId(app.id)}
-              className={`p-4 cursor-pointer transition-all ${selectedAppId === app.id ? 'border-primary bg-primary-tint/30 shadow-md shadow-primary/5' : ''}`}
+              className={`p-5 cursor-pointer transition-all border-2 rounded-2xl ${selectedAppId === app.id ? 'border-primary bg-primary-tint/20 shadow-lg shadow-primary/5' : 'border-line-2'}`}
             >
               <div className="flex justify-between items-start mb-3">
                 <span className="font-mono text-[10px] font-bold text-ink-4 tracking-tighter uppercase">#{app?.id || '---'}</span>
@@ -110,7 +110,7 @@ const Applications = () => {
         {/* Right Column: Detail */}
         <div className="lg:col-span-7 overflow-y-auto pr-2 scrollbar-hide">
           {selectedApp ? (
-            <Card className="flex flex-col h-fit">
+            <Card className="flex flex-col h-fit rounded-2xl border-2 border-line-2 shadow-sm">
               <div className="p-6 border-b border-line-2 flex items-center justify-between bg-tint/10">
                 <div className="flex items-center gap-4">
                   <span className="font-mono text-sm font-bold text-ink-3 tracking-tighter">#{selectedApp?.id || '---'}</span>

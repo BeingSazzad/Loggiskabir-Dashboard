@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Truck, Users, BarChart3, AlertTriangle,
@@ -60,8 +60,8 @@ const Operations = () => {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Today's Schedule</h1>
-          <p className="text-ink-3 font-medium">{todayLabel}</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Today's Schedule</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">{todayLabel}</p>
         </div>
       </div>
 
@@ -122,7 +122,7 @@ const Operations = () => {
                     return (
                       <tr key={trip?.id} onClick={() => navigate(trip?.status === 'pending_review' ? '/bookings' : '/live')} className="hover:bg-bg cursor-pointer transition-colors group">
                         <td className="px-5 py-3"><div className="flex items-center gap-2">{statusIcon(trip?.status)}<TripStatusBadge status={trip?.status} /></div></td>
-                        <td className="px-5 py-3"><div className="flex items-center gap-2.5 min-w-0"><Avatar initials={trip?.rider?.initials || '?'} size="xs" /><div className="min-w-0"><p className="text-xs font-bold text-ink truncate">{trip?.rider?.name || 'Unknown'}</p><div className="flex items-center gap-2 mt-0.5"><p className="text-[10px] text-ink-4">{trip?.mobility || 'Standard'}</p>{trip?.type === 'round_trip' ? <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100"><Repeat size={8} strokeWidth={3} /><span className="text-[8px] font-black uppercase">Round</span></div> : <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100"><MoveRight size={8} strokeWidth={3} /><span className="text-[8px] font-black uppercase">O/W</span></div>}</div></div></div></td>
+                        <td className="px-5 py-3"><div className="flex items-center gap-2.5 min-w-0"><Avatar initials={trip?.rider?.initials || '?'} size="xs" /><div className="min-w-0"><p className="text-xs font-bold text-ink truncate">{trip?.rider?.name || 'Unknown'}</p><div className="flex items-center gap-2 mt-0.5"><p className="text-[10px] text-ink-4">{trip?.mobility || 'Standard'}</p>{trip?.type === 'round_trip' ? <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100"><Repeat size={8} strokeWidth={3} /><span className="text-[8px] font-black uppercase">Round Trip</span></div> : <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100"><MoveRight size={8} strokeWidth={3} /><span className="text-[8px] font-black uppercase">One Way</span></div>}</div></div></div></td>
                         <td className="px-5 py-3 hidden md:table-cell max-w-[180px]"><p className="text-[10px] font-semibold text-ink truncate">{trip?.pickup || '---'}</p><p className="text-[10px] text-ink-4 flex items-center gap-1 truncate"><MapPin size={8} className="flex-shrink-0" /> {trip?.dropoff || '---'}</p></td>
                         <td className="px-5 py-3 whitespace-nowrap"><p className="text-xs font-bold text-ink">{formatTime(trip?.scheduledTime)}</p><p className="text-[10px] text-ink-4">{formatShortDate(trip?.scheduledTime)}</p></td>
                         <td className="px-5 py-3 hidden md:table-cell">{driver ? <p className="text-xs font-bold text-ink whitespace-nowrap">{driver.name}</p> : <span className="text-[10px] italic text-ink-4">Unassigned</span>}</td>

@@ -1,48 +1,23 @@
 import { drivers as mockDrivers } from '../data/mockData';
 
-// Simulated database
 let driversDB = [...mockDrivers];
 
-// Utility to simulate network delay
-const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
-
 export const driverService = {
-  /**
-   * Fetch all drivers
-   * @param {Object} filters - Optional filters
-   * @returns {Promise<Array>} Array of drivers
-   */
-  getDrivers: async (filters = {}) => {
-    await delay();
+  getDrivers: (filters = {}) => {
     let result = [...driversDB];
-    
-    // Apply optional filters if backend were real
     if (filters.status && filters.status !== 'all') {
-       result = result.filter(d => d.status === filters.status);
+      result = result.filter(d => d.status === filters.status);
     }
-    
-    return result;
+    return Promise.resolve(result);
   },
 
-  /**
-   * Fetch a single driver by ID
-   * @param {string} id 
-   * @returns {Promise<Object>}
-   */
-  getDriverById: async (id) => {
-    await delay();
+  getDriverById: (id) => {
     const driver = driversDB.find(d => d.id === id);
-    if (!driver) throw new Error('Driver not found');
-    return driver;
+    if (!driver) return Promise.reject(new Error('Driver not found'));
+    return Promise.resolve(driver);
   },
 
-  /**
-   * Create a new driver
-   * @param {Object} driverData 
-   * @returns {Promise<Object>}
-   */
-  createDriver: async (driverData) => {
-    await delay(800); // Simulate slightly longer write operation
+  createDriver: (driverData) => {
     const newDriver = {
       id: `DRV-${Math.floor(1000 + Math.random() * 9000)}`,
       ...driverData,
@@ -53,21 +28,13 @@ export const driverService = {
       joinedDate: new Date().toISOString()
     };
     driversDB = [newDriver, ...driversDB];
-    return newDriver;
+    return Promise.resolve(newDriver);
   },
 
-  /**
-   * Update an existing driver
-   * @param {string} id 
-   * @param {Object} updates 
-   * @returns {Promise<Object>}
-   */
-  updateDriver: async (id, updates) => {
-    await delay();
+  updateDriver: (id, updates) => {
     const index = driversDB.findIndex(d => d.id === id);
-    if (index === -1) throw new Error('Driver not found');
-    
+    if (index === -1) return Promise.reject(new Error('Driver not found'));
     driversDB[index] = { ...driversDB[index], ...updates };
-    return driversDB[index];
+    return Promise.resolve(driversDB[index]);
   }
 };

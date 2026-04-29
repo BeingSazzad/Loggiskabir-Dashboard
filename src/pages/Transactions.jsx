@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   CreditCard, 
   Search, 
@@ -63,8 +63,8 @@ const Transactions = () => {
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Financial Transactions</h1>
-          <p className="text-ink-3 font-medium">Manage payments, refunds, and financial reports</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Financial Transactions</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Manage payments, refunds, and financial reports</p>
         </div>
         <Button variant="outline" icon={Download}>Export CSV</Button>
       </div>
@@ -87,7 +87,7 @@ const Transactions = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex bg-bg border border-line p-1 rounded-xl shadow-inner">
+          <div className="flex bg-bg p-1 rounded-xl border border-line shadow-inner">
             {['all', 'paid', 'pending', 'refunded'].map(f => (
               <button 
                 key={f}

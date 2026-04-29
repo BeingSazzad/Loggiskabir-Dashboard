@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Search, Download, ChevronRight, MapPin, ArrowRight,
   Clock, User, Truck as TruckIcon, CheckCircle2, XCircle, TrendingUp,
@@ -27,7 +27,7 @@ const TripDetailsModal = ({ trip, drivers, onClose }) => {
           <div className="flex items-center gap-4 mb-4 sm:mb-0">
             <TripStatusBadge status={trip.status} />
             <div>
-              <h2 className="text-xl font-extrabold font-display text-ink uppercase tracking-tight flex items-center gap-2">
+              <h2 className="text-xl font-black font-display text-ink uppercase tracking-tight flex items-center gap-2">
                 Trip #{trip.id}
                 {trip.rating && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full flex items-center gap-1"><TrendingUp size={12}/> ★ {trip.rating}</span>}
               </h2>
@@ -180,7 +180,7 @@ const TripDetailsModal = ({ trip, drivers, onClose }) => {
               {/* Rider Info */}
               <section className="bg-white rounded-2xl border border-line-2 p-5 shadow-sm">
                 <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <User size={14} /> Passenger Information
+                  <User size={14} /> Rider Information
                 </h3>
                 
                 <div className="flex flex-col sm:flex-row gap-6">
@@ -500,8 +500,8 @@ const TripHistory = () => {
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Trip History</h1>
-          <p className="text-ink-3 font-medium">Archived and active records for LOGISS fleet</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Trip History</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Archived and active records for LOGISS fleet</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" icon={Download} onClick={handleExport}>Export CSV</Button>

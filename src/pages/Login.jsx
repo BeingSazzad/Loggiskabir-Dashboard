@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Truck, ShieldAlert, Navigation, ArrowRight, Mail, Lock } from 'lucide-react';
 import { Button } from '../components/UI';
 
@@ -33,7 +33,7 @@ const Login = ({ setRole }) => {
           <div className="mb-8">
             <img src="/logo.png" alt="Logiss Rides" className="h-24 w-auto drop-shadow-lg bg-white/80 p-2 rounded-xl backdrop-blur-sm" />
           </div>
-          <h1 className="font-display font-extrabold text-5xl tracking-tight text-white mb-4 leading-tight">
+          <h1 className="font-display font-black text-5xl tracking-tight text-white mb-4 leading-tight">
             Logistics &<br/>Fleet Operations
           </h1>
           <p className="text-white/70 text-lg max-w-md">

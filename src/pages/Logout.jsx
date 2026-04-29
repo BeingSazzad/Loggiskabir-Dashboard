@@ -10,8 +10,8 @@ const Logout = ({ onBackToLogin }) => {
           <LogOut size={40} className="text-primary" />
         </div>
         
-        <h1 className="text-3xl font-extrabold font-display text-ink mb-2">Successfully Signed Out</h1>
-        <p className="text-ink-3 font-medium mb-8">
+        <h1 className="text-4xl font-black font-display text-ink mb-2">Successfully Signed Out</h1>
+        <p className="text-ink-3 font-semibold mb-8">
           Your dispatch session has been securely ended. See you next time!
         </p>
 

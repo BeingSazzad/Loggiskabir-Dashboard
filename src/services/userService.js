@@ -1,25 +1,14 @@
 import { mockUsers } from '../data/mockData';
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
 export const userService = {
-  getUsers: async () => {
-    await delay(600);
-    return [...mockUsers];
-  },
-  
-  updateUserStatus: async (id, status) => {
-    await delay(400);
-    return { success: true };
-  },
+  getUsers: () => Promise.resolve([...mockUsers]),
 
-  inviteUser: async (userData) => {
-    await delay(800);
-    return { 
-      id: `LOG-${Math.floor(Math.random() * 900) + 100}`,
-      ...userData,
-      status: 'active',
-      lastLogin: 'Never'
-    };
-  }
+  updateUserStatus: (_id, _status) => Promise.resolve({ success: true }),
+
+  inviteUser: (userData) => Promise.resolve({
+    id: `LOG-${Math.floor(Math.random() * 900) + 100}`,
+    ...userData,
+    status: 'active',
+    lastLogin: 'Never'
+  })
 };

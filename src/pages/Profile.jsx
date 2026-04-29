@@ -1,195 +1,143 @@
-import React, { useState } from 'react';
-import { 
-  User, 
-  Shield, 
-  Bell, 
-  Mail, 
-  Phone, 
-  Key, 
-  Smartphone, 
-  MapPin, 
-  Lock,
-  ChevronRight,
-  Camera,
-  History,
-  ShieldCheck,
-  Globe,
-  Loader2
+import { useState, useRef } from 'react';
+import {
+  User, Mail, Phone, MapPin,
+  Camera, Loader2, CheckCircle2,
 } from 'lucide-react';
-import { Card, Avatar, Button, Badge } from '../components/UI';
+import { Card, Badge, Button } from '../components/UI';
+
+const PROFILES = {
+  admin: {
+    name: 'Marcus A. Holloway',
+    email: 'm.holloway@logiss.com',
+    phone: '(804) 555-0882',
+    region: 'Richmond, VA',
+    role: 'Administrator',
+    employeeId: 'LOGISS-882',
+    department: 'Operations & Fleet',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+  },
+  dispatcher: {
+    name: 'Sandra K. Reynolds',
+    email: 's.reynolds@logiss.com',
+    phone: '(804) 555-0941',
+    region: 'Richmond, VA',
+    role: 'Dispatch Officer',
+    employeeId: 'LOGISS-941',
+    department: 'Dispatch Center',
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+  },
+};
+
+const Field = ({ label, icon: Icon, value, readOnly }) => (
+  <div>
+    <p className="text-xs font-semibold text-ink-4 mb-1.5">{label}</p>
+    <div className="relative">
+      {Icon && <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-4 pointer-events-none" />}
+      <input
+        defaultValue={value}
+        readOnly={readOnly}
+        className={`w-full h-11 rounded-xl border border-line-2 text-sm font-medium text-ink bg-bg ${Icon ? 'pl-10' : 'pl-4'} pr-4 focus:outline-none focus:border-primary/30 focus:bg-white transition-all ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+      />
+    </div>
+  </div>
+);
 
 const Profile = ({ role }) => {
-  const [activeTab, setActiveTab] = useState('account');
-  const [isSaving, setIsSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [previewImg, setPreviewImg] = useState(null);
+  const fileRef = useRef();
 
-  const tabs = [
-    { id: 'account', label: 'Account Info', icon: User },
-    { id: 'security', label: 'Security & Privacy', icon: Lock },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-  ];
+  const p = PROFILES[role] || PROFILES.dispatcher;
+  const displayImg = previewImg || p.image;
 
   const handleSave = () => {
-    setIsSaving(true);
-    setTimeout(() => setIsSaving(false), 1000);
+    setSaving(true);
+    setTimeout(() => { setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000); }, 900);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreviewImg(ev.target.result);
+    reader.readAsDataURL(file);
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-line-2 pb-8">
-        <div className="flex items-center gap-6">
-          <div className="relative group">
-            <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-bg">
-              <Avatar initials={role === 'admin' ? 'AD' : 'DS'} size="full" shape="square" />
-            </div>
-            <button className="absolute -bottom-2 -right-2 p-2 bg-primary text-white rounded-xl shadow-lg hover:bg-primary-dark transition-all scale-90 group-hover:scale-100">
-              <Camera size={16} />
-            </button>
+    <div className="max-w-2xl mx-auto pb-16 animate-in fade-in duration-300">
+
+      {/* Header */}
+      <div className="flex items-center gap-5 mb-8 pb-8 border-b border-line-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-4xl font-black font-display text-ink tracking-tight">{p.name}</h1>
+            <Badge variant="primary-light" className="text-[10px] uppercase tracking-widest">{p.role}</Badge>
           </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">{role === 'admin' ? 'Admin User' : 'Dispatcher User'}</h1>
-              <Badge variant="primary-light" className="text-[10px] uppercase tracking-widest">{role}</Badge>
-            </div>
-            <p className="text-ink-3 font-medium mt-1 italic">Joined LOGISS Operations on Jan 2026</p>
-          </div>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">{p.employeeId} · {p.department}</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" icon={History}>Login History</Button>
-          <Button variant="primary" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
+        <Button variant="primary" onClick={handleSave} disabled={saving} className="shrink-0">
+          {saving
+            ? <><Loader2 size={14} className="animate-spin inline mr-1.5" />Saving</>
+            : saved
+            ? <><CheckCircle2 size={14} className="inline mr-1.5" />Saved</>
+            : 'Save Changes'}
+        </Button>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Nav */}
-        <aside className="lg:w-64 flex flex-col gap-1">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                activeTab === tab.id 
-                ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]' 
-                : 'text-ink-3 hover:bg-bg'
-              }`}
-            >
-              <tab.icon size={18} />
-              {tab.label}
-            </button>
-          ))}
-        </aside>
+      <Card className="p-6 space-y-6">
 
-        {/* Right Content */}
-        <div className="flex-1 space-y-6">
-          {activeTab === 'account' && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <Card className="p-8 space-y-8 border-line-2 shadow-sm">
-                <section>
-                  <h4 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <User size={12} className="text-primary" /> Personal Information
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-ink-3 ml-1">Full Name</label>
-                      <div className="relative group">
-                        <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" />
-                        <input className="input-base w-full pl-12 h-12 bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20" defaultValue={role === 'admin' ? 'Admin User' : 'Dispatcher User'} />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-ink-3 ml-1">Email Address</label>
-                      <div className="relative group">
-                        <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" />
-                        <input className="input-base w-full pl-12 h-12 bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20" defaultValue={role === 'admin' ? 'admin@logiss.com' : 'dispatcher@logiss.com'} />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-ink-3 ml-1">Phone Number</label>
-                      <div className="relative group">
-                        <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" />
-                        <input className="input-base w-full pl-12 h-12 bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20" defaultValue="(804) 555-0100" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-ink-3 ml-1">Reporting Region</label>
-                      <div className="relative group">
-                        <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-4 group-focus-within:text-primary transition-colors" />
-                        <input className="input-base w-full pl-12 h-12 bg-bg border-2 border-transparent focus:bg-white focus:border-primary/20" defaultValue="Richmond, VA" />
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="pt-8 border-t border-line-2">
-                  <h4 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest mb-6">Language & Locale</h4>
-                  <div className="flex items-center justify-between p-4 bg-bg rounded-2xl border border-line-2 hover:border-line transition-all cursor-pointer">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-ink-3 shadow-sm border border-line-2">
-                        <Globe size={20} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-ink">English (United States)</p>
-                        <p className="text-[10px] text-ink-4 font-semibold uppercase tracking-wider">Default Dashboard Language</p>
-                      </div>
-                    </div>
-                    <ChevronRight size={16} className="text-line" />
-                  </div>
-                </section>
-              </Card>
-            </div>
-          )}
-
-          {activeTab === 'security' && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <Card className="p-8 border-line-2 shadow-sm">
-                <h4 className="text-[10px] font-bold text-ink-4 uppercase tracking-widest mb-8 flex items-center gap-2">
-                  <ShieldCheck size={12} className="text-accent" /> Security Overview
-                </h4>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-6 bg-white rounded-2xl border-2 border-line-2 hover:border-primary/20 transition-all group cursor-pointer shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-accent-light rounded-2xl flex items-center justify-center text-accent shadow-sm border border-accent/10 transition-transform group-hover:scale-110">
-                        <Key size={24} />
-                      </div>
-                      <div>
-                        <p className="text-base font-bold text-ink">Change Password</p>
-                        <p className="text-xs text-ink-3 font-medium mt-1">Last changed 4 months ago</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" icon={ChevronRight} />
-                  </div>
-
-                  <div className="flex items-center justify-between p-6 bg-white rounded-2xl border-2 border-line-2 hover:border-primary/20 transition-all group cursor-pointer shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary-light rounded-2xl flex items-center justify-center text-primary shadow-sm border border-primary/10 transition-transform group-hover:scale-110">
-                        <Smartphone size={24} />
-                      </div>
-                      <div>
-                        <p className="text-base font-bold text-ink">Two-Factor Authentication</p>
-                        <p className="text-xs text-ink-3 font-medium mt-1 italic">Not enabled (Recommended)</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">Enable</Button>
-                  </div>
+        {/* Photo Upload */}
+        <div>
+          <p className="text-[10px] font-bold text-ink-4 uppercase tracking-[0.18em] mb-4">Profile Photo</p>
+          <div className="flex items-center gap-5">
+            <div className="relative shrink-0">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-line shadow-md bg-bg">
+                <img src={displayImg} alt={p.name} className="w-full h-full object-cover" />
+              </div>
+              {previewImg && (
+                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow">
+                  <CheckCircle2 size={11} className="text-white" />
                 </div>
-
-                <div className="mt-10 p-6 bg-urgent-light/30 rounded-2xl border border-urgent/10 flex items-start gap-4">
-                  <Shield size={24} className="text-urgent mt-1" />
-                  <div>
-                    <p className="text-sm font-extrabold text-urgent uppercase tracking-widest mb-1">Critical Security Alert</p>
-                    <p className="text-xs font-medium text-urgent/80 leading-relaxed">
-                      Always ensure you sign out from public terminals. Your account access is audited for every login session from new IP addresses.
-                    </p>
-                  </div>
-                </div>
-              </Card>
+              )}
             </div>
-          )}
+            <div className="space-y-2">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <Button variant="outline" size="sm" icon={Camera} onClick={() => fileRef.current?.click()}>
+                {previewImg ? 'Change Photo' : 'Upload Photo'}
+              </Button>
+              {previewImg && (
+                <button
+                  onClick={() => setPreviewImg(null)}
+                  className="block text-[11px] font-semibold text-ink-4 hover:text-urgent transition-colors"
+                >
+                  Remove
+                </button>
+              )}
+              <p className="text-[11px] text-ink-4">JPG, PNG or WebP · Max 2MB</p>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Personal Info */}
+        <div className="pt-5 border-t border-line-2">
+          <p className="text-[10px] font-bold text-ink-4 uppercase tracking-[0.18em] mb-5">Personal Information</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Full Name"        icon={User}   value={p.name}   />
+            <Field label="Email Address"    icon={Mail}   value={p.email}  />
+            <Field label="Phone Number"     icon={Phone}  value={p.phone}  />
+            <Field label="Reporting Region" icon={MapPin} value={p.region} />
+          </div>
+        </div>
+
+
+      </Card>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Clock, MapPin, Phone, ChevronRight,
@@ -186,8 +186,8 @@ const Bookings = () => {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Bookings</h1>
-          <p className="text-ink-3 font-medium">Manage medical transportation requests</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Booking Requests</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Review and dispatch medical transportation requests</p>
         </div>
         <Button variant="primary" icon={Plus} onClick={() => setShowManualModal(true)}>Manual Entry</Button>
       </div>
@@ -270,7 +270,7 @@ const Bookings = () => {
                       <td className="px-6 py-6">
                         <div className="flex flex-col gap-1.5">
                           <Badge variant="primary" className="w-fit">{booking?.mobility || 'Standard'}</Badge>
-                          {booking?.type === 'round_trip' ? <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 w-fit"><Repeat size={10} strokeWidth={3} /><span className="text-[9px] font-black uppercase">Round</span></div> : <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 w-fit"><MoveRight size={10} strokeWidth={3} /><span className="text-[9px] font-black uppercase">O/W</span></div>}
+                          {booking?.type === 'round_trip' ? <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 w-fit"><Repeat size={10} strokeWidth={3} /><span className="text-[9px] font-black uppercase">Round Trip</span></div> : <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 w-fit"><MoveRight size={10} strokeWidth={3} /><span className="text-[9px] font-black uppercase">One Way</span></div>}
                         </div>
                       </td>
                       <td className="px-6 py-6 whitespace-nowrap">
@@ -282,7 +282,7 @@ const Bookings = () => {
                           {activeTab === 'pending' ? (
                             <button className="p-2 text-accent hover:bg-accent-light rounded-xl transition-all" onClick={(e) => { e.stopPropagation(); handleApprove(); }}><Check size={18} /></button>
                           ) : (
-                            <button className="p-2 text-primary hover:bg-primary-light rounded-xl transition-all flex items-center gap-1.5 px-3" onClick={(e) => { e.stopPropagation(); openBooking(booking.id); setIsAssigning(true); }}><Users size={16} /><span className="text-[10px] font-bold uppercase">Assign</span></button>
+                            <button className="p-2 text-primary hover:bg-primary-light rounded-xl transition-all flex items-center gap-1.5 px-3" onClick={(e) => { e.stopPropagation(); openBooking(booking.id); setIsAssigning(true); }}><Users size={16} /><span className="text-[10px] font-bold uppercase">Assign Driver</span></button>
                           )}
                           <ChevronRight size={15} className="text-ink-4" />
                         </div>
@@ -389,7 +389,7 @@ const Bookings = () => {
 
                 <div className="p-6 border-t border-line-2 bg-white space-y-3">
                   {selectedBooking.status === 'pending_review' ? (
-                    <div className="flex gap-3"><Button variant="ghost" className="text-urgent flex-1" onClick={handleReject}>Reject</Button><Button variant="primary" className="flex-1" onClick={handleApprove}>Approve</Button></div>
+                    <div className="flex gap-3"><Button variant="ghost" className="text-urgent flex-1" onClick={handleReject}>Decline</Button><Button variant="primary" className="flex-1" onClick={handleApprove}>Confirm</Button></div>
                   ) : (
                     <Button variant="accent" className="w-full py-4 text-base" icon={Navigation} onClick={handleDispatch} disabled={!selectedBooking.driverId}>Dispatch Trip</Button>
                   )}

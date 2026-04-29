@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ChevronLeft, ChevronRight, Clock, Truck, Users,
   Search, AlertTriangle, CheckCircle2, Coffee, X, Wrench, Loader2
@@ -140,12 +140,8 @@ const Schedule = () => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">
-            Fleet &amp; Driver Schedule
-          </h1>
-          <p className="text-ink-3 font-medium mt-0.5">
-            Coordinate shifts, vehicle availability and driver assignments
-          </p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Fleet Schedule</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Coordinate shifts, vehicle availability, and operator assignments</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -187,7 +183,7 @@ const Schedule = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line-2 pb-3">
-        <div className="flex gap-1 bg-bg p-1 rounded-xl border border-line-2 w-fit">
+        <div className="flex bg-bg p-1 rounded-xl border border-line w-fit">
           {[
             { id: 'driver', label: 'Driver Schedule', icon: Users  },
             { id: 'fleet',  label: 'Fleet Schedule',  icon: Truck  },
@@ -197,7 +193,7 @@ const Schedule = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
                 activeTab === tab.id
-                  ? 'bg-white shadow-sm text-primary border border-line'
+                  ? 'bg-white shadow-sm text-primary border border-line-2'
                   : 'text-ink-3 hover:text-ink'
               }`}
             >

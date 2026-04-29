@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
@@ -72,8 +72,8 @@ const AdminDashboard = () => {
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">Executive Dashboard</h1>
-          <p className="text-ink-3 font-medium">Platform-wide overview and business performance metrics</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">Executive Dashboard</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Platform-wide overview and business performance metrics</p>
         </div>
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-accent-light/30 border border-accent/20 rounded-full">
           <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />

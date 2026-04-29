@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   Users, 
   UserPlus, 
@@ -43,8 +43,8 @@ const UserAccess = () => {
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-ink tracking-tight">User Access</h1>
-          <p className="text-ink-3 font-medium">Manage dispatcher and administrator access</p>
+          <h1 className="text-4xl font-black font-display text-ink tracking-tight">User Management</h1>
+          <p className="text-ink-3 font-semibold mt-1 tracking-wide">Manage dispatcher and administrator access controls</p>
         </div>
         <Button variant="primary" icon={UserPlus} onClick={() => setShowInviteModal(true)}>Invite User</Button>
       </div>
@@ -97,7 +97,7 @@ const UserAccess = () => {
                     <span className="text-xs font-bold text-ink-3">{user.lastLogin}</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {user.id !== 'LOG-882' && (
+                    {user.id !== 'LOGISS-882' && (
                       <button 
                         onClick={() => toggleStatus(user.id)}
                         className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all border opacity-0 group-hover:opacity-100 ${user.status === 'active' ? 'text-urgent border-urgent hover:bg-urgent hover:text-white' : 'text-accent border-accent hover:bg-accent hover:text-white'}`}
