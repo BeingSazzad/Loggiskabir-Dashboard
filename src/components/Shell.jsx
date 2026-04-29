@@ -63,8 +63,8 @@ const Shell = ({ children, page, setPage, role, onLogout }) => {
     <div className="flex h-screen bg-bg overflow-hidden font-sans text-ink">
       {/* Sidebar */}
       <aside className="w-[260px] bg-white border-r border-line fixed h-full flex flex-col z-20 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.05)]">
-        <div className="p-6 flex items-center gap-3 mb-2">
-          <img src="/logo.png" alt="Logiss Rides" className="h-12 w-auto" />
+        <div className="p-6 flex items-center justify-center mb-2">
+          <img src="/logo.png" alt="Logiss Rides" className="w-48 h-auto max-h-24 object-contain" />
         </div>
 
         <nav className="flex-1 px-4 py-2 overflow-y-auto scrollbar-hide">
