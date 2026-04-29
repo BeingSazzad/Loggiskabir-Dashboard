@@ -104,7 +104,7 @@ const Transactions = () => {
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-xs font-bold text-ink">{formatShortDate(txn.date)}</p>
-                    <p className="text-[10px] text-ink-4 mt-0.5">{txn.date.split('T')[1].slice(0,5)}</p>
+                    <p className="text-[10px] text-ink-4 mt-0.5">{txn.date?.includes('T') ? txn.date.split('T')[1].slice(0,5) : '--:--'}</p>
                   </td>
                   <td className="px-6 py-4 flex items-center gap-3">
                     <Avatar initials={txn.rider.initials} size="xs" />

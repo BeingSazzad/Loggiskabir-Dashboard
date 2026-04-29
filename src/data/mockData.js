@@ -1,7 +1,7 @@
 export const vehicles = [
   {
     id: 'VEH-001', make: 'Ford Transit', model: 'T-250', year: 2022,
-    color: 'White', plate: 'VA · 4KL-8392', type: 'Ambulatory Van',
+    color: 'White', plate: 'VA · 4KL-8392', type: 'Ambulatory Van', image: 'https://images.unsplash.com/photo-1626668893632-6f3a4466d22f?w=300&h=200&fit=crop',
     seats: 6, vin: '1FTBW2CM2NKA00142',
     status: 'in_trip', assignedDriverId: 'DRV-2024-8421',
     mileage: 48200, lastService: '2026-02-10', nextService: '2026-08-10',
@@ -9,7 +9,7 @@ export const vehicles = [
   },
   {
     id: 'VEH-002', make: 'Honda Odyssey', model: 'EX-L', year: 2021,
-    color: 'Silver', plate: 'VA · 7XR-1129', type: 'Wheelchair Van',
+    color: 'Silver', plate: 'VA · 7XR-1129', type: 'Wheelchair Van', image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop',
     seats: 4, vin: '5FNRL6H73MB000283',
     status: 'available', assignedDriverId: 'DRV-2024-7710',
     mileage: 62100, lastService: '2026-01-15', nextService: '2026-07-15',
@@ -17,7 +17,7 @@ export const vehicles = [
   },
   {
     id: 'VEH-003', make: 'Toyota Sienna', model: 'XLE', year: 2023,
-    color: 'Gray', plate: 'VA · 2HT-5560', type: 'Ambulatory Van',
+    color: 'Gray', plate: 'VA · 2HT-5560', type: 'Ambulatory Van', image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=300&h=200&fit=crop',
     seats: 7, vin: '5TDYZ3DC7LS000491',
     status: 'available', assignedDriverId: 'DRV-2024-9082',
     mileage: 21300, lastService: '2026-03-20', nextService: '2026-09-20',
@@ -25,7 +25,7 @@ export const vehicles = [
   },
   {
     id: 'VEH-004', make: 'Ford Transit', model: 'T-350', year: 2020,
-    color: 'White', plate: 'VA · 9KE-3320', type: 'Ambulatory Van',
+    color: 'White', plate: 'VA · 9KE-3320', type: 'Ambulatory Van', image: 'https://images.unsplash.com/photo-1626668893632-6f3a4466d22f?w=300&h=200&fit=crop',
     seats: 8, vin: '1FTBW2CM2LKA02211',
     status: 'off_duty', assignedDriverId: 'DRV-2024-6531',
     mileage: 89400, lastService: '2025-12-01', nextService: '2026-06-01',
@@ -33,7 +33,7 @@ export const vehicles = [
   },
   {
     id: 'VEH-005', make: 'Chrysler Pacifica', model: 'Hybrid', year: 2022,
-    color: 'Blue', plate: 'VA · 5DL-7821', type: 'Wheelchair Van',
+    color: 'Blue', plate: 'VA · 5DL-7821', type: 'Wheelchair Van', image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop',
     seats: 3, vin: '2C4RC1N72NR100833',
     status: 'break', assignedDriverId: 'DRV-2024-4407',
     mileage: 33800, lastService: '2026-04-01', nextService: '2026-10-01',
@@ -41,7 +41,7 @@ export const vehicles = [
   },
   {
     id: 'VEH-006', make: 'RAM ProMaster', model: '2500', year: 2023,
-    color: 'White', plate: 'VA · 1PX-4490', type: 'Stretcher Van',
+    color: 'White', plate: 'VA · 1PX-4490', type: 'Stretcher Van', image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=300&h=200&fit=crop',
     seats: 2, vin: '3C6TRVDG0PE500112',
     status: 'available', assignedDriverId: null,
     mileage: 11200, lastService: '2026-04-10', nextService: '2026-10-10',
@@ -482,11 +482,13 @@ export const trips = [
     status: 'completed',
     driverId: 'DRV-2024-9082',
     type: 'round_trip',
+    mobility: 'Ambulatory',
+    cost: 4.50,
     pickup: 'Richmond',
     dropoff: 'VCU Medical',
     scheduledTime: '2024-10-14T10:00:00',
+    submittedTime: '2024-10-13T09:00:00',
     distance: '11.2 mi',
-    cost: 4.50,
     paymentStatus: 'charged',
     rating: 5
   },
@@ -496,11 +498,13 @@ export const trips = [
     status: 'completed',
     driverId: 'DRV-2024-8421',
     type: 'one_way',
+    mobility: 'Ambulatory',
+    cost: 3.50,
     pickup: 'Richmond',
     dropoff: 'Bon Secours St. Francis',
     scheduledTime: '2024-10-08T09:00:00',
+    submittedTime: '2024-10-07T10:00:00',
     distance: '9.4 mi',
-    cost: 3.50
   },
   {
     id: 'LOGISS-2803',
@@ -510,7 +514,10 @@ export const trips = [
     type: 'round_trip',
     pickup: 'Richmond',
     dropoff: 'Medical Office',
+    mobility: 'Ambulatory',
+    cost: 0,
     scheduledTime: '2024-10-03T14:30:00',
+    submittedTime: '2024-10-02T09:00:00',
     cancelReason: 'Patient rescheduled appointment'
   }
 ];

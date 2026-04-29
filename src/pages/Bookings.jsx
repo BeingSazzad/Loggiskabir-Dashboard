@@ -121,7 +121,7 @@ const ManualTripModal = ({ onClose, onSave }) => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">First Name *</label>
-                    <input required className={inputClass} value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} placeholder="First" />
+                    <input required={userType === 'new'} className={inputClass} value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} placeholder="First" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Middle Name</label>
@@ -129,7 +129,7 @@ const ManualTripModal = ({ onClose, onSave }) => {
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Last Name *</label>
-                    <input required className={inputClass} value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} placeholder="Last" />
+                    <input required={userType === 'new'} className={inputClass} value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} placeholder="Last" />
                   </div>
                   <div className="md:col-span-3">
                     <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Phone Number</label>
@@ -220,10 +220,12 @@ const Bookings = ({ setPage }) => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedTrips.length === filteredTrips.length && filteredTrips.length > 0) {
-      setSelectedTrips([]);
+    const pageIds = paginatedBookings.map(t => t.id);
+    const allSelected = pageIds.every(id => selectedTrips.includes(id));
+    if (allSelected) {
+      setSelectedTrips(prev => prev.filter(id => !pageIds.includes(id)));
     } else {
-      setSelectedTrips(filteredTrips.map(t => t.id));
+      setSelectedTrips(prev => [...new Set([...prev, ...pageIds])]);
     }
   };
 
@@ -296,7 +298,7 @@ const Bookings = ({ setPage }) => {
         {['pending', 'unassigned'].map(tab => (
           <button
             key={tab}
-            onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
+            onClick={() => { setActiveTab(tab); setCurrentPage(1); setSelectedBookingId(null); }}
             className={`px-4 py-2 text-sm font-bold border-b-2 transition-all capitalize ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-ink-3 hover:text-ink-2'}`}
           >
             {tab === 'pending' ? 'Pending Review' : tab}
@@ -320,7 +322,7 @@ const Bookings = ({ setPage }) => {
                     <th className="px-6 py-4 w-10">
                       <input 
                         type="checkbox" 
-                        checked={selectedTrips.length === filteredTrips.length && filteredTrips.length > 0}
+                        checked={paginatedBookings.length > 0 && paginatedBookings.every(b => selectedTrips.includes(b.id))}
                         onChange={toggleSelectAll}
                         className="w-4 h-4 rounded border-line text-primary focus:ring-primary/20 cursor-pointer"
                       />

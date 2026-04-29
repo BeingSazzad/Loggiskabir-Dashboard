@@ -468,18 +468,19 @@ const Fleet = ({ role }) => {
       {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Fleet',       value: stats.total,     icon: Truck,        color: 'bg-primary-light text-primary' },
-          { label: 'Available',         value: stats.available, icon: CheckCircle2, color: 'bg-accent-light text-accent'   },
-          { label: 'In Trip',           value: stats.inTrip,    icon: Clock,        color: 'bg-primary-light text-primary' },
-          { label: 'Compliance Issues', value: stats.issues,    icon: AlertTriangle,color: 'bg-urgent-light text-urgent'   },
+          { label: 'Total Fleet',       value: stats.total,     sub: 'registered vehicles', icon: Truck,        color: 'bg-primary-light text-primary' },
+          { label: 'Available Now',      value: stats.available, sub: 'ready to dispatch',   icon: CheckCircle2, color: 'bg-accent-light text-accent'   },
+          { label: 'Currently In Trip',  value: stats.inTrip,    sub: 'active assignments',  icon: Clock,        color: 'bg-primary-light/60 text-primary' },
+          { label: 'Compliance Issues',  value: stats.issues,    sub: 'need attention',      icon: AlertTriangle,color: 'bg-urgent-light text-urgent'   },
         ].map(s => (
-          <Card key={s.label} className="p-4 flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${s.color}`}>
-              <s.icon size={18} />
+          <Card key={s.label} className={`p-5 flex items-center gap-4 ${s.label === 'Compliance Issues' && stats.issues > 0 ? 'border-urgent/20' : ''}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${s.color}`}>
+              <s.icon size={20} />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[10px] font-bold text-ink-4 uppercase tracking-wider leading-none">{s.label}</p>
-              <p className="text-2xl font-extrabold text-ink mt-0.5">{s.value}</p>
+              <p className="text-3xl font-extrabold text-ink mt-1 leading-none">{s.value}</p>
+              <p className="text-[10px] text-ink-4 mt-1">{s.sub}</p>
             </div>
           </Card>
         ))}
@@ -531,8 +532,12 @@ const Fleet = ({ role }) => {
                     {/* Vehicle */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-bg rounded-xl flex items-center justify-center flex-shrink-0 border border-line-2 group-hover:border-primary/20 transition-colors">
-                          <Truck size={16} className="text-primary" />
+                        <div className="w-10 h-10 bg-bg rounded-xl flex items-center justify-center flex-shrink-0 border border-line-2 group-hover:border-primary/20 overflow-hidden transition-colors relative">
+                          {v.image ? (
+                            <img src={v.image} alt={v.plate} className="w-full h-full object-cover" />
+                          ) : (
+                            <Truck size={16} className="text-primary" />
+                          )}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-extrabold text-ink">{v.year} {v.make} {v.model}</p>
@@ -551,10 +556,16 @@ const Fleet = ({ role }) => {
 
                     {/* Status */}
                     <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`}></span>
-                        <span className={`text-xs font-bold ${s.text}`}>{s.label}</span>
-                      </div>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                        v.status === 'available'   ? 'bg-accent-light text-accent border-accent/20' :
+                        v.status === 'in_trip'     ? 'bg-primary-tint/40 text-primary border-primary/20' :
+                        v.status === 'break'       ? 'bg-warning-light text-warning-dark border-warning/20' :
+                        v.status === 'maintenance' ? 'bg-urgent-light text-urgent border-urgent/20' :
+                        'bg-bg text-ink-3 border-line-2'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+                        {s.label}
+                      </span>
                     </td>
 
                     {/* Assigned Driver */}

@@ -75,93 +75,72 @@ const Shell = ({ children, page, setPage, role, onLogout }) => {
           </div>
         </div>
 
-        <nav className="flex-1 px-4 py-2 space-y-8 overflow-y-auto scrollbar-hide">
-          <div>
-            <h3 className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-4">
-              {role === 'admin' ? 'Admin Controls' : 'Operations'}
-            </h3>
+        <nav className="flex-1 px-4 py-2 overflow-y-auto scrollbar-hide">
+          {role === 'admin' ? (
             <div className="space-y-1">
-              {role === 'admin' ? (
-                <>
-                  <NavItem 
-                    icon={LayoutDashboard} 
-                    label="Dashboard" 
-                    active={page === 'admin_dashboard' || page === 'operations'} 
-                    onClick={() => setPage('admin_dashboard')} 
-                  />
-                  <NavItem 
-                    icon={CreditCard} 
-                    label="Transactions" 
-                    active={page === 'transactions'} 
-                    onClick={() => setPage('transactions')} 
-                  />
-                  <NavItem 
-                    icon={UserPlus} 
-                    label="User Access" 
-                    active={page === 'users'} 
-                    onClick={() => setPage('users')} 
-                  />
-                  <NavItem 
-                    icon={FileText} 
-                    label="Content Manager" 
-                    active={page === 'cms'} 
-                    onClick={() => setPage('cms')} 
-                  />
-                  
-                  <h3 className="px-3 mt-6 mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-4">Operations</h3>
-                  <NavItem icon={Inbox} label="Bookings" badge="8" active={page === 'bookings'} onClick={() => setPage('bookings')} />
-                  <NavItem 
-                    icon={Map} 
-                    label="Live Trips" 
-                    badge={
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
-                        {liveTripsCount}
-                      </div>
-                    } 
-                    active={page === 'live'} 
-                    onClick={() => setPage('live')} 
-                  />
-                  <NavItem icon={Users} label="Drivers" active={page === 'drivers'} onClick={() => setPage('drivers')} />
-                  <NavItem icon={FileCheck} label="Applications" badge="3" active={page === 'applications'} onClick={() => setPage('applications')} />
-                  <NavItem icon={Flag} label="Reports" badge="2" badgeVariant="urgent" active={page === 'reports'} onClick={() => setPage('reports')} />
-                  <NavItem icon={Truck} label="Trip History" active={page === 'trips'} onClick={() => setPage('trips')} />
-                  <NavItem icon={CalendarDays} label="Schedule" active={page === 'schedule'} onClick={() => setPage('schedule')} />
-                  <NavItem icon={Car} label="Fleet" active={page === 'fleet'} onClick={() => setPage('fleet')} />
-                </>
-              ) : (
-                <>
-                  <NavItem icon={LayoutDashboard} label="Operations" active={page === 'operations'} onClick={() => setPage('operations')} />
-                  <NavItem icon={Inbox} label="Bookings" badge="8" active={page === 'bookings'} onClick={() => setPage('bookings')} />
-                  <NavItem 
-                    icon={Map} 
-                    label="Live Trips" 
-                    badge={
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
-                        {liveTripsCount}
-                      </div>
-                    } 
-                    active={page === 'live'} 
-                    onClick={() => setPage('live')} 
-                  />
-                  <NavItem icon={Users} label="Drivers" active={page === 'drivers'} onClick={() => setPage('drivers')} />
-                  <NavItem icon={Truck} label="Trip History" active={page === 'trips'} onClick={() => setPage('trips')} />
-                  <NavItem icon={CalendarDays} label="Schedule" active={page === 'schedule'} onClick={() => setPage('schedule')} />
-                  <NavItem icon={Car} label="Fleet" active={page === 'fleet'} onClick={() => setPage('fleet')} />
-                </>
-              )}
+              <NavItem icon={LayoutDashboard} label="Dashboard" active={page === 'admin_dashboard' || page === 'operations'} onClick={() => setPage('admin_dashboard')} />
+              <NavItem icon={Inbox} label="Bookings" badge="8" active={page === 'bookings'} onClick={() => setPage('bookings')} />
+              <NavItem
+                icon={Map}
+                label="Live Trips"
+                badge={
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
+                    {liveTripsCount}
+                  </div>
+                }
+                active={page === 'live'}
+                onClick={() => setPage('live')}
+              />
+              <NavItem icon={Flag} label="Reports" badge="2" badgeVariant="urgent" active={page === 'reports'} onClick={() => setPage('reports')} />
+              <div className="h-px bg-line-2 mx-3 my-2" />
+              <NavItem icon={Users} label="Drivers" active={page === 'drivers'} onClick={() => setPage('drivers')} />
+              <NavItem icon={FileCheck} label="Applications" badge="3" active={page === 'applications'} onClick={() => setPage('applications')} />
+              <NavItem icon={CalendarDays} label="Schedule" active={page === 'schedule'} onClick={() => setPage('schedule')} />
+              <NavItem icon={Car} label="Fleet" active={page === 'fleet'} onClick={() => setPage('fleet')} />
+              <NavItem icon={Truck} label="Trip History" active={page === 'trips'} onClick={() => setPage('trips')} />
+              <div className="h-px bg-line-2 mx-3 my-2" />
+              <NavItem icon={CreditCard} label="Transactions" active={page === 'transactions'} onClick={() => setPage('transactions')} />
+              <NavItem icon={UserPlus} label="User Access" active={page === 'users'} onClick={() => setPage('users')} />
+              <NavItem icon={FileText} label="Content Manager" active={page === 'cms'} onClick={() => setPage('cms')} />
+              <div className="h-px bg-line-2 mx-3 my-2" />
+              <NavItem icon={Settings} label="Settings" active={page === 'settings'} onClick={() => setPage('settings')} />
             </div>
-          </div>
+          ) : (
+            <div className="space-y-1">
+              <NavItem icon={LayoutDashboard} label="Operations" active={page === 'operations'} onClick={() => setPage('operations')} />
+              <NavItem icon={Inbox} label="Bookings" badge="8" active={page === 'bookings'} onClick={() => setPage('bookings')} />
+              <NavItem
+                icon={Map}
+                label="Live Trips"
+                badge={
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot"></span>
+                    {liveTripsCount}
+                  </div>
+                }
+                active={page === 'live'}
+                onClick={() => setPage('live')}
+              />
+              <NavItem icon={Users} label="Drivers" active={page === 'drivers'} onClick={() => setPage('drivers')} />
+              <div className="h-px bg-line-2 mx-3 my-2" />
+              <NavItem icon={CalendarDays} label="Schedule" active={page === 'schedule'} onClick={() => setPage('schedule')} />
+              <NavItem icon={Car} label="Fleet" active={page === 'fleet'} onClick={() => setPage('fleet')} />
+              <NavItem icon={Truck} label="Trip History" active={page === 'trips'} onClick={() => setPage('trips')} />
+              <div className="h-px bg-line-2 mx-3 my-2" />
+              <NavItem icon={Settings} label="Settings" active={page === 'settings'} onClick={() => setPage('settings')} />
+            </div>
+          )}
         </nav>
 
-        <div className="p-3 border-t border-line space-y-1">
-          <NavItem 
-            icon={Settings} 
-            label="Settings" 
-            active={page === 'settings'} 
-            onClick={() => setPage('settings')} 
-          />
+        <div className="p-3 border-t border-line">
+          <div
+            onClick={onLogout}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 text-urgent hover:bg-urgent-light/60 group"
+          >
+            <LogOut size={18} className="text-urgent" />
+            <span className="text-xs font-bold">Log Out</span>
+          </div>
         </div>
 
       </aside>
