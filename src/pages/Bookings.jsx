@@ -10,6 +10,7 @@ import {
   User,
   Users,
   Calendar,
+  CalendarClock,
   AlertCircle,
   Truck,
   Star,
@@ -63,6 +64,8 @@ const ManualTripModal = ({ onClose, onSave }) => {
     pickup: '',
     dropoff: '',
     scheduledTime: '',
+    returnTime: '',
+    willCall: false,
     mobility: 'Ambulatory',
     type: 'one_way',
   });
@@ -156,13 +159,60 @@ const ManualTripModal = ({ onClose, onSave }) => {
                   <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Date & Time *</label>
                   <input required type="datetime-local" className={inputClass} value={form.scheduledTime} onChange={e => setForm({ ...form, scheduledTime: e.target.value })} />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Trip Type</label>
-                  <select className={inputClass} value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                    <option value="one_way">One Way</option>
-                    <option value="round_trip">Round Trip</option>
-                  </select>
+                <div className="md:col-span-2 mt-2">
+                  <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-2">Trip Type</label>
+                  <div className="flex items-center bg-bg p-1 rounded-xl w-full border border-line-2">
+                    <button 
+                      type="button"
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${form.type === 'one_way' ? 'bg-white shadow-sm text-primary ring-1 ring-line' : 'text-ink-4 hover:text-ink-2'}`}
+                      onClick={() => setForm({ ...form, type: 'one_way' })}
+                    >
+                      One Way
+                    </button>
+                    <button 
+                      type="button"
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${form.type === 'round_trip' ? 'bg-white shadow-sm text-primary ring-1 ring-line' : 'text-ink-4 hover:text-ink-2'}`}
+                      onClick={() => setForm({ ...form, type: 'round_trip' })}
+                    >
+                      Round Trip
+                    </button>
+                  </div>
                 </div>
+
+                {form.type === 'round_trip' && (
+                  <div className="md:col-span-2 mt-2 p-4 bg-bg rounded-xl border border-line-2 space-y-4 animate-in slide-in-from-top-2">
+                    <h4 className="text-[10px] font-black text-ink uppercase tracking-widest flex items-center gap-2">
+                      <CalendarClock size={12} className="text-primary" /> Return Schedule
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                      <div>
+                        <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Return Time</label>
+                        <input 
+                          type="datetime-local" 
+                          className={`${inputClass} disabled:opacity-50 disabled:bg-line-2 disabled:cursor-not-allowed`}
+                          value={form.returnTime} 
+                          onChange={e => setForm({ ...form, returnTime: e.target.value })} 
+                          disabled={form.willCall}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-white border border-line-2 rounded-xl">
+                        <div className="flex-1 pr-3">
+                          <p className="text-sm font-bold text-ink">Will Call Return</p>
+                          <p className="text-[10px] font-medium text-ink-4 leading-tight mt-0.5">Driver will return when passenger is ready</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, willCall: !form.willCall, returnTime: '' })}
+                          className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${form.willCall ? 'bg-primary' : 'bg-line-2'}`}
+                        >
+                          <span className={`absolute top-1 bottom-1 w-4 bg-white rounded-full transition-all shadow-sm ${form.willCall ? 'left-6' : 'left-1'}`} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="md:col-span-2">
                   <label className="block text-[10px] font-bold text-ink-3 uppercase tracking-wider mb-1">Mobility Requirements</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
